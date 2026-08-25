@@ -185,6 +185,49 @@ def switch(on):
     im.save(os.path.join(OUT,('sw_on' if on else 'sw_off')+'.png'))
 switch(True); switch(False)
 
+
+# ══ 장(章)별 배경 ═══════════════════════════════
+# 우주 계층을 하나 올라갈 때마다 화면 바탕과 위쪽 광채가 바뀐다.
+# 색조만 다르고 무늬는 같아서 "같은 게임의 다음 장"으로 읽힌다.
+import colorsys
+CHAPTER_HUE=[
+ (0.11,0.35),  # 0 지구      금빛
+ (0.45,0.30),  # 1 행성      청록
+ (0.07,0.42),  # 2 항성계    주황
+ (0.75,0.34),  # 3 성단      보라
+ (0.62,0.38),  # 4 은하      남색
+ (0.88,0.34),  # 5 은하군    자홍
+ (0.52,0.36),  # 6 은하단    청록빛 하늘
+ (0.13,0.30),  # 7 초은하단  호박
+ (0.98,0.38),  # 8 필라멘트  심홍
+ (0.35,0.32),  # 9 우주 거대구조 옥빛
+ (0.58,0.14),  # 10 관측 가능한 우주 백금
+ (0.80,0.20),  # 11 다중우주 프리즘
+]
+def tint(hex_, h, sat):
+    r,g,b = [v/255 for v in rgb(hex_)[:3]]
+    _,l,_ = colorsys.rgb_to_hls(r,g,b)
+    r2,g2,b2 = colorsys.hls_to_rgb(h, l, sat)
+    return (int(r2*255), int(g2*255), int(b2*255), 255)
+
+for ci,(h,sat) in enumerate(CHAPTER_HUE):
+    def bgc(x,y,h=h,sat=sat):
+        v=(x*7+y*13)%23
+        base='#0f0f13'
+        if (x-y)%8==0: base='#131318'
+        elif (x+y)%16==0: base='#121216'
+        elif v==0: base='#141419'
+        elif v==11: base='#0d0d10'
+        return tint(base,h,sat*0.5)
+    tile(f'bg_ch{ci}',32,32,bgc)
+    def glowc(x,y,h=h,sat=sat):
+        t=max(0.0,1.0-y/190.0)**2.2
+        if BAYER[y%4][x%4]/16.0 < t*0.85:
+            r,g,b,_=tint('#d4a94a',h,sat)
+            return (r,g,b,int(40+70*t))
+        return None
+    tile(f'glow_ch{ci}',32,190,glowc)
+
 # ── 로고 ────────────────────────────────────
 FONT='/System/Library/Fonts/AppleSDGothicNeo.ttc'
 def bitmap_text(txt,size,idx=6,thr=110):

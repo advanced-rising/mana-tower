@@ -466,6 +466,44 @@ body{
 .btn .c{display:inline-flex;align-items:center;gap:3px}
 .unit .buy{min-width:0}
 
+/* ══ 장(章) ═════════════════════════════════════
+   우주 계층을 한 칸 올라갈 때마다 바탕과 강조색이 바뀐다.
+   무늬는 그대로라 "같은 게임의 다음 장"으로 읽힌다. */
+html[data-chapter] body{background:url('art/ui/glow_ch0.png') repeat-x top,url('art/ui/bg_ch0.png') repeat,#0e0e11}
+html[data-chapter="1"] body{background:url('art/ui/glow_ch1.png') repeat-x top,url('art/ui/bg_ch1.png') repeat,#0b1113}
+html[data-chapter="2"] body{background:url('art/ui/glow_ch2.png') repeat-x top,url('art/ui/bg_ch2.png') repeat,#130f0b}
+html[data-chapter="3"] body{background:url('art/ui/glow_ch3.png') repeat-x top,url('art/ui/bg_ch3.png') repeat,#110b13}
+html[data-chapter="4"] body{background:url('art/ui/glow_ch4.png') repeat-x top,url('art/ui/bg_ch4.png') repeat,#0b0d15}
+html[data-chapter="5"] body{background:url('art/ui/glow_ch5.png') repeat-x top,url('art/ui/bg_ch5.png') repeat,#130b11}
+html[data-chapter="6"] body{background:url('art/ui/glow_ch6.png') repeat-x top,url('art/ui/bg_ch6.png') repeat,#0b1215}
+html[data-chapter="7"] body{background:url('art/ui/glow_ch7.png') repeat-x top,url('art/ui/bg_ch7.png') repeat,#141109}
+html[data-chapter="8"] body{background:url('art/ui/glow_ch8.png') repeat-x top,url('art/ui/bg_ch8.png') repeat,#150a0d}
+html[data-chapter="9"] body{background:url('art/ui/glow_ch9.png') repeat-x top,url('art/ui/bg_ch9.png') repeat,#0b1410}
+html[data-chapter="10"] body{background:url('art/ui/glow_ch10.png') repeat-x top,url('art/ui/bg_ch10.png') repeat,#111318}
+html[data-chapter="11"] body{background:url('art/ui/glow_ch11.png') repeat-x top,url('art/ui/bg_ch11.png') repeat,#120b16}
+html[data-chapter="1"]{--gold:#4ad4c2;--gold2:#8aecdf;--goldDk:#287a6e}
+html[data-chapter="2"]{--gold:#e08a3c;--gold2:#f6c489;--goldDk:#8a4f1c}
+html[data-chapter="3"]{--gold:#a97ae0;--gold2:#d0b6f6;--goldDk:#5e3f8a}
+html[data-chapter="4"]{--gold:#6a86e0;--gold2:#a8bcf6;--goldDk:#3a4a8a}
+html[data-chapter="5"]{--gold:#e06ab0;--gold2:#f6a8d4;--goldDk:#8a3a68}
+html[data-chapter="6"]{--gold:#4ab8e0;--gold2:#96dcf6;--goldDk:#286a8a}
+html[data-chapter="7"]{--gold:#e0c04a;--gold2:#f6e496;--goldDk:#8a7228}
+html[data-chapter="8"]{--gold:#e04a5e;--gold2:#f6969f;--goldDk:#8a2838}
+html[data-chapter="9"]{--gold:#4ae08a;--gold2:#96f6bd;--goldDk:#288a50}
+html[data-chapter="10"]{--gold:#c8d0dc;--gold2:#eef2f8;--goldDk:#78808c}
+html[data-chapter="11"]{--gold:#c07ae0;--gold2:#e6b6f6;--goldDk:#703f8a}
+
+/* 새 장에 들어설 때 뜨는 띠 */
+#chapter{position:fixed;left:0;right:0;top:0;z-index:240;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;height:100vh;opacity:0}
+#chapter.on{animation:chIn 3.2s ease-out forwards}
+#chapter .box{padding:14px 26px;background:rgba(8,8,12,.88);
+  border:6px solid transparent;border-image:url('art/ui/btn_gold.png') 6 stretch;text-align:center}
+#chapter .k{font-size:11px;letter-spacing:.34em;color:var(--gold)}
+#chapter .t{font-size:24px;font-weight:700;color:var(--gold2);letter-spacing:.06em;margin-top:2px}
+@keyframes chIn{0%{opacity:0;transform:scale(.96)}12%{opacity:1;transform:none}
+  78%{opacity:1}100%{opacity:0}}
+
 </style>
 </head>
 <body>
@@ -493,6 +531,7 @@ body{
     <button type="button" class="btn gold" id="modalOk"></button></div>
 </div></div>
 <div id="toast"></div>
+<div id="chapter"><div class="box"><div class="k"></div><div class="t"></div></div></div>
 <input type="file" id="fileIn" accept=".txt,.json" style="display:none">
 
 <script>
@@ -862,49 +901,63 @@ function addMana(v){S.mana+=v;S.manaRun+=v;S.manaEver+=v}
 const isBoss=f=>f%10===0;
 
 /* ── 우주 계층 ────────────────────────────────
-   층은 그대로 두고 그 번호를 오도미터로 읽는다.
-   100층마다 행성이, 100행성마다 행성계가, 그 위에 은하와 은하계가 넘어간다.
-   가장 위 칸은 자릿수 제한이 없다 — 여기서 끝나지 않는다. */
+   실제 천문학의 구조를 그대로 따른다.
+     항성계 → 성단 → 은하 → 은하군 → 은하단 → 초은하단 → 필라멘트 → 우주 거대구조
+   층 번호를 오도미터로 읽을 뿐이라 기존 계산과 세이브를 건드리지 않는다.
+   맨 윗 칸은 자릿수 제한이 없다 — 여기서 끝나지 않는다. */
 const COSMOS=[
- {k:'floor',   per:1,    nm:{ko:'층',    en:"Floor"}},
- {k:'planet',  per:100,  nm:{ko:'행성',  en:"Planet"}},
- {k:'system',  per:100,  nm:{ko:'행성계',en:"System"}},
- {k:'galaxy',  per:100,  nm:{ko:'은하',  en:"Galaxy"}},
- {k:'cluster', per:100,  nm:{ko:'은하계',en:"Cluster"}},
+ {k:'floor',   per:1,   ko:'층',        en:"Floor",       eg:''},
+ {k:'planet',  per:100, ko:'행성',      en:"Planet",      eg:'지구'},
+ {k:'system',  per:8,   ko:'항성계',    en:"Star System", eg:'태양계'},
+ {k:'cluster', per:10,  ko:'성단',      en:"Star Cluster",eg:'플레이아데스'},
+ {k:'galaxy',  per:10,  ko:'은하',      en:"Galaxy",      eg:'우리 은하'},
+ {k:'group',   per:10,  ko:'은하군',    en:"Galaxy Group",eg:'국부은하군'},
+ {k:'gcluster',per:10,  ko:'은하단',    en:"Galaxy Cluster",eg:'처녀자리 은하단'},
+ {k:'super',   per:10,  ko:'초은하단',  en:"Supercluster",eg:'라니아케아'},
+ {k:'filament',per:10,  ko:'우주 필라멘트',en:"Filament", eg:'슬론 장성'},
+ {k:'web',     per:10,  ko:'우주 거대구조',en:"Cosmic Web",eg:'우주 그물'},
+ {k:'observ',  per:10,  ko:'관측 가능한 우주',en:"Observable Universe",eg:''},
+ {k:'multi',   per:10,  ko:'다중우주',  en:"Multiverse",  eg:''},
 ];
-const COSMOS_MUL=[1, 1.5, 5, 25, 200];   // 한 칸 넘길 때마다 전체 생산에 붙는 배율
+/* 칸을 하나 넘길 때마다 전체 생산에 붙는 배율. 위로 갈수록 가파르다. */
+const COSMOS_MUL=[1, 1.5, 4, 12, 40, 150, 600, 2500, 1.2e4, 6e4, 3e5, 2e6];
 
 function cosmos(f){
   const o={}; let div=1;
   for(let i=0;i<COSMOS.length;i++){
-    div*= i===0?1:COSMOS[i].per;
-    const next = i+1<COSMOS.length ? COSMOS[i+1].per : Infinity;
-    o[COSMOS[i].k] = Math.floor((f-1)/div) % next + 1;
+    if(i) div*=COSMOS[i].per;
+    const cap = i+1<COSMOS.length ? COSMOS[i+1].per : Infinity;
+    o[COSMOS[i].k] = Math.floor((f-1)/div) % cap + 1;
   }
   return o;
 }
-/* 지구권을 벗어났는지 — 100층 아래는 아직 지구 안이다 */
-const inEarth = f => f<=100;
-function cosmosLabel(f){
+/* 지금 어느 장(章)에 있는가 — 1 보다 큰 가장 높은 칸 */
+function chapterOf(f){
   const c=cosmos(f);
-  if(inEarth(f)) return X(`지구 · ${c.floor}층`, `Earth · F${c.floor}`);
+  let top=0;
+  for(let i=1;i<COSMOS.length;i++) if(c[COSMOS[i].k]>1) top=i;
+  if(top===0 && f<=100) return 0;          // 지구
+  return Math.max(1,top);
+}
+function chapterName(i){
+  if(i===0) return X('지구','Earth');
+  return X(COSMOS[i].ko, COSMOS[i].en);
+}
+function cosmosLabel(f){
+  const c=cosmos(f), ch=chapterOf(f);
+  if(ch===0) return X(`지구 · ${c.floor}층`, `Earth · F${c.floor}`);
   const p=[];
-  if(c.cluster>1) p.push(X(`은하계 ${c.cluster}`,`Cluster ${c.cluster}`));
-  if(c.galaxy>1||c.cluster>1) p.push(X(`은하 ${c.galaxy}`,`Galaxy ${c.galaxy}`));
-  if(c.system>1||c.galaxy>1||c.cluster>1) p.push(X(`행성계 ${c.system}`,`System ${c.system}`));
+  for(let i=ch;i>=2;i--) p.push(X(`${COSMOS[i].ko} ${c[COSMOS[i].k]}`,`${COSMOS[i].en} ${c[COSMOS[i].k]}`));
   p.push(X(`행성 ${c.planet}`,`Planet ${c.planet}`));
   p.push(X(`${c.floor}층`,`F${c.floor}`));
   return p.join(' · ');
 }
-/* 칸을 넘길 때마다 붙는 영구 배율 */
 function cosmosBonus(f){
   const c=cosmos(f); let v=1;
-  v*=Math.pow(COSMOS_MUL[1], c.planet-1);
-  v*=Math.pow(COSMOS_MUL[2], c.system-1);
-  v*=Math.pow(COSMOS_MUL[3], c.galaxy-1);
-  v*=Math.pow(COSMOS_MUL[4], c.cluster-1);
-  return v;
+  for(let i=1;i<COSMOS.length;i++) v*=Math.pow(COSMOS_MUL[i], c[COSMOS[i].k]-1);
+  return isFinite(v)?v:1e300;
 }
+
 /* 층마다 다른 적이 나온다 */
 /* 던전 몬스터 : 기본 6종 × 속성 6종 = 36종. 보스는 2종 × 6 = 12종.
    그림은 tools/foes.py 가 같은 실루엣에 팔레트와 파츠(불꽃·독액·얼음·
@@ -952,10 +1005,17 @@ function foeOf(f){
   return isBoss(f) ? BOSSES[(Math.floor(f/10)-1)%BOSSES.length] : FOES[(f-1)%FOES.length];
 }
 function dungeonPower(){
+  /* 시설 수는 완만하게(0.45제곱) 오르는데 층 체력은 지수로 오른다.
+     그래서 원정대 공격력을 마나 생산에 묶는다. 생산이 오르면 던전도 따라 깊어진다. */
   let u=0;for(let i=0;i<PRODUCERS.length;i++)u+=cnt(i);
-  return (1+Math.pow(u,0.45))*M().dungeon;
+  const rate=Math.max(1,manaRate());
+  return (1+Math.pow(u,0.45))*M().dungeon*Math.pow(rate,0.75);
 }
-function floorHP(f){return 40*Math.pow(1.35,f-1)*(isBoss(f)?8:1)*elemOf(f).hp}
+function floorHP(f){
+  /* 200층까지는 가파르게, 그 위로는 완만하게. 자바스크립트 수 한계에 빨리 닿지 않게 한다. */
+  const a=Math.min(f-1,200), b=Math.max(0,f-1-200);
+  return 40*Math.pow(1.35,a)*Math.pow(1.09,b)*(isBoss(f)?8:1)*elemOf(f).hp;
+}
 function floorLoot(f){
   const m=M(), b=isBoss(f)?10*m.boss:1, e=elemOf(f);
   return{
@@ -964,13 +1024,28 @@ function floorLoot(f){
     offering:isBoss(f)?Math.max(1,Math.floor(f*0.8*m.offer*b*e.offer/6)):0,
   };
 }
+let curChapter=-1;
+function syncChapter(force){
+  const ch=chapterOf(Math.max(1,S.deepest||1));
+  if(ch===curChapter&&!force) return;
+  const first=curChapter<0;
+  curChapter=ch;
+  document.documentElement.dataset.chapter=ch;
+  if(first) return;
+  const box=$('chapter'); if(!box) return;
+  box.querySelector('.k').textContent=X(`제 ${ch+1} 장`,`CHAPTER ${ch+1}`);
+  box.querySelector('.t').textContent=chapterName(ch);
+  box.classList.remove('on'); void box.offsetWidth; box.classList.add('on');
+  log(`${icHTML('star')}<b class="gold">${X(`제 ${ch+1} 장 · ${chapterName(ch)}`,`Chapter ${ch+1} · ${chapterName(ch)}`)}</b> ${X('에 들어섰다','reached')}`,true);
+}
+
 function clearFloor(){
   const f=S.floor,l=floorLoot(f);
   addMana(l.mana);
   S.crystal+=l.crystal; S.crystalEver+=l.crystal;
   if(l.offering){S.offering+=l.offering;S.offerEver+=l.offering}
   const nw=f>S.deepest;
-  if(nw) S.deepest=f;
+  if(nw){ S.deepest=f; syncChapter(); }
   const foe=foeOf(f);
   log(`${icHTML(foe.sp)}${isBoss(f)?`<b class="bad">${X('보스','BOSS')}</b> `:''}<b>${NM(foe.nm)}</b> ${X('격파','defeated')} <span class="dim">${cosmosLabel(f)}</span> · ${icHTML('mana')}${fmt(l.mana)} ${icHTML('crystal')}${fmt(l.crystal)}${l.offering?' '+icHTML('offering')+fmt(l.offering):''}`, isBoss(f));
   S.floor=f+1; recalc();
@@ -1927,7 +2002,7 @@ document.title=X('마탑: 심연의 왕국','Tower of the Abyss');
   fav.rel='icon'; fav.type='image/png'; fav.href=spriteURL('tower');
   document.head.appendChild(fav);
 }
-recalc(); buildRes();
+recalc(); buildRes(); syncChapter(true);
 function syncTopH(){
   document.documentElement.style.setProperty('--topH', $('top').offsetHeight+'px');
 }
