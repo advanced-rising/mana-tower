@@ -204,7 +204,8 @@ main{min-width:0}
 .up .bd{min-width:0;flex:1}
 .up .t{font-family:var(--serif);font-size:13.5px;letter-spacing:.02em;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
 .up .lv{font-size:10.5px;color:var(--faint);font-family:var(--sans)}
-.up .d{font-size:11.5px;color:var(--dim);line-height:1.45;margin:1px 0 3px}
+.up .d{display:block;font-size:11.5px;color:var(--dim);line-height:1.45;margin:1px 0 3px}
+.chal .goal{display:block;margin-bottom:2px}
 .up .c{font-size:11.5px;font-variant-numeric:tabular-nums;color:var(--dim);display:flex;align-items:center;gap:4px}
 .up.afford{border-color:var(--gold);box-shadow:inset 0 0 0 1px rgba(212,169,74,.2), 0 0 13px rgba(212,169,74,.09)}
 .up.afford .c{color:var(--gold2)}
@@ -414,8 +415,8 @@ main{min-width:0}
   <h3 id="modalTitle"></h3>
   <div class="body" id="modalBody"></div>
   <div class="row"><span style="flex:1"></span>
-    <button type="button" class="btn" id="modalNo" style="display:none">취소</button>
-    <button type="button" class="btn gold" id="modalOk">확인</button></div>
+    <button type="button" class="btn" id="modalNo" style="display:none"></button>
+    <button type="button" class="btn gold" id="modalOk"></button></div>
 </div></div>
 <div id="toast"></div>
 <input type="file" id="fileIn" accept=".txt,.json" style="display:none">
@@ -727,7 +728,7 @@ function clearFloor(){
   const nw=f>S.deepest;
   if(nw) S.deepest=f;
   const foe=foeOf(f);
-  log(`${icHTML(foe.sp)}${isBoss(f)?'<b class="bad">보스</b> ':''}<b>${foe.nm}</b> 격파 <span class="dim">${f}층</span> · ${icHTML('mana')}${fmt(l.mana)} ${icHTML('crystal')}${fmt(l.crystal)}${l.offering?' '+icHTML('offering')+fmt(l.offering):''}`, isBoss(f));
+  log(`${icHTML(foe.sp)}${isBoss(f)?`<b class="bad">${X('보스','BOSS')}</b> `:''}<b>${NM(foe.nm)}</b> ${X('격파','defeated')} <span class="dim">${X(f+'층','F'+f)}</span> · ${icHTML('mana')}${fmt(l.mana)} ${icHTML('crystal')}${fmt(l.crystal)}${l.offering?' '+icHTML('offering')+fmt(l.offering):''}`, isBoss(f));
   S.floor=f+1; recalc();
 }
 
@@ -763,8 +764,8 @@ function doRebirth(silent){
   S.rebirths++;
   if(S.chal) exitChallenge(false);
   softReset();
-  log(`${icHTML('soul')}<b>환생</b> · 영혼석 <b class="soul">+${fmt(g)}</b> · 오퍼링 <b class="offer">+${fmt(o)}</b>`,true);
-  if(!silent) toast(icHTML('soul')+` 환생 · 영혼석 +${fmt(g)}`);
+  log(`${icHTML('soul')}<b>${X('환생','Rebirth')}</b> · ${X('영혼석','Soul Shards')} <b class="soul">+${fmt(g)}</b> · ${X('오퍼링','Offerings')} <b class="offer">+${fmt(o)}</b>`,true);
+  if(!silent) toast(icHTML('soul')+X(` 환생 · 영혼석 +${fmt(g)}`,` Rebirth · Soul Shards +${fmt(g)}`));
   if(autoOK('chal')) autoEnterChallenge();
   return true;
 }
@@ -776,8 +777,8 @@ function doAscend(silent){
   S.rebirths=0; S.deepest=0; S.offering=0; S.lastSoulGain=0; S.sinceAscend=0;
   if(S.chal) exitChallenge(false);
   softReset();
-  log(`${icHTML('relic')}<b>승천</b> · 유물 <b class="relic">+${fmt(g)}</b> · 영혼석과 룬이 초기화되었다`,true);
-  if(!silent) toast(icHTML('relic')+` 승천 · 유물 +${fmt(g)}`);
+  log(`${icHTML('relic')}<b>${X('승천','Ascension')}</b> · ${X('유물','Relics')} <b class="relic">+${fmt(g)}</b> · ${X('영혼석과 룬이 초기화되었다','soul shards and runes reset')}`,true);
+  if(!silent) toast(icHTML('relic')+X(` 승천 · 유물 +${fmt(g)}`,` Ascension · Relics +${fmt(g)}`));
   return true;
 }
 
@@ -801,7 +802,7 @@ function checkChallenge(){
   const c=S.chalDone[ch.id]||0;
   if(S.manaRun>=chalGoal(ch,c)){
     S.chalDone[ch.id]=c+1;
-    log(`${icHTML('medal')}<b class="gold">${NM(ch.nm)} ${X('${c+1}단계 돌파!','stage '+(c+1)+' cleared!')}</b> · ${ch.rw(c+1)}`,true);
+    log(`${icHTML('medal')}<b class="gold">${NM(ch.nm)} ${X(`${c+1}단계 돌파!`,`stage ${c+1} cleared!`)}</b> · ${ch.rw(c+1)}`,true);
     achToast(NM(ch.nm)+X(' 돌파',' cleared'), ch.rw(c+1),'medal');
     exitChallenge(true);
     if(autoOK('chal')) autoEnterChallenge();
@@ -982,6 +983,7 @@ function nextAch(){
 let modalCb=null;
 function modal(title,body,onOk){
   $('modalTitle').innerHTML=title; $('modalBody').innerHTML=body;
+  $('modalOk').textContent=X('확인','OK'); $('modalNo').textContent=X('취소','Cancel');
   $('modalWrap').classList.add('on');
   $('modalNo').style.display=onOk?'':'none';
   modalCb=onOk||null;
@@ -1235,9 +1237,9 @@ function buildRelics(p){
     });
   });
   c.appendChild(g); p.appendChild(c);
-  updaters.push(()=>{info.innerHTML=`<span class="tag">${icHTML('offering')} 보유 <b>${fmt(S.offering)}</b></span>
-    <span class="tag">합계 레벨 <b>${runeTotal()}</b></span>
-    <span class="tag">최대 레벨 <b>${Math.floor(M().runeCap)}</b></span>`});
+  updaters.push(()=>{info.innerHTML=`<span class="tag">${icHTML('offering')} ${X('보유','Held')} <b>${fmt(S.offering)}</b></span>
+    <span class="tag">${X('합계 레벨',"Total level")} <b>${runeTotal()}</b></span>
+    <span class="tag">${X('최대 레벨',"Level cap")} <b>${Math.floor(M().runeCap)}</b></span>`});
 
   const c2=card([X('장비',"Gear"),'staff'],X('던전에서 캐낸 <b class="crystal">결정</b>으로 벼려낸다. 승천해도 사라지지 않는 영구 강화.',"Forged from <b class='crystal'>crystals</b> mined in the dungeon. Kept forever, even through ascension."));
   const info2=el('div','row'); info2.style.marginBottom='9px'; c2.appendChild(info2);
@@ -1262,17 +1264,17 @@ function buildRelics(p){
     });
   });
   c2.appendChild(g2); p.appendChild(c2);
-  updaters.push(()=>{info2.innerHTML=`<span class="tag">${icHTML('crystal')} 보유 <b>${fmt(S.crystal)}</b></span>
-    <span class="tag">합계 레벨 <b>${gearTotal()}</b></span>
-    <span class="tag">효과 지수 <b>×${fmt(M().gearPow)}</b></span>`});
+  updaters.push(()=>{info2.innerHTML=`<span class="tag">${icHTML('crystal')} ${X('보유','Held')} <b>${fmt(S.crystal)}</b></span>
+    <span class="tag">${X('합계 레벨',"Total level")} <b>${gearTotal()}</b></span>
+    <span class="tag">${X('효과 지수',"Effect exponent")} <b>×${fmt(M().gearPow)}</b></span>`});
 }
 
 function buildRebirth(p){
-  const c=card([X('환생',"Rebirth"),'soul'],`마나·시설·연구를 모두 버리고 <b class="soul">영혼석</b>과 <b class="offer">오퍼링</b>을 얻는다. 영혼 강화는 승천 전까지 남는다.<br>필요 조건: 이번 회차 누적 마나 ${fmt(REBIRTH_REQ)}`);
+  const c=card([X('환생',"Rebirth"),'soul'],X(`마나·시설·연구를 모두 버리고 <b class="soul">영혼석</b>과 <b class="offer">오퍼링</b>을 얻는다. 영혼 강화는 승천 전까지 남는다.<br>필요 조건: 이번 회차 누적 마나 ${fmt(REBIRTH_REQ)}`,`Throw away mana, buildings and research for <b class="soul">soul shards</b> and <b class="offer">offerings</b>. Soul upgrades last until you ascend.<br>Requires ${fmt(REBIRTH_REQ)} total mana this run.`));
   const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
   const b=btn('gold big','',()=>{
     if(soulGain()<=0) return;
-    modal('환생하시겠습니까?',`영혼석 <b class="soul">${fmt(soulGain())}</b> · 오퍼링 <b class="offer">${fmt(offerGain())}</b>을 얻고<br>마나 · 시설 · 연구가 초기화됩니다.`,()=>doRebirth());
+    modal(X('환생하시겠습니까?','Rebirth?'),X(`영혼석 <b class="soul">${fmt(soulGain())}</b> · 오퍼링 <b class="offer">${fmt(offerGain())}</b>을 얻고<br>마나 · 시설 · 연구가 초기화됩니다.`,`You gain <b class="soul">${fmt(soulGain())}</b> soul shards and <b class="offer">${fmt(offerGain())}</b> offerings.<br>Mana, buildings and research reset.`),()=>doRebirth());
   });
   c.appendChild(b); p.appendChild(c);
   const uc=card([X('영혼 강화',"Soul Upgrades"),'gem'],X('환생해도 유지된다. 승천할 때만 초기화된다.',"Kept through rebirths. Only ascension resets them."));
@@ -1280,22 +1282,23 @@ function buildRebirth(p){
   p.appendChild(uc);
   updaters.push(()=>{
     const g=soulGain();
-    info.innerHTML=`<span class="tag">회차 누적 ${icHTML('mana')}<b>${fmt(S.manaRun)}</b></span>
-      <span class="tag">획득 예정 ${icHTML('soul')}<b class="soul">${fmt(g)}</b></span>
+    info.innerHTML=`<span class="tag">${X('회차 누적',"Run total")} ${icHTML('mana')}<b>${fmt(S.manaRun)}</b></span>
+      <span class="tag">${X('획득 예정',"You gain")} ${icHTML('soul')}<b class="soul">${fmt(g)}</b></span>
       <span class="tag">${icHTML('offering')}<b class="offer">${fmt(offerGain())}</b></span>
-      <span class="tag">영혼석 배율 <b>×${fmt(M().soul)}</b></span>
-      <span class="tag">환생 <b>${S.rebirths}</b>회 · 생산 +${5*S.rebirths}%</span>`;
+      <span class="tag">${X('영혼석 배율',"Shard multiplier")} <b>×${fmt(M().soul)}</b></span>
+      <span class="tag">${X(`환생 <b>${S.rebirths}</b>회 · 생산 +${5*S.rebirths}%`,`<b>${S.rebirths}</b> rebirths · output +${5*S.rebirths}%`)}</span>`;
     b.disabled=g<=0;
-    b.innerHTML=g>0?`${icHTML('soul',24)} 환생하여 영혼석 ${fmt(g)} 획득`:`${icHTML('soul',24)} 누적 마나 ${fmt(REBIRTH_REQ)} 필요`;
+    b.innerHTML=icHTML('soul',24)+' '+(g>0?X(`환생하여 영혼석 ${fmt(g)} 획득`,`Rebirth for ${fmt(g)} soul shards`)
+      :X(`누적 마나 ${fmt(REBIRTH_REQ)} 필요`,`Needs ${fmt(REBIRTH_REQ)} total mana`));
   });
 }
 
 function buildAscend(p){
-  const c=card([X('승천',"Ascension"),'relic'],`영혼석·영혼 강화·룬·최심층까지 전부 버리고 <b class="relic">유물</b>을 얻는다. 유물 강화는 <b>영원히</b> 남는다.<br>필요 조건: 이번 주기 누적 영혼석 ${fmt(ASCEND_REQ)}`);
+  const c=card([X('승천',"Ascension"),'relic'],X(`영혼석·영혼 강화·룬·최심층까지 전부 버리고 <b class="relic">유물</b>을 얻는다. 유물 강화는 <b>영원히</b> 남는다.<br>필요 조건: 이번 주기 누적 영혼석 ${fmt(ASCEND_REQ)}`,`Give up soul shards, soul upgrades, runes and depth for <b class="relic">relics</b>. Relic upgrades last <b>forever</b>.<br>Requires ${fmt(ASCEND_REQ)} soul shards this cycle.`));
   const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
   const b=btn('gold big','',()=>{
     if(relicGain()<=0) return;
-    modal('승천하시겠습니까?',`유물 <b class="relic">${fmt(relicGain())}</b>을 얻고<br>영혼석 · 영혼 강화 · 룬 · 최심층이 초기화됩니다.`,()=>doAscend());
+    modal(X('승천하시겠습니까?','Ascend?'),X(`유물 <b class="relic">${fmt(relicGain())}</b>을 얻고<br>영혼석 · 영혼 강화 · 룬 · 최심층이 초기화됩니다.`,`You gain <b class="relic">${fmt(relicGain())}</b> relics.<br>Soul shards, soul upgrades, runes and depth reset.`),()=>doAscend());
   });
   c.appendChild(b); p.appendChild(c);
   const uc=card([X('유물 강화',"Relic Upgrades"),'relic'],X('무엇을 해도 사라지지 않는 영구 강화.',"Permanent upgrades that nothing ever takes away."));
@@ -1303,11 +1306,12 @@ function buildAscend(p){
   p.appendChild(uc);
   updaters.push(()=>{
     const g=relicGain();
-    info.innerHTML=`<span class="tag">주기 누적 ${icHTML('soul')}<b>${fmt(S.soulAsc)}</b></span>
-      <span class="tag">획득 예정 ${icHTML('relic')}<b class="relic">${fmt(g)}</b></span>
-      <span class="tag">승천 <b>${S.ascensions}</b>회</span>`;
+    info.innerHTML=`<span class="tag">${X('주기 누적',"Cycle total")} ${icHTML('soul')}<b>${fmt(S.soulAsc)}</b></span>
+      <span class="tag">${X('획득 예정',"You gain")} ${icHTML('relic')}<b class="relic">${fmt(g)}</b></span>
+      <span class="tag">${X(`승천 <b>${S.ascensions}</b>회`,`<b>${S.ascensions}</b> ascensions`)}</span>`;
     b.disabled=g<=0;
-    b.innerHTML=g>0?`${icHTML('relic',24)} 승천하여 유물 ${fmt(g)} 획득`:`${icHTML('relic',24)} 누적 영혼석 ${fmt(ASCEND_REQ)} 필요`;
+    b.innerHTML=icHTML('relic',24)+' '+(g>0?X(`승천하여 유물 ${fmt(g)} 획득`,`Ascend for ${fmt(g)} relics`)
+      :X(`누적 영혼석 ${fmt(ASCEND_REQ)} 필요`,`Needs ${fmt(ASCEND_REQ)} soul shards`));
   });
 }
 
@@ -1321,28 +1325,28 @@ function buildChal(p){
     b.querySelector('.ic').appendChild(ic(ch.sp,32));
     b.addEventListener('click',e=>{
       e.preventDefault();
-      if(S.chal===ch.id){exitChallenge(true);toast('시련 포기');refresh();return}
+      if(S.chal===ch.id){exitChallenge(true);toast(X('시련 포기',"Trial abandoned"));refresh();return}
       if((S.chalDone[ch.id]||0)>=ch.max) return;
       enterChallenge(ch.id); refresh();
     });
     g.appendChild(b);
     updaters.push(()=>{
       const n=S.chalDone[ch.id]||0, maxed=n>=ch.max, active=S.chal===ch.id;
-      b.querySelector('.t').innerHTML=`${NM(ch.nm)} <span class="lv">${n} / ${ch.max} 단계</span>`;
+      b.querySelector('.t').innerHTML=`${NM(ch.nm)} <span class="lv">${X(`${n} / ${ch.max} 단계`,`stage ${n} / ${ch.max}`)}</span>`;
       b.querySelector('.d').textContent=DSF(ch.desc);
-      b.querySelector('.goal').innerHTML=maxed?'':`목표 ${icHTML('mana')} ${fmt(chalGoal(ch,n))}`;
-      b.querySelector('.c').innerHTML=maxed?`<span class="good">완주 · ${ch.rw(n)}</span>`
+      b.querySelector('.goal').innerHTML=maxed?'':`${X('목표',"Goal")} ${icHTML('mana')} ${fmt(chalGoal(ch,n))}`;
+      b.querySelector('.c').innerHTML=maxed?`<span class="good">${X('완주',"Complete")} · ${ch.rw(n)}</span>`
         :active?`<span class="bad">진행 중 · 눌러서 포기</span>`
-        :`현재 보상 ${n?ch.rw(n):'없음'}`;
+        :`${X('현재 보상','Current reward')} ${n?ch.rw(n):X('없음','none')}`;
       b.classList.toggle('done',maxed); b.classList.toggle('active',active); b.disabled=maxed;
     });
   });
   c.appendChild(g); p.appendChild(c);
   updaters.push(()=>{
     const ch=curChal();
-    info.innerHTML=`<span class="tag">완료 <b>${chalTotal()}</b> / ${CHALLENGES.reduce((a,c2)=>a+c2.max,0)}</span>
-      <span class="tag">보상 지수 <b>×${fmt(M().chalPow)}</b></span>
-      ${ch?`<span class="tag bad">진행 중: <b>${ch.nm}</b> · ${icHTML('mana')}${fmt(S.manaRun)} / ${fmt(chalGoal(ch,S.chalDone[ch.id]||0))}</span>`:''}`;
+    info.innerHTML=`<span class="tag">${X('완료',"Cleared")} <b>${chalTotal()}</b> / ${CHALLENGES.reduce((a,c2)=>a+c2.max,0)}</span>
+      <span class="tag">${X('보상 지수',"Reward exponent")} <b>×${fmt(M().chalPow)}</b></span>
+      ${ch?`<span class="tag bad">${X('진행 중','In trial')}: <b>${NM(ch.nm)}</b> · ${icHTML('mana')}${fmt(S.manaRun)} / ${fmt(chalGoal(ch,S.chalDone[ch.id]||0))}</span>`:''}`;
   });
 }
 
@@ -1358,7 +1362,7 @@ function buildAch(p){
     updaters.push(()=>d.classList.toggle('got',!!S.achs[a.id]));
   });
   c.appendChild(g); p.appendChild(c);
-  updaters.push(()=>{sub.innerHTML=`달성 <b class="gold">${achCount()}</b> / ${ACHS.length} · 하나당 마나 생산 <b>+2%</b> (현재 +${2*achCount()}%)`});
+  updaters.push(()=>{sub.innerHTML=X(`달성 <b class="gold">${achCount()}</b> / ${ACHS.length} · 하나당 마나 생산 <b>+2%</b> (현재 +${2*achCount()}%)`,`<b class="gold">${achCount()}</b> / ${ACHS.length} unlocked · <b>+2%</b> mana output each (now +${2*achCount()}%)`)});
 }
 
 function buildAuto(p){
@@ -1372,10 +1376,10 @@ function buildAuto(p){
   const st=el('div','row'); s.appendChild(st); p.appendChild(s);
   updaters.push(()=>{
     const m=M();
-    st.innerHTML=`<span class="tag">자동화 주기 <b>×${m.autoSpeed.toFixed(2)}</b></span>
-      <span class="tag">마지막 환생 이후 <b>${fmtTime(S.sinceRebirth)}</b></span>
-      <span class="tag">마지막 승천 이후 <b>${fmtTime(S.sinceAscend)}</b></span>
-      <span class="tag">직전 환생 보상 <b>${fmt(S.lastSoulGain)}</b></span>`;
+    st.innerHTML=`<span class="tag">${X('자동화 주기',"Automation interval")} <b>×${m.autoSpeed.toFixed(2)}</b></span>
+      <span class="tag">${X('마지막 환생 이후',"Since last rebirth")} <b>${fmtTime(S.sinceRebirth)}</b></span>
+      <span class="tag">${X('마지막 승천 이후',"Since last ascension")} <b>${fmtTime(S.sinceAscend)}</b></span>
+      <span class="tag">${X('직전 환생 보상',"Last rebirth gain")} <b>${fmt(S.lastSoulGain)}</b></span>`;
   });
 }
 
@@ -1383,24 +1387,32 @@ function buildSettings(p){
   const c=card([X('세이브',"Save Data"),'anvil'],X('15초마다, 그리고 창을 닫을 때 자동 저장된다.',"Saves every 15 seconds and whenever you close the tab."));
   const row=el('div','row');
   row.append(
-    btn('sm','지금 저장',()=>save()),
-    btn('sm','파일로 내보내기',()=>exportSave()),
-    btn('sm','파일에서 불러오기',()=>$('fileIn').click()),
-    btn('sm','처음부터 다시',()=>modal('정말 초기화할까요?','유물까지 <b>전부</b> 사라지며 되돌릴 수 없습니다.<br>먼저 내보내기로 백업해 두세요.',hardReset))
+    btn('sm',X('지금 저장','Save now'),()=>save()),
+    btn('sm',X('파일로 내보내기','Export file'),()=>exportSave()),
+    btn('sm',X('파일에서 불러오기','Import file'),()=>$('fileIn').click()),
+    btn('sm',X('처음부터 다시','Hard reset'),()=>modal(X('정말 초기화할까요?','Reset everything?'),X('유물까지 <b>전부</b> 사라지며 되돌릴 수 없습니다.<br>먼저 내보내기로 백업해 두세요.','<b>Everything</b> goes, relics included. This cannot be undone.<br>Export a backup first.'),hardReset))
   );
   c.appendChild(row); p.appendChild(c);
   const sc=card([X('기록',"Records"),'scroll']);
   const st=el('div','hint'); st.style.cssText='margin:0;line-height:2'; sc.appendChild(st); p.appendChild(sc);
   const hc=card([X('단축키',"Hotkeys"),'book']);
-  hc.appendChild(el('div','hint','<b>1~9, 0</b> 탭 이동 · <b>스페이스</b> 마나 채집 · <b>B</b> 구매 수량 · <b>E</b> 탐험 토글 · <b>S</b> 저장'));
+  hc.appendChild(el('div','hint',X('<b>1~9, 0</b> 탭 이동 · <b>스페이스</b> 마나 채집 · <b>B</b> 구매 수량 · <b>E</b> 탐험 토글 · <b>S</b> 저장',
+    '<b>1~9, 0</b> switch tabs · <b>Space</b> gather · <b>B</b> buy amount · <b>E</b> toggle delving · <b>S</b> save')));
   p.appendChild(hc);
   updaters.push(()=>{
     const m=M();
-    st.innerHTML=`플레이 시간 <b>${fmtTime(S.playtime)}</b> · 채집 <b>${fmt(S.clicks)}</b>회<br>
-      누적 ${icHTML('mana')}<b>${fmt(S.manaEver)}</b> · ${icHTML('offering')}<b>${fmt(S.offerEver)}</b> · ${icHTML('crystal')}<b>${fmt(S.crystalEver)}</b> · ${icHTML('soul')}<b>${fmt(S.soulEver)}</b> · ${icHTML('relic')}<b>${fmt(S.relicEver)}</b><br>
-      환생 <b>${S.rebirths}</b>회 · 승천 <b>${S.ascensions}</b>회 · 최심층 <b class="gold">${S.deepest}층</b> · 시련 <b>${chalTotal()}</b>단계<br>
-      마나 배율 <b class="gold">×${fmt(m.prod)}</b> · 게임 속도 <b>×${m.speed.toFixed(2)}</b> · 던전 배율 <b>×${fmt(m.dungeon)}</b><br>
-      오프라인 상한 <b>${m.offline}시간</b> · 버전 <b>v${VERSION}</b>`;
+    const tot=`${icHTML('mana')}<b>${fmt(S.manaEver)}</b> · ${icHTML('offering')}<b>${fmt(S.offerEver)}</b> · ${icHTML('crystal')}<b>${fmt(S.crystalEver)}</b> · ${icHTML('soul')}<b>${fmt(S.soulEver)}</b> · ${icHTML('relic')}<b>${fmt(S.relicEver)}</b>`;
+    st.innerHTML=X(
+      `플레이 시간 <b>${fmtTime(S.playtime)}</b> · 채집 <b>${fmt(S.clicks)}</b>회<br>
+       누적 ${tot}<br>
+       환생 <b>${S.rebirths}</b>회 · 승천 <b>${S.ascensions}</b>회 · 최심층 <b class="gold">${S.deepest}층</b> · 시련 <b>${chalTotal()}</b>단계<br>
+       마나 배율 <b class="gold">×${fmt(m.prod)}</b> · 게임 속도 <b>×${m.speed.toFixed(2)}</b> · 던전 배율 <b>×${fmt(m.dungeon)}</b><br>
+       오프라인 상한 <b>${m.offline}시간</b> · 버전 <b>v${VERSION}</b>`,
+      `Playtime <b>${fmtTime(S.playtime)}</b> · <b>${fmt(S.clicks)}</b> gathers<br>
+       Lifetime ${tot}<br>
+       <b>${S.rebirths}</b> rebirths · <b>${S.ascensions}</b> ascensions · deepest <b class="gold">F${S.deepest}</b> · <b>${chalTotal()}</b> trial stages<br>
+       Mana <b class="gold">×${fmt(m.prod)}</b> · speed <b>×${m.speed.toFixed(2)}</b> · dungeon <b>×${fmt(m.dungeon)}</b><br>
+       Offline cap <b>${m.offline}h</b> · version <b>v${VERSION}</b>`);
   });
 }
 
@@ -1431,7 +1443,7 @@ function buildRes(){
     const t=el('div','txt');
     t.innerHTML=`<div class="lab">${NM(r.nm)}</div><div class="val"></div><div class="sub"></div>`;
     d.appendChild(t); box.appendChild(d);
-    resNodes[r.id]={box:d,val:t.querySelector('.val'),sub:t.querySelector('.sub')};
+    resNodes[r.id]={box:d,lab:t.querySelector('.lab'),val:t.querySelector('.val'),sub:t.querySelector('.sub')};
   });
 }
 function updateSide(){
@@ -1457,7 +1469,7 @@ function updateRes(){
     const n=resNodes[r.id]; if(!n) return;
     const sh=r.show();
     n.box.style.display=sh?'':'none';
-    if(sh){n.val.textContent=r.val();n.sub.textContent=r.sub()}
+    if(sh){n.lab.textContent=NM(r.nm);n.val.textContent=r.val();n.sub.textContent=r.sub()}
   });
 }
 
@@ -1487,14 +1499,14 @@ const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o))));
 const dec=s=>JSON.parse(decodeURIComponent(escape(atob(s.trim()))));
 function save(quiet){
   S.lastTick=Date.now();
-  try{localStorage.setItem(SAVE_KEY,enc(S)); if(!quiet)toast('저장했습니다'); return true}
-  catch(e){toast('저장 실패: '+e.message); return false}
+  try{localStorage.setItem(SAVE_KEY,enc(S)); if(!quiet)toast(X('저장했습니다',"Saved")); return true}
+  catch(e){toast(X('저장 실패: ','Save failed: ')+e.message); return false}
 }
 function load(){
   const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false;
   try{
     S=mergeState(dec(raw)); return true;
-  }catch(e){console.error(e);toast('세이브를 읽지 못했습니다');return false}
+  }catch(e){console.error(e);toast(X('세이브를 읽지 못했습니다',"Could not read the save"));return false}
 }
 function mergeState(o){
   const base=newState(), s=Object.assign(base,o);
@@ -1513,12 +1525,12 @@ function offlineCatchUp(){
   const b={mana:S.mana,soul:S.soulEver,deep:S.deepest,reb:S.rebirths,cry:S.crystalEver};
   const steps=140;
   for(let i=0;i<steps;i++) tick(dt/steps);
-  modal(`${icHTML('moon',16)} 자리를 비운 사이`,`
-    경과 <b>${fmtTime(dt)}</b> <span class="dim">(상한 ${fmtTime(cap)})</span><br>
-    ${icHTML('mana')} 마나 <b class="mana">+${fmt(S.mana-b.mana)}</b><br>
-    ${icHTML('crystal')} 결정 <b class="crystal">+${fmt(S.crystalEver-b.cry)}</b><br>
-    ${icHTML('soul')} 영혼석 <b class="soul">+${fmt(S.soulEver-b.soul)}</b> <span class="dim">(환생 ${S.rebirths-b.reb}회)</span><br>
-    ${S.deepest>b.deep?`${icHTML('sword')} 최심층 <b class="gold">${b.deep}층 → ${S.deepest}층</b>`:''}
+  modal(`${icHTML('moon',16)} ${X('자리를 비운 사이','While you were away')}`,`
+    ${X('경과','Away')} <b>${fmtTime(dt)}</b> <span class="dim">(${X('상한','cap')} ${fmtTime(cap)})</span><br>
+    ${icHTML('mana')} ${X('마나','Mana')} <b class="mana">+${fmt(S.mana-b.mana)}</b><br>
+    ${icHTML('crystal')} ${X('결정','Crystals')} <b class="crystal">+${fmt(S.crystalEver-b.cry)}</b><br>
+    ${icHTML('soul')} ${X('영혼석','Soul Shards')} <b class="soul">+${fmt(S.soulEver-b.soul)}</b> <span class="dim">(${X(`환생 ${S.rebirths-b.reb}회`,`${S.rebirths-b.reb} rebirths`)})</span><br>
+    ${S.deepest>b.deep?`${icHTML('sword')} ${X('최심층','Deepest')} <b class="gold">${X(b.deep+'층 → '+S.deepest+'층','F'+b.deep+' → F'+S.deepest)}</b>`:''}
   `);
 }
 function exportSave(){
@@ -1528,19 +1540,19 @@ function exportSave(){
   const t=new Date(),p=n=>String(n).padStart(2,'0');
   a.download=`마탑-세이브-${t.getFullYear()}${p(t.getMonth()+1)}${p(t.getDate())}-${p(t.getHours())}${p(t.getMinutes())}.txt`;
   a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-  toast('세이브를 내보냈습니다');
+  toast(X('세이브를 내보냈습니다',"Save exported"));
 }
 function importSave(txt){
   try{
     const o=dec(txt);
     if(typeof o!=='object'||!('mana' in o)) throw new Error('형식이 다릅니다');
     S=mergeState(o); save(true); render();
-    modal('불러오기 완료','세이브를 성공적으로 불러왔습니다.');
-  }catch(e){modal('불러오기 실패','올바른 마탑 세이브 파일이 아닙니다.<br><span class="dim">'+e.message+'</span>')}
+    modal(X('불러오기 완료','Import complete'),X('세이브를 성공적으로 불러왔습니다.','The save was loaded successfully.'));
+  }catch(e){modal(X('불러오기 실패','Import failed'),X('올바른 마탑 세이브 파일이 아닙니다.<br>','This is not a valid Tower of the Abyss save.<br>')+'<span class="dim">'+e.message+'</span>')}
 }
 function hardReset(){
   localStorage.removeItem(SAVE_KEY); S=newState(); LOG=[]; recalc(); render();
-  toast('처음부터 다시 시작합니다');
+  toast(X('처음부터 다시 시작합니다',"Starting over"));
 }
 
 /* ══════════════ 루프 & 입력 ══════════════ */
@@ -1598,7 +1610,7 @@ const had=load();
 recalc();
 if(had) offlineCatchUp();
 else{
-  log(`${icHTML('tower')}심연 위에 마탑을 세운다. 견습 마법사부터 불러들이자.`,true);
+  log(icHTML('tower')+X('심연 위에 마탑을 세운다. 견습 마법사부터 불러들이자.','You raise a tower above the abyss. Summon an Apprentice Mage first.'),true);
   modal(`${icHTML('tower',24)} 마탑: 심연의 왕국`,`
     <b>견습 마법사</b>가 마나를 뽑아내고, 그 위 시설들이 아래 시설을 스스로 지어 올립니다.<br><br>
     처음에는 <b class="gold">직접</b> 해야 합니다. 마나를 채집하고, 시설을 올리고, 연구를 사고, 던전에 출격하고.<br>
