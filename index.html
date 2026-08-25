@@ -1130,23 +1130,23 @@ const BADGES=[];
 for(const f of BADGE_FRAME) for(const c of BADGE_PAL) for(const e of BADGE_EMB) BADGES.push(`badge_${f}_${c}_${e}`);
 const ACHS=[
  {id:'h1', sp:'apprentice', nm:{ko:'첫 걸음',en:"First Step"},      d:()=>X('견습 마법사 고용',"Hire an Apprentice Mage"),      f:()=>S.bought[0]>=1},
- {id:'h2', sp:'coinpurse', nm:{ko:'소규모 길드',en:"Small Guild"},  d:()=>X('마나 1,000',"1,000 mana"),            f:()=>S.manaEver>=1e3},
- {id:'h3', sp:'treasure', nm:{ko:'마나 부자',en:"Mana Rich"},    d:()=>X('마나 1e6',"1e6 mana"),              f:()=>S.manaEver>=1e6},
- {id:'h4', sp:'vault', nm:{ko:'대부호',en:"Magnate"},       d:()=>X('마나 1e12',"1e12 mana"),             f:()=>S.manaEver>=1e12},
- {id:'h5', sp:'starcompass', nm:{ko:'천문학자',en:"Astronomer"},     d:()=>X('마나 1e20',"1e20 mana"),             f:()=>S.manaEver>=1e20},
- {id:'h6', sp:'inf_frame', nm:{ko:'무한의 문턱',en:"Brink of Infinity"},  d:()=>X('마나 1e40',"1e40 mana"),             f:()=>S.manaEver>=1e40},
+ {id:'h2', sp:'coinpurse', nm:{ko:'소규모 길드',en:"Small Guild"},  d:()=>X('마나 1,000',"1,000 mana"),            f:()=>S.manaPeakL>=3},
+ {id:'h3', sp:'treasure', nm:{ko:'마나 부자',en:"Mana Rich"},    d:()=>X('마나 1e6',"1e6 mana"),              f:()=>S.manaPeakL>=6},
+ {id:'h4', sp:'vault', nm:{ko:'대부호',en:"Magnate"},       d:()=>X('마나 1e12',"1e12 mana"),             f:()=>S.manaPeakL>=12},
+ {id:'h5', sp:'starcompass', nm:{ko:'천문학자',en:"Astronomer"},     d:()=>X('마나 1e20',"1e20 mana"),             f:()=>S.manaPeakL>=20},
+ {id:'h6', sp:'inf_frame', nm:{ko:'무한의 문턱',en:"Brink of Infinity"},  d:()=>X('마나 1e40',"1e40 mana"),             f:()=>S.manaPeakL>=40},
  {id:'h7', sp:'workshop', nm:{ko:'공방장',en:"Workshop Master"},       d:()=>X('마법 공방 25개',"25 Arcane Workshops"),        f:()=>cnt(1)>=25},
  {id:'h8', sp:'tower', nm:{ko:'탑주',en:"Tower Lord"},         d:()=>X('마탑 25개',"25 Mage Towers"),             f:()=>cnt(2)>=25},
  {id:'h9', sp:'academy', nm:{ko:'학장',en:"Dean"},         d:()=>X('아카데미 25개',"25 Academies"),         f:()=>cnt(3)>=25},
  {id:'h10', sp:'council',nm:{ko:'대현자',en:"Archsage"},       d:()=>X('대현자 회의 10개',"10 Archsage Councils"),      f:()=>cnt(4)>=10},
- {id:'h11', sp:'soul',nm:{ko:'첫 환생',en:"First Rebirth"},      d:()=>X('환생 1회',"Rebirth once"),              f:()=>S.rebirths>=1},
- {id:'h12', sp:'spiral',nm:{ko:'윤회',en:"Samsara"},         d:()=>X('환생 25회',"Rebirth 25 times"),             f:()=>S.rebirths>=25},
- {id:'h13', sp:'eonring',nm:{ko:'영원한 순환',en:"Eternal Cycle"},  d:()=>X('환생 100회',"Rebirth 100 times"),            f:()=>S.rebirths>=100},
- {id:'h14', sp:'reliquary',nm:{ko:'승천자',en:"Ascendant"},       d:()=>X('승천 1회',"Ascend once"),              f:()=>S.ascensions>=1},
- {id:'h15', sp:'starcrown',nm:{ko:'초월자',en:"Transcendent"},       d:()=>X('승천 10회',"Ascend 10 times"),             f:()=>S.ascensions>=10},
- {id:'h16', sp:'compass',nm:{ko:'탐험가',en:"Explorer"},       d:()=>X('던전 10층',"Dungeon floor 10"),             f:()=>S.deepest>=10},
- {id:'h17', sp:'skull',nm:{ko:'보스 사냥꾼',en:"Boss Hunter"},  d:()=>X('던전 30층',"Dungeon floor 30"),             f:()=>S.deepest>=30},
- {id:'h18', sp:'abysscrown',nm:{ko:'심연 정복자',en:"Abyss Conqueror"},  d:()=>X('던전 75층',"Dungeon floor 75"),             f:()=>S.deepest>=75},
+ {id:'h11', sp:'soul',nm:{ko:'첫 환생',en:"First Rebirth"},      d:()=>X('환생 1회',"Rebirth once"),              f:()=>(S.rebirthEver||S.rebirths)>=1},
+ {id:'h12', sp:'spiral',nm:{ko:'윤회',en:"Samsara"},         d:()=>X('환생 25회',"Rebirth 25 times"),             f:()=>(S.rebirthEver||S.rebirths)>=25},
+ {id:'h13', sp:'eonring',nm:{ko:'영원한 순환',en:"Eternal Cycle"},  d:()=>X('환생 100회',"Rebirth 100 times"),            f:()=>(S.rebirthEver||S.rebirths)>=100},
+ {id:'h14', sp:'reliquary',nm:{ko:'승천자',en:"Ascendant"},       d:()=>X('승천 1회',"Ascend once"),              f:()=>(S.ascendEver||S.ascensions)>=1},
+ {id:'h15', sp:'starcrown',nm:{ko:'초월자',en:"Transcendent"},       d:()=>X('승천 10회',"Ascend 10 times"),             f:()=>(S.ascendEver||S.ascensions)>=10},
+ {id:'h16', sp:'compass',nm:{ko:'탐험가',en:"Explorer"},       d:()=>X('던전 10층',"Dungeon floor 10"),             f:()=>(S.deepestEver||S.deepest)>=10},
+ {id:'h17', sp:'skull',nm:{ko:'보스 사냥꾼',en:"Boss Hunter"},  d:()=>X('던전 30층',"Dungeon floor 30"),             f:()=>(S.deepestEver||S.deepest)>=30},
+ {id:'h18', sp:'abysscrown',nm:{ko:'심연 정복자',en:"Abyss Conqueror"},  d:()=>X('던전 75층',"Dungeon floor 75"),             f:()=>(S.deepestEver||S.deepest)>=75},
  {id:'h19', sp:'runebook',nm:{ko:'룬 수집가',en:"Rune Collector"},    d:()=>X('룬 합계 레벨 25',"25 total rune levels"),       f:()=>runeTotal()>=25},
  {id:'h20', sp:'rune_forge',nm:{ko:'룬 대가',en:"Rune Master"},      d:()=>X('룬 합계 레벨 100',"100 total rune levels"),      f:()=>runeTotal()>=100},
  {id:'h21', sp:'helm',nm:{ko:'무장',en:"Armed"},         d:()=>X('장비 합계 레벨 15',"15 total gear levels"),     f:()=>gearTotal()>=15},
@@ -1179,6 +1179,7 @@ function newState(){return{
   origin:0, originEver:0, originCount:0,
   rebirths:0, ascensions:0, transcends:0,
   rebirthEver:0, ascendEver:0, transEver:0,   // 어떤 초기화에도 줄지 않는다
+  deepestEver:0, manaPeakL:-Infinity,         // 업적이 기다릴 수 있는 최고 기록
   lastSoulGain:0, lastRelicGain:0, lastStarGain:0,
   sinceRebirth:0, sinceAscend:0, sinceTrans:0, sinceInf:0,
   deepest:0, floor:1, prog:0, exploring:false,
@@ -1430,6 +1431,7 @@ function addManaLog(vLog){
   S.manaL=logAdd(S.manaL,vLog);
   S.manaRunL=logAdd(S.manaRunL,vLog);
   S.manaEverL=logAdd(S.manaEverL,vLog);
+  if(!(S.manaPeakL>=S.manaEverL)) S.manaPeakL=S.manaEverL;   // 돌파해도 줄지 않는다
   syncMana();
 }
 function addMana(v){ addManaLog(numLog(v)); }
@@ -1708,7 +1710,7 @@ function clearFloor(show){
   S.crystal=safeAdd(S.crystal,l.crystal); S.crystalEver=safeAdd(S.crystalEver,l.crystal);
   if(l.offering){S.offering=safeAdd(S.offering,l.offering); S.offerEver=safeAdd(S.offerEver,l.offering);}
   const nw=f>S.deepest;
-  if(nw){ S.deepest=f; syncChapter(); }
+  if(nw){ S.deepest=f; if(f>(S.deepestEver||0)) S.deepestEver=f; syncChapter(); }
   const foe=foeOf(f);
   if(show!==0)
     log(`${icHTML(foe.sp)}${isBoss(f)?`<b class="bad">${X('보스','BOSS')}</b> `:''}<b>${NM(foe.nm)}</b> ${X('격파','defeated')}${show>1?` <span class="dim">${X(`외 ${show-1}층`,`and ${show-1} more`)}</span>`:''} <span class="dim">${cosmosLabel(f)}</span> · ${icHTML('mana')}${fmtLog(l.manaLog)} ${icHTML('crystal')}${fmtLog(l.crystalLog)}${l.offering?' '+icHTML('offering')+fmtLog(l.offeringLog):''}`, isBoss(f));
@@ -1865,19 +1867,19 @@ const _ac={mx:0,dx:0,rx:0,ax:0,tx:0,ix:0};
 for(let e=25;e<=300;e+=3){
   const v=Math.pow(10,e);
   ACHS.push({id:'mx'+e, nm:achName('mx',_ac.mx++),
-    d:()=>X(`누적 마나 1e${e}`,`1e${e} total mana`), f:()=>S.manaEver>=v});
+    d:()=>X(`누적 마나 1e${e}`,`1e${e} total mana`), f:()=>S.manaPeakL>=e});
 }
 for(let f=100;f<=3000;f+=50){
   ACHS.push({id:'dx'+f, nm:achName('dx',_ac.dx++),
-    d:()=>X(`던전 ${f}층`,`Dungeon floor ${f}`), f:()=>S.deepest>=f});
+    d:()=>X(`던전 ${f}층`,`Dungeon floor ${f}`), f:()=>(S.deepestEver||S.deepest)>=f});
 }
 for(let n=50;n<=3000;n+=50){
   ACHS.push({id:'rx'+n, nm:achName('rx',_ac.rx++),
-    d:()=>X(`환생 ${n}회`,`Rebirth ${n} times`), f:()=>S.rebirths>=n});
+    d:()=>X(`환생 ${n}회`,`Rebirth ${n} times`), f:()=>(S.rebirthEver||S.rebirths)>=n});
 }
 for(let n=5;n<=500;n+=5){
   ACHS.push({id:'ax'+n, nm:achName('ax',_ac.ax++),
-    d:()=>X(`승천 ${n}회`,`Ascend ${n} times`), f:()=>S.ascensions>=n});
+    d:()=>X(`승천 ${n}회`,`Ascend ${n} times`), f:()=>(S.ascendEver||S.ascensions)>=n});
 }
 /* 우주 계층과 무한 계층을 밟을 때마다 */
 for(let i=1;i<COSMOS.length;i++){
@@ -1894,7 +1896,7 @@ for(let i=0;i<INF_LAYERS.length;i++){
 }
 for(let n=1;n<=200;n+=1){
   ACHS.push({id:'tx'+n, nm:achName('tx',_ac.tx++),
-    d:()=>X(`초월 ${n}회`,`Transcend ${n} times`), f:()=>S.transcends>=n});
+    d:()=>X(`초월 ${n}회`,`Transcend ${n} times`), f:()=>(S.transEver||S.transcends)>=n});
 }
 
 /* 그림이 지정되지 않은 업적에 배지를 하나씩 떼어 준다. 앞에서부터 순서대로 주면
@@ -2972,6 +2974,11 @@ function mergeState(o){
   s.rebirthEver=Math.max(s.rebirthEver||0, s.rebirths||0);   // 옛 세이브 보정
   s.ascendEver =Math.max(s.ascendEver ||0, s.ascensions||0);
   s.transEver  =Math.max(s.transEver  ||0, s.transcends||0);
+  s.deepestEver=Math.max(s.deepestEver||0, s.deepest||0);
+  /* manaPeakL 은 -Infinity 가 기본값인데 JSON 은 그것을 null 로 적는다 */
+  const pk=(typeof s.manaPeakL==='number'&&!isNaN(s.manaPeakL))?s.manaPeakL:-Infinity;
+  const ev=(typeof s.manaEverL==='number'&&!isNaN(s.manaEverL))?s.manaEverL:-Infinity;
+  s.manaPeakL=Math.max(pk,ev);
   for(const k of ['research','runes','gear','soulUps','relicUps','starUps','infUps','eterUps','realUps','voidUps','originUps','achs','chalDone','autoUnlocked'])
     if(!s[k]||typeof s[k]!=='object') s[k]={};
   for(const k of ['mana','manaRun','manaEver','offering','offerEver','crystal','crystalEver',
