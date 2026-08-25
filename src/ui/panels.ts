@@ -154,7 +154,10 @@ export function buildDungeon(p){
     foe.classList.toggle('boss',boss);
     const fo=foeOf(f), want=spriteURL(fo.sp);
     if(foeIco.src!==want) foeIco.src=want;
-    ftitle.innerHTML=`<b class="gold">${NM(fo.nm)}</b> ${boss?'<span class="tag bad" style="vertical-align:2px">보스</span> ':''}<span class="dim" style="font-size:12.5px">${f}층 · 최심층 ${S.deepest}층</span>`;
+    /* 층수가 열 자리를 넘으면 이름에 그대로 붙어 읽히지 않는다.
+       줄을 갈라 놓고 숫자는 짧은 표기로 적는다. */
+    ftitle.innerHTML=`<b class="gold">${NM(fo.nm)}</b>${boss?' <span class="tag bad" style="vertical-align:2px">'+X('보스','BOSS')+'</span>':''}`
+      +`<div class="dim" style="font-size:12px;margin-top:2px">${X('층','Floor')} <b>${fmt(f)}</b> <span style="opacity:.5">·</span> ${X('최심층','Deepest')} <b>${fmt(S.deepest)}</b></div>`;
     const r=Math.max(0,Math.min(1,S.prog||0));
     const gap=pl-hl, per=gap>=8?1e8:(gap<=-300?0:Math.pow(10,gap));
     hp.querySelector('i').style.width=(r*100).toFixed(1)+'%';

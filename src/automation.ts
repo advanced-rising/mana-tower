@@ -153,17 +153,24 @@ export function runAutomation(dt){
   if(autoOK('soulup'))  autoBuyTree(SOUL_UPS,'soulUps','soul');
   if(autoOK('relicup')) autoBuyTree(RELIC_UPS,'relicUps','relic');
   // 환생 / 승천 · 직전 회차보다 확실히 나아졌을 때만
-  if(autoOK('rebirth')&&S.sinceRebirth>90){   // 회차가 너무 짧으면 연구·룬이 쌓일 틈이 없다
+  /* "직전 회차의 1.5 배" 만 조건으로 두면 이득이 정체되는 순간 영영 넘어가지
+     않는다. 실제로 삼십 분을 돌려도 환생이 다섯 번뿐이었고, 환생·승천 횟수를
+     보는 업적이 통째로 멈췄다. 나아지면 바로 넘어가되, 회차가 충분히 길어지면
+     더 나아지지 않아도 넘어간다. */
+  if(autoOK('rebirth')&&!S.chal&&S.sinceRebirth>60){
     const g=soulGain();
-    if(g>=10&&g>=1.5*(S.lastSoulGain||0)) doRebirth(true);
+    if(g>=10&&(g>=1.2*(S.lastSoulGain||0)||S.sinceRebirth>240)) doRebirth(true);
   }
-  if(autoOK('ascend')&&S.sinceAscend>120){
+  if(autoOK('ascend')&&!S.chal&&S.sinceAscend>90){
     const g=relicGain();
-    if(g>=3&&g>=1.5*(S.lastRelicGain||0)) doAscend(true);
+    if(g>=3&&(g>=1.2*(S.lastRelicGain||0)||S.sinceAscend>360)) doAscend(true);
   }
   /* 첫 돌파는 손으로 해야 한다 — 아래 계층을 통째로 갈아 넣는 결정이기 때문이다.
-     한 번 해 본 뒤로는 그 계층을 자동으로 뚫는다. 위 계층부터 살핀다. */
-  if(S.sinceInf>=INF_AUTO_CD){
+     한 번 해 본 뒤로는 그 계층을 자동으로 뚫는다. 위 계층부터 살핀다.
+     단, 시련 중에는 미룬다. 돌파가 시련을 즉시 깨뜨리는 바람에 자동 시련이
+     들어가자마자 쫓겨나고 쿨다운만 다시 차오르길 반복해, 스물다섯 달을 돌려도
+     시련이 두 단계에서 멈춰 있었다. 시련에는 900 초 제한이 있으니 오래 밀리지 않는다. */
+  if(!S.chal && S.sinceInf>=INF_AUTO_CD){
     for(let i=INF_LAYERS.length-1;i>=0;i--){
       const L=INF_LAYERS[i];
       const key = i===0 ? 'inf' : 'brk'+L.k;
@@ -184,8 +191,8 @@ export function runAutomation(dt){
     if(soulGain()>0) doRebirth(true);      // doRebirth 안에서 시련 진입을 시도한다
     if(!S.chal) autoEnterChallenge();
   }
-  if(autoOK('trans')&&S.sinceTrans>300){
+  if(autoOK('trans')&&!S.chal&&S.sinceTrans>180){
     const g=starGain();
-    if(g>=2&&g>=1.5*(S.lastStarGain||0)) doTranscend(true);
+    if(g>=2&&(g>=1.2*(S.lastStarGain||0)||S.sinceTrans>600)) doTranscend(true);
   }
 }
