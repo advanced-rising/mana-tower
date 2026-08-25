@@ -1712,7 +1712,10 @@ function clearFloor(show){
   const foe=foeOf(f);
   if(show!==0)
     log(`${icHTML(foe.sp)}${isBoss(f)?`<b class="bad">${X('보스','BOSS')}</b> `:''}<b>${NM(foe.nm)}</b> ${X('격파','defeated')}${show>1?` <span class="dim">${X(`외 ${show-1}층`,`and ${show-1} more`)}</span>`:''} <span class="dim">${cosmosLabel(f)}</span> · ${icHTML('mana')}${fmtLog(l.manaLog)} ${icHTML('crystal')}${fmtLog(l.crystalLog)}${l.offering?' '+icHTML('offering')+fmtLog(l.offeringLog):''}`, isBoss(f));
-  S.floor=f+1; recalc();
+  S.floor=f+1;
+  /* 쓸어 담는 중간에는 배율을 다시 재지 않는다. computeM 은 강화 백여든 개를
+     하나씩 따로 재므로 256 층을 쓸면 256 번 도는 셈이 된다. 마지막에 한 번만. */
+  if(show!==0) recalc();
 }
 
 /* ══════════════ 프레스티지 ══════════════ */
@@ -2261,6 +2264,16 @@ function switchTab(id){
 }
 
 /* ══════════════ 공용 위젯 ══════════════ */
+/* 0.1 초마다 갱신 함수가 전부 돈다. 그때마다 querySelector 로 노드를 다시 찾고
+   값이 그대로여도 innerHTML 을 다시 써서 브라우저에 HTML 파싱을 시키고 있었다.
+   노드는 만들 때 한 번만 찾고, 값이 달라졌을 때만 쓴다. */
+function memo(node){
+  return {
+    set html(v){ if(node._h!==v){ node._h=v; node.innerHTML=v; } },
+    set text(v){ if(node._h!==v){ node._h=v; node.textContent=v; } },
+    node,
+  };
+}
 function card(title,hint){
   const c=el('div','card');
   if(title){const h=el('h2');h.appendChild(ic(title[1],16));h.appendChild(el('span',null,title[0]));c.appendChild(h)}
@@ -2275,6 +2288,8 @@ function levelGrid(defs,lvOf,curOf,pay,curSp){
     b.type='button'; b.className='up';
     b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
     b.querySelector('.ic').appendChild(ic(u.sp,32));
+    const _t=memo(b.querySelector('.t')),_d=memo(b.querySelector('.d')),_c=memo(b.querySelector('.c'));
+    const _goal=b.querySelector('.goal')&&memo(b.querySelector('.goal'));
     b.addEventListener('click',e=>{
       e.preventDefault();
       const l=lvOf(u.id);
@@ -2294,11 +2309,11 @@ function levelGrid(defs,lvOf,curOf,pay,curSp){
     g.appendChild(b);
     updaters.push(()=>{
       const l=lvOf(u.id),maxed=l>=u.max,c=u.c(l),afford=!maxed&&curOf()>=c;
-      b.querySelector('.t').innerHTML=`${NM(u.nm)} <span class="lv">Lv.${fmt(l)}${u.max!==Infinity?' / '+u.max:''}</span>`;
-      b.querySelector('.d').textContent=u.d(l);
+      _t.html=`${NM(u.nm)} <span class="lv">Lv.${fmt(l)}${u.max!==Infinity?' / '+u.max:''}</span>`;
+      _d.text=u.d(l);
       let bn=0,bs=0,bw=(S.buyAmt==='max')?1e9:S.buyAmt;
       while(bn<bw&&l+bn<u.max&&bn<1000){ const cc=u.c(l+bn); if(!isFinite(cc)||bs+cc>curOf())break; bs+=cc; bn++; }
-      b.querySelector('.c').innerHTML=maxed?`<span class="good">${X('최대치 도달','Maxed')}</span>`
+      _c.html=maxed?`<span class="good">${X('최대치 도달','Maxed')}</span>`
         :`${icHTML(curSp)} ${fmt(bn>0?bs:c)}${bn>1?` <span class="dim">×${bn}</span>`:''}`;
       b.classList.toggle('done',maxed); b.classList.toggle('afford',afford); b.disabled=maxed;
     });
@@ -2317,14 +2332,17 @@ function toggleRow(def){
   txt.append(nm,ds); left.append(icb,txt);
   const b=btn('sm','',()=>{ S.auto[def.k]=S.auto[def.k]?0:1; });   // 잠김과 무관하게 토글
   r.append(left,b);
+  const _nm=memo(nm), _ds=memo(ds), _b=memo(b);
+  let _cls='';
   updaters.push(()=>{
     const un=autoUnlocked(def.k), on=!!S.auto[def.k];   // 잠겨 있어도 미리 켜 둘 수 있다
-    nm.innerHTML=NM(def.nm)+(un?'':' <span class="lv">🔒</span>');
-    ds.innerHTML=un?DS(def):`<span class="dim">${X('해금 조건','Unlocks at')}: <b>${DSF(def.req)}</b></span>`;
+    _nm.html=NM(def.nm)+(un?'':' <span class="lv">🔒</span>');
+    _ds.html=un?DS(def):`<span class="dim">${X('해금 조건','Unlocks at')}: <b>${DSF(def.req)}</b></span>`;
     b.disabled=false;
-    b.className='btn sm '+(on?'on':'off');
+    const cls='btn sm '+(on?'on':'off');
+    if(_cls!==cls){ _cls=cls; b.className=cls; }
     const lab=on?(un?X('자동 ON','AUTO'):X('대기 중','ARMED')):X('수동 OFF','MANUAL');
-    b.innerHTML=`<img class="px sw" src="art/ui/sw_${on?'on':'off'}.png" width="22" height="12" alt="">${lab}`;
+    _b.html=`<img class="px sw" src="art/ui/sw_${on?'on':'off'}.png" width="22" height="12" alt="">${lab}`;
   });
   return r;
 }
@@ -2381,6 +2399,8 @@ function buildResearch(p){
     b.type='button'; b.className='up';
     b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
     b.querySelector('.ic').appendChild(ic(r.sp,32));
+    const _t=memo(b.querySelector('.t')),_d=memo(b.querySelector('.d')),_c=memo(b.querySelector('.c'));
+    const _goal=b.querySelector('.goal')&&memo(b.querySelector('.goal'));
     b.addEventListener('click',e=>{
       e.preventDefault();
       if(S.research[r.id]||!(S.manaL>=numLog(r.cost))) return;
@@ -2394,9 +2414,9 @@ function buildResearch(p){
       const done=!!S.research[r.id], lock=r.req&&!S.research[r.req];
       const ch=curChal(), banned=ch&&ch.rule.noResearch;
       const afford=!done&&!lock&&!banned&&S.manaL>=numLog(r.cost);
-      b.querySelector('.t').textContent=NM(r.nm);
-      b.querySelector('.d').textContent=DS(r);
-      b.querySelector('.c').innerHTML=done?`<span class="good">${X('연구 완료','Researched')}</span>`
+      _t.text=NM(r.nm);
+      _d.text=DS(r);
+      _c.html=done?`<span class="good">${X('연구 완료','Researched')}</span>`
         :banned?`<span class="bad">${X('시련으로 봉인됨','Sealed by trial')}</span>`
         :lock?`<span class="dim">${X('선행','Needs')}: ${NM(RESEARCH.find(x=>x.id===r.req).nm)}</span>`
         :`${icHTML('mana')} ${fmt(r.cost)}`;
@@ -2434,24 +2454,26 @@ function buildDungeon(p){
     const row=el('div','up'); row.style.cursor='default';
     row.innerHTML='<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>';
     tg.appendChild(row);
-    return {i,row,ic:row.querySelector('.ic'),t:row.querySelector('.t'),d:row.querySelector('.d'),c:row.querySelector('.c')};
+    const icb=row.querySelector('.ic'); const img=ic('unknown',32); icb.appendChild(img);
+    return {i,row,img,t:memo(row.querySelector('.t')),d:memo(row.querySelector('.d')),c:memo(row.querySelector('.c')),cls:''};
   }).filter(Boolean);
   tc.appendChild(tg); p.appendChild(tc);
   updaters.push(()=>{
     const seen=chapterSeen(), cur=cosmos(Math.max(1,S.deepest||1));
     tiers.forEach(t=>{
       const open=t.i<=seen, next=t.i===seen+1;
-      t.ic.innerHTML='';
-      t.ic.appendChild(ic(open?COSMOS_SP[t.i]:'unknown',32));
-      t.t.textContent = open ? X(COSMOS[t.i].ko,COSMOS[t.i].en) : '???';
-      t.d.textContent = open
+      const want=spriteURL(open?COSMOS_SP[t.i]:'unknown');   // 매 프레임 img 를 새로 만들 이유가 없다
+      if(t.img.getAttribute('src')!==want) t.img.setAttribute('src',want);
+      t.t.text = open ? X(COSMOS[t.i].ko,COSMOS[t.i].en) : '???';
+      t.d.text = open
         ? (COSMOS[t.i].eg?X(`예: ${COSMOS[t.i].eg}`,COSMOS[t.i].eg):'')
         : (next?X('한 칸만 더 올라가면 열린다',"One rung above you"):X('아직 알 수 없다',"Unknown"));
-      t.c.textContent = open
+      t.c.text = open
         ? X(`${COSMOS[t.i].ko} ${fmt(cur[COSMOS[t.i].k])} · 전체 ×${powTxt(COSMOS_MUL[t.i],cur[COSMOS[t.i].k]-1)}`,
             `${COSMOS[t.i].en} ${fmt(cur[COSMOS[t.i].k])} · ×${powTxt(COSMOS_MUL[t.i],cur[COSMOS[t.i].k]-1)}`)
         : '';
-      t.row.className='up'+(open?(t.i===seen?' afford':' done'):' lock');
+      const cls='up'+(open?(t.i===seen?' afford':' done'):' lock');
+      if(t.cls!==cls){ t.cls=cls; t.row.className=cls; }
     });
   });
 
@@ -2496,6 +2518,8 @@ function buildGear(p){
     const b=document.createElement('button'); b.type='button'; b.className='up';
     b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
     b.querySelector('.ic').appendChild(ic(gr.sp,32));
+    const _t=memo(b.querySelector('.t')),_d=memo(b.querySelector('.d')),_c=memo(b.querySelector('.c'));
+    const _goal=b.querySelector('.goal')&&memo(b.querySelector('.goal'));
     b.addEventListener('click',e=>{
       e.preventDefault();
       const l=S.gear[gr.id]||0;
@@ -2508,9 +2532,9 @@ function buildGear(p){
       const l=S.gear[gr.id]||0, pw=M().gearPow;
       const n=Math.max(1,buyAmtFor(gearCost,l,S.crystal,1.6));
       const cost=bulkCost(gearCost,l,n,1.6);
-      b.querySelector('.t').innerHTML=`${NM(gr.nm)} <span class="lv">Lv.${fmt(l)}</span>`;
-      b.querySelector('.d').textContent=gr.d(l,pw);
-      b.querySelector('.c').innerHTML=`${icHTML('crystal')} ${fmt(cost)}${n>1?` <span class="dim">×${n}</span>`:''}`;
+      _t.html=`${NM(gr.nm)} <span class="lv">Lv.${fmt(l)}</span>`;
+      _d.text=gr.d(l,pw);
+      _c.html=`${icHTML('crystal')} ${fmt(cost)}${n>1?` <span class="dim">×${n}</span>`:''}`;
       b.classList.toggle('afford',S.crystal>=cost);
     });
   });
@@ -2529,6 +2553,8 @@ function buildRelics(p){
     const b=document.createElement('button'); b.type='button'; b.className='up';
     b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
     b.querySelector('.ic').appendChild(ic(r.sp,32));
+    const _t=memo(b.querySelector('.t')),_d=memo(b.querySelector('.d')),_c=memo(b.querySelector('.c'));
+    const _goal=b.querySelector('.goal')&&memo(b.querySelector('.goal'));
     b.addEventListener('click',e=>{
       e.preventDefault();
       const l=S.runes[r.id]||0, cap=Math.floor(M().runeCap);
@@ -2543,9 +2569,9 @@ function buildRelics(p){
       const l=S.runes[r.id]||0, cap=Math.floor(M().runeCap), maxed=l>=cap;
       const n=Math.max(1,Math.min(buyAmtFor(runeCost,l,S.offering,1.30),Math.max(0,cap-l)));
       const cost=bulkCost(runeCost,l,n,1.30);
-      b.querySelector('.t').innerHTML=`${NM(r.nm)} <span class="lv">Lv.${l} / ${cap}</span>`;
-      b.querySelector('.d').textContent=r.d(l);
-      b.querySelector('.c').innerHTML=maxed?`<span class="good">${X('최대 레벨','Max level')}</span>`
+      _t.html=`${NM(r.nm)} <span class="lv">Lv.${l} / ${cap}</span>`;
+      _d.text=r.d(l);
+      _c.html=maxed?`<span class="good">${X('최대 레벨','Max level')}</span>`
         :`${icHTML('offering')} ${fmt(cost)}${n>1?` <span class="dim">×${n}</span>`:''}`;
       b.classList.toggle('done',maxed); b.classList.toggle('afford',!maxed&&S.offering>=cost); b.disabled=maxed;
     });
@@ -2690,6 +2716,8 @@ function buildChal(p){
     const b=document.createElement('button'); b.type='button'; b.className='up chal';
     b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="goal"></span><span class="c"></span></span>`;
     b.querySelector('.ic').appendChild(ic(ch.sp,32));
+    const _t=memo(b.querySelector('.t')),_d=memo(b.querySelector('.d')),_c=memo(b.querySelector('.c'));
+    const _goal=b.querySelector('.goal')&&memo(b.querySelector('.goal'));
     b.addEventListener('click',e=>{
       e.preventDefault();
       if(S.chal===ch.id){exitChallenge(true);toast(X('시련 포기',"Trial abandoned"));refresh();return}
@@ -2699,10 +2727,10 @@ function buildChal(p){
     g.appendChild(b);
     updaters.push(()=>{
       const n=S.chalDone[ch.id]||0, maxed=n>=ch.max, active=S.chal===ch.id;
-      b.querySelector('.t').innerHTML=`${NM(ch.nm)} <span class="lv">${X(`${n} / ${ch.max} 단계`,`stage ${n} / ${ch.max}`)}</span>`;
-      b.querySelector('.d').textContent=DSF(ch.desc);
-      b.querySelector('.goal').innerHTML=maxed?'':`${X('목표',"Goal")} ${icHTML('mana')} ${fmt(chalGoal(ch,n))}`;
-      b.querySelector('.c').innerHTML=maxed?`<span class="good">${X('완주',"Complete")} · ${ch.rw(n)}</span>`
+      _t.html=`${NM(ch.nm)} <span class="lv">${X(`${n} / ${ch.max} 단계`,`stage ${n} / ${ch.max}`)}</span>`;
+      _d.text=DSF(ch.desc);
+      _goal.html=maxed?'':`${X('목표',"Goal")} ${icHTML('mana')} ${fmt(chalGoal(ch,n))}`;
+      _c.html=maxed?`<span class="good">${X('완주',"Complete")} · ${ch.rw(n)}</span>`
         :active?`<span class="bad">진행 중 · 눌러서 포기</span>`
         :`${X('현재 보상','Current reward')} ${n?ch.rw(n):X('없음','none')}`;
       b.classList.toggle('done',maxed); b.classList.toggle('active',active); b.disabled=maxed;
@@ -2726,25 +2754,29 @@ function buildAch(p){
   const AHEAD=6;
   const rows=ACHS.map((a,i)=>{
     const d=el('div','ach');
-    const icb=el('span'); d.appendChild(icb);
+    const icb=el('span'); const img=ic('unknown',32); icb.appendChild(img);
+    d.appendChild(icb);
     const t=el('div'); d.appendChild(t); g.appendChild(d);
-    return {a,i,d,icb,t};
+    return {a,i,d,img,t,key:-1};
   });
+  /* 오백일흔두 줄을 0.1 초마다 통째로 다시 그리고 있었다 — 매번 이미지 노드를
+     새로 만들어 붙이기까지 했다. 초당 오천 개다. 줄의 상태가 바뀌었을 때만 손댄다. */
   updaters.push(()=>{
     let shown=0;
-    rows.forEach(r=>{
+    for(const r of rows){
       const got=!!S.achs[r.a.id];
       const reveal=got||shown<AHEAD;
-      if(!got) shown+=reveal?1:0;
+      if(!got&&reveal) shown++;
+      const key=(got?2:0)|(reveal?1:0);
+      if(r.key===key) continue;
+      r.key=key;
       r.d.classList.toggle('got',got);
-      r.icb.innerHTML='';
-      /* 업적마다 제 그림이 있다. 메달 세 장을 572개가 나눠 쓰던 때는
-         무엇을 딴 것인지 이름을 읽어야만 알 수 있었다. */
-      r.icb.appendChild(ic(reveal?(r.a.sp||'medal'):'unknown',32));
+      const want=spriteURL(reveal?(r.a.sp||'medal'):'unknown');
+      if(r.img.getAttribute('src')!==want) r.img.setAttribute('src',want);
       r.t.innerHTML = reveal
         ? `<div class="t">${NM(r.a.nm)}</div><div class="d">${DS(r.a)}</div>`
         : `<div class="t">???</div><div class="d">${X('아직 알 수 없다',"Unknown")}</div>`;
-    });
+    }
   });
   c.appendChild(g); p.appendChild(c);
   updaters.push(()=>{sub.innerHTML=X(`달성 <b class="gold">${achCount()}</b> / ${ACHS.length} · 하나당 마나 생산 <b>+2%</b> (현재 +${2*achCount()}%)`,`<b class="gold">${achCount()}</b> / ${ACHS.length} unlocked · <b>+2%</b> mana output each (now +${2*achCount()}%)`)});
