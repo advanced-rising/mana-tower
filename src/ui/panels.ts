@@ -6,11 +6,11 @@ import { enterChallenge, exitChallenge } from '../trials'
 import { DS, DSF, NM, VERSION, X, ic, icHTML, spriteURL } from '../core'
 import { ACHS, CHALLENGES, GEAR, MILESTONES, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, bulkCost, buyAmtFor, chalGoal, gearCost, runeCost } from '../content'
 import { LOG, S } from '../state'
-import { achCount, chalTotal, cntLog, curChal, fmt, fmtLog, fmtTime, gearTotal, logSub, numLog, pctTxt, powTxt, runeTotal } from '../num'
+import { achCount, bulkCostLog, chalTotal, cntLog, costLogAt, curChal, curL, fmt, fmtLog, fmtTime, gearTotal, logSub, numLog, pctTxt, powTxt, runeTotal, spendRes } from '../num'
 import { M, buyProducer, costLogOf, gather, gatherAmountLog, manaRateLog, maxAfford, recalc, tierLocked } from '../multipliers'
 import { COSMOS, COSMOS_MUL, COSMOS_SP, FOES, chapterOf, chapterSeen, cosmos, dungeonPowerLog, floorHPLog, floorLoot, foeOf, isBoss } from '../dungeon'
 import { ASCEND_REQ, REBIRTH_REQ, TRANS_REQ, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, offerGain, relicGain, reqTxt, soulGain, starGain } from '../prestige'
-import { AUTO_DEF, AUTO_DEFS, allAuto, autoUnlocked } from '../automation'
+import { AUTO_DEF, AUTO_DEFS, allAuto, autoUnlocked, buyBulkLog } from '../automation'
 import { $, btn, el, modal, toast } from './dom'
 import { card, levelGrid, memo, toggleRow } from './widgets'
 import { refresh } from './render'
@@ -196,19 +196,21 @@ export function buildGear(p){
     b.addEventListener('click',e=>{
       e.preventDefault();
       const l=S.gear[gr.id]||0;
-      const n=buyAmtFor(gearCost,l,S.crystal,1.6);
-      if(n<=0) return;
-      S.crystal-=bulkCost(gearCost,l,n,1.6); S.gear[gr.id]=l+n; recalc(); refresh();
+      const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
+      const {n,costLog}=buyBulkLog(gearCost,l,curL('crystal'),want);
+      if(!(n>0)) return;
+      spendRes('crystal',costLog); S.gear[gr.id]=l+n; recalc(); refresh();
     });
     g2.appendChild(b);
     updaters.push(()=>{
       const l=S.gear[gr.id]||0, pw=M().gearPowLog;   // 지수는 자릿수로 넘긴다
-      const n=Math.max(1,buyAmtFor(gearCost,l,S.crystal,1.6));
-      const cost=bulkCost(gearCost,l,n,1.6);
+      const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
+      const bb=buyBulkLog(gearCost,l,curL('crystal'),want);
+      const n=Math.max(1,bb.n), costL=bb.n>0?bb.costLog:costLogAt(gearCost,l);
       _t.html=`${NM(gr.nm)} <span class="lv">Lv.${fmt(l)}</span>`;
       _d.text=gr.d(l,pw);
-      _c.html=`${icHTML('crystal')} ${fmt(cost)}${n>1?` <span class="dim">×${n}</span>`:''}`;
-      b.classList.toggle('afford',S.crystal>=cost);
+      _c.html=`${icHTML('crystal')} ${fmtLog(costL)}${n>1?` <span class="dim">×${fmt(n)}</span>`:''}`;
+      b.classList.toggle('afford',curL('crystal')>=costL);
     });
   });
   c2.appendChild(g2); p.appendChild(c2);
@@ -232,21 +234,23 @@ export function buildRelics(p){
       e.preventDefault();
       const l=S.runes[r.id]||0, cap=Math.floor(M().runeCap);
       if(l>=cap) return;
-      let n=buyAmtFor(runeCost,l,S.offering,1.30);
+      const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
+      let n=buyBulkLog(runeCost,l,curL('offering'),want).n;
       n=Math.min(n,cap-l);
       if(n<=0) return;
-      S.offering-=bulkCost(runeCost,l,n,1.30); S.runes[r.id]=l+n; recalc(); refresh();
+      spendRes('offering',bulkCostLog(runeCost,l,n)); S.runes[r.id]=l+n; recalc(); refresh();
     });
     g.appendChild(b);
     updaters.push(()=>{
       const l=S.runes[r.id]||0, cap=Math.floor(M().runeCap), maxed=l>=cap;
-      const n=Math.max(1,Math.min(buyAmtFor(runeCost,l,S.offering,1.30),Math.max(0,cap-l)));
-      const cost=bulkCost(runeCost,l,n,1.30);
+      const want2=(S.buyAmt==='max')?Infinity:S.buyAmt;
+      const n=Math.max(1,Math.min(buyBulkLog(runeCost,l,curL('offering'),want2).n,Math.max(0,cap-l)));
+      const costL=bulkCostLog(runeCost,l,n);
       _t.html=`${NM(r.nm)} <span class="lv">Lv.${l} / ${cap}</span>`;
       _d.text=r.d(l);
       _c.html=maxed?`<span class="good">${X('최대 레벨','Max level')}</span>`
-        :`${icHTML('offering')} ${fmt(cost)}${n>1?` <span class="dim">×${n}</span>`:''}`;
-      b.classList.toggle('done',maxed); b.classList.toggle('afford',!maxed&&S.offering>=cost); b.disabled=maxed;
+        :`${icHTML('offering')} ${fmtLog(costL)}${n>1?` <span class="dim">×${fmt(n)}</span>`:''}`;
+      b.classList.toggle('done',maxed); b.classList.toggle('afford',!maxed&&curL('offering')>=costL); b.disabled=maxed;
     });
   });
   c.appendChild(g); p.appendChild(c);
@@ -265,7 +269,7 @@ export function buildRebirth(p){
   });
   c.appendChild(b); p.appendChild(c);
   const uc=card([X('영혼 강화',"Soul Upgrades"),'gem'],X('환생해도 유지된다. 승천할 때만 초기화된다.',"Kept through rebirths. Only ascension resets them."));
-  uc.appendChild(levelGrid(SOUL_UPS,id=>S.soulUps[id]||0,()=>S.soul,(c2,id,n)=>{S.soul-=c2;S.soulUps[id]=(S.soulUps[id]||0)+(n||1)},'soul'));
+  uc.appendChild(levelGrid(SOUL_UPS,id=>S.soulUps[id]||0,'soul',(id,n)=>{S.soulUps[id]=(S.soulUps[id]||0)+(n||1)},'soul'));
   p.appendChild(uc);
   updaters.push(()=>{
     const g=soulGain();
@@ -308,7 +312,7 @@ export function buildAscend(p){
   });
   c.appendChild(b); p.appendChild(c);
   const uc=card([X('유물 강화',"Relic Upgrades"),'relic'],X('무엇을 해도 사라지지 않는 영구 강화.',"Permanent upgrades that nothing ever takes away."));
-  uc.appendChild(levelGrid(RELIC_UPS,id=>S.relicUps[id]||0,()=>S.relic,(c2,id,n)=>{S.relic-=c2;S.relicUps[id]=(S.relicUps[id]||0)+(n||1)},'relic'));
+  uc.appendChild(levelGrid(RELIC_UPS,id=>S.relicUps[id]||0,'relic',(id,n)=>{S.relicUps[id]=(S.relicUps[id]||0)+(n||1)},'relic'));
   p.appendChild(uc);
   updaters.push(()=>{
     const g=relicGain();
@@ -330,7 +334,7 @@ export function buildTrans(p){
   });
   c.appendChild(b); p.appendChild(c);
   const uc=card([X('별 강화',"Star Upgrades"),'sparkle'],X('가장 깊은 층의 강화. 초월해도 남는다.',"The deepest layer. Even transcending cannot take these away."));
-  uc.appendChild(levelGrid(STAR_UPS,id=>S.starUps[id]||0,()=>S.star,(c2,id,n)=>{S.star-=c2;S.starUps[id]=(S.starUps[id]||0)+(n||1)},'star'));
+  uc.appendChild(levelGrid(STAR_UPS,id=>S.starUps[id]||0,'star',(id,n)=>{S.starUps[id]=(S.starUps[id]||0)+(n||1)},'star'));
   p.appendChild(uc);
   updaters.push(()=>{
     const g=starGain();
@@ -361,8 +365,8 @@ export function buildInf(p){
       lc.appendChild(el('div','hint',X(`${L.ko}으로만 살 수 있다. 아래 계층을 통째로 갈아 넣고 얻는 것이라 효과가 크다.`,
                                        `Bought with ${L.en} alone. You fed whole layers into this, so it hits hard.`)));
       const eu=el('div'); eu.style.marginTop='8px';
-      eu.appendChild(levelGrid(L.ups(),id=>(S[L.store]||{})[id]||0,()=>S[L.k]||0,
-        (c2,id,n)=>{S[L.k]-=c2;(S[L.store]=S[L.store]||{})[id]=((S[L.store]||{})[id]||0)+(n||1)},L.sp));
+      eu.appendChild(levelGrid(L.ups(),id=>(S[L.store]||{})[id]||0,L.k,
+        (id,n)=>{(S[L.store]=S[L.store]||{})[id]=((S[L.store]||{})[id]||0)+(n||1)},L.sp));
       lc.appendChild(eu);
     }
     p.appendChild(lc);

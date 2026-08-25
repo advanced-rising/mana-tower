@@ -1,9 +1,9 @@
 import { updaters } from './tabs'
 import { DS, DSF, NM, X, ic, icHTML } from '../core'
 import { S } from '../state'
-import { fmt } from '../num'
+import { costLogAt, fmt, fmtLog } from '../num'
 import { recalc } from '../multipliers'
-import { autoUnlocked } from '../automation'
+import { autoUnlocked, budgetLogOf, buyBulkLog, payFrom } from '../automation'
 import { btn, el, toast } from './dom'
 import { refresh } from './render'
 
@@ -25,7 +25,7 @@ export function card(title,hint){
   return c;
 }
 /* 레벨식 업그레이드 격자 (영혼/유물 공용) */
-export function levelGrid(defs,lvOf,curOf,pay,curSp){
+export function levelGrid(defs,lvOf,curKey,setLv,curSp){
   const g=el('div','grid wide');
   defs.forEach(u=>{
     const b=document.createElement('button');
@@ -34,31 +34,30 @@ export function levelGrid(defs,lvOf,curOf,pay,curSp){
     b.querySelector('.ic').appendChild(ic(u.sp,32));
     const _t=memo(b.querySelector('.t')),_d=memo(b.querySelector('.d')),_c=memo(b.querySelector('.c'));
     const _goal=b.querySelector('.goal')&&memo(b.querySelector('.goal'));
+    /* 예전에는 비용을 한 단계씩 평범한 수로 더했다. 레벨이 1,340 을 넘으면
+       c(l) 자체가 ∞ 라 그 위로는 아무것도 살 수 없었고, 자원이 ∞ 이면
+       ∞ - ∞ = NaN 이 되어 잔액이 통째로 망가졌다. 전부 자릿수로 다룬다. */
     b.addEventListener('click',e=>{
       e.preventDefault();
       const l=lvOf(u.id);
       if(l>=u.max) return;
-      /* 한 번에 여러 단계. 비용 곡선이 등비가 아니어도 되게 하나씩 더해 본다. */
-      let n=0,spent=0,want=(S.buyAmt==='max')?1e9:S.buyAmt;
-      while(n<want&&l+n<u.max){
-        const c=u.c(l+n);
-        if(!isFinite(c)||spent+c>curOf()) break;
-        spent+=c; n++;
-        if(n>=1000) break;
-      }
-      if(n<=0) return;
-      pay(spent,u.id,n); recalc(); refresh();
+      const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
+      const cap=Math.min(u.max-l, want);
+      const {n,costLog}=buyBulkLog(u.c,l,budgetLogOf(curKey),cap);
+      if(!(n>0)) return;
+      payFrom(curKey,costLog); setLv(u.id,n); recalc(); refresh();
       toast(icHTML(u.sp)+' '+NM(u.nm)+' Lv.'+fmt(l+n));
     });
     g.appendChild(b);
     updaters.push(()=>{
-      const l=lvOf(u.id),maxed=l>=u.max,c=u.c(l),afford=!maxed&&curOf()>=c;
+      const l=lvOf(u.id),maxed=l>=u.max;
+      const bud=budgetLogOf(curKey), cl=costLogAt(u.c,l), afford=!maxed&&bud>=cl;
       _t.html=`${NM(u.nm)} <span class="lv">Lv.${fmt(l)}${u.max!==Infinity?' / '+u.max:''}</span>`;
       _d.text=u.d(l);
-      let bn=0,bs=0,bw=(S.buyAmt==='max')?1e9:S.buyAmt;
-      while(bn<bw&&l+bn<u.max&&bn<1000){ const cc=u.c(l+bn); if(!isFinite(cc)||bs+cc>curOf())break; bs+=cc; bn++; }
+      const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
+      const {n:bn,costLog:bs}=buyBulkLog(u.c,l,bud,Math.min(u.max-l,want));
       _c.html=maxed?`<span class="good">${X('최대치 도달','Maxed')}</span>`
-        :`${icHTML(curSp)} ${fmt(bn>0?bs:c)}${bn>1?` <span class="dim">×${bn}</span>`:''}`;
+        :`${icHTML(curSp)} ${fmtLog(bn>0?bs:cl)}${bn>1?` <span class="dim">×${fmt(bn)}</span>`:''}`;
       b.classList.toggle('done',maxed); b.classList.toggle('afford',afford); b.disabled=maxed;
     });
   });

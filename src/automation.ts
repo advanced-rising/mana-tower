@@ -63,8 +63,8 @@ export const autoOK=k=>autoUnlocked(k)&&!!S.auto[k];
    예산이 ∞ 가 되고, 살 수 있는 단계도 ∞ 가 되어 n 을 절반씩 줄이는 고리가
    Infinity/2 = Infinity 로 영원히 돌았다 — 게임이 통째로 멈추던 자리다. */
 const LOGGED=new Set(RES);
-function budgetLogOf(k){ return LOGGED.has(k)?curL(k):numLog(S[k]||0) }
-function payFrom(k,costLog){
+export function budgetLogOf(k){ return LOGGED.has(k)?curL(k):numLog(S[k]||0) }
+export function payFrom(k,costLog){
   if(LOGGED.has(k)) spendRes(k,costLog);
   else S[k]=Math.max(0,(S[k]||0)-(costLog<300?Math.pow(10,costLog):Infinity));
 }
