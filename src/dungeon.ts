@@ -189,11 +189,22 @@ export const elemOf=f=>foeOf(f).af;
    기본형만 바뀌고 속성이 열두 층 내리 같아서 — 속성이 색을 정하므로 — 화면이
    열두 층 동안 한 가지 색으로 고인다. 배열 길이와 서로소인 13 씩 건너뛰면
    기본형과 속성이 매 층 함께 바뀌고, 그래도 결국 전부 한 번씩 나온다. */
-export const FOE_STRIDE=13, BOSS_STRIDE=5;
+export /* 고정 간격으로 훑으면 걸음 폭과 명단 길이가 맞물려 몇 종류만 돌고 만다.
+   힘이 세지면 한 걸음이 수천·수만 층이 되는데 그 폭이 거의 일정해서,
+   96 층씩 건너뛸 때는 스물네 걸음 동안 세 종류밖에 안 나왔다.
+   층 번호를 곱셈 해시로 흩어 놓으면 어떤 폭으로 밟아도 고르게 나오고,
+   층마다의 결과는 그대로 정해져 있어 체력·속성은 흔들리지 않는다. */
+function foeHash(f){
+  const lo=f%4294967296, hi=Math.floor(f/4294967296)%4294967296;
+  let h=((lo^hi)>>>0)^0x9e3779b9;
+  h=Math.imul(h^(h>>>15),0x85ebca6b)>>>0;
+  h=Math.imul(h^(h>>>13),0xc2b2ae35)>>>0;
+  return (h^(h>>>16))>>>0;
+}
 export function foeOf(f){
   const [foes,bosses]=poolsFor(chapterOf(f));
-  return isBoss(f) ? bosses[((Math.floor(f/10)-1)*BOSS_STRIDE)%bosses.length]
-                   : foes[((f-1)*FOE_STRIDE)%foes.length];
+  return isBoss(f) ? bosses[foeHash(Math.floor(f/10))%bosses.length]
+                   : foes[foeHash(f)%foes.length];
 }
 export function dungeonPowerLog(){
   let ul=-Infinity;for(let i=0;i<PRODUCERS.length;i++)ul=logAdd(ul,cntLog(i));
@@ -247,10 +258,18 @@ export function syncChapter(force){
    이제는 힘이 닿는 층까지 한 번에 내려간다 — 200 층 위로는 체력이 한 층당
    1.09 배씩 오르므로, 자릿수 차이를 그 기울기로 나누면 닿는 거리가 나온다. */
 export const SWEEP_MAX=1e9;
+/* 되찾는 데에도 시간이 든다. 힘만 보고 쓸면 승천 직후 한두 걸음 만에
+   예전 최심층까지 되돌아가 버려서, 깊이를 잃는다는 대가가 사라진다.
+   한 걸음이 최고 기록의 1/64 를 넘지 않게 해 예순 걸음 남짓(≈18 초)은
+   내려가게 한다. 기록 위로는 어차피 힘이 먼저 막으므로 이 제한이 걸리지 않는다. */
+export function sweepPace(){
+  return Math.max(256, Math.floor((S.deepestEver||0)/64));
+}
 export function sweepCount(){
   const p=dungeonPowerLog(), h=floorHPLog(S.floor);
   if(!(p>h)) return 1;
-  return Math.max(1, Math.min(SWEEP_MAX, Math.floor((p-h)/L10(1.09))));
+  const reach=Math.floor((p-h)/L10(1.09));
+  return Math.max(1, Math.min(SWEEP_MAX, reach, sweepPace()));
 }
 /* 층을 하나씩 세면서 보상을 더하면 백만 층에서 브라우저가 멈춘다.
    층마다 1.40 배씩 오르는 마나는 등비합으로, 층에 비례하는 결정과

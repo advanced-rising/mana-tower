@@ -89,3 +89,17 @@ export function toggleRow(def){
   });
   return r;
 }
+
+/* 구매 수량 고르개. 마탑에만 있어서 다른 곳에서는 한 단계씩만 눌러야 했다.
+   S.buyAmt 는 하나뿐이므로 어느 쪽에서 바꾸든 모든 상점에 함께 적용된다. */
+export function buyAmtRow(){
+  const r=el('div','row'); r.style.margin='2px 0 9px';
+  r.appendChild(el('span','dim',X('구매 수량','Buy amount')));
+  [1,10,100,'max'].forEach(v=>{
+    const b=btn('sm',v==='max'?X('최대','Max'):'×'+v,()=>{S.buyAmt=v;refresh()});
+    let cls='';
+    updaters.push(()=>{ const n='btn sm '+(S.buyAmt===v?'on':''); if(cls!==n){cls=n;b.className=n} });
+    r.appendChild(b);
+  });
+  return r;
+}

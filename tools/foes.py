@@ -236,7 +236,195 @@ def knight(c,t,o):
     c.rect(6,4,10,5,'0'); c.rect(7,4,9,4,o)
     return m,[(7,4),(9,4)],0.8
 
-BASE={'ooze':ooze,'bat':bat,'beast':beast,'wraith':wraith,'serpent':serpent,'golem':golem,
+# ══ 추가 생물 · 실루엣이 겹치지 않게 ══════════════
+def slug(c,t,o):
+    m=sm(m_ellipse(8,12,7,3), m_ellipse(10,9,3.4,2.6))
+    m|=m_rect(11,4,11,7)|m_rect(13,4,13,7)                       # 더듬이
+    put(c,m,t,o)
+    return m,[(11,9)],1.0
+
+def mantis(c,t,o):
+    m=sm(m_poly([(4,14),(7,6),(9,6),(8,14)]),                    # 세운 몸통
+         m_ellipse(9,4,2.6,2.2))                                  # 머리
+    m|=m_poly([(9,7),(14,4),(15,6),(10,9)])                       # 앞다리
+    m|=m_rect(3,13,5,15)|m_rect(7,13,9,15)
+    put(c,m,t,o)
+    return m,[(10,4)],1.0
+
+def boar(c,t,o):
+    m=sm(m_ellipse(7,9,5.6,3.6), m_ellipse(12,9,3,2.6))
+    m|=m_rect(3,12,4,15)|m_rect(6,12,7,15)|m_rect(9,12,10,15)
+    put(c,m,t,o)
+    c.rect(14,8,15,8,o); c.rect(14,10,15,10,o)                    # 엄니
+    return m,[(12,8)],1.0
+
+def raven(c,t,o):
+    m=sm(m_ellipse(7,9,4,4.4), m_ellipse(10,5,2.6,2.2),
+         m_poly([(3,6),(7,8),(4,13)]))                            # 접은 날개
+    m|=m_poly([(12,5),(15,6),(12,7)])                             # 부리
+    m|=m_rect(5,14,6,15)|m_rect(8,14,9,15)
+    put(c,m,t,o)
+    return m,[(11,4)],1.0
+
+def centipede(c,t,o):
+    m=set()
+    for i in range(6): m|=m_ellipse(2+i*2.4,8+(1.6 if i%2 else -1.6),1.8,1.8)
+    m|=m_ellipse(14,7,2.2,2.0)
+    put(c,m,t,o)
+    for i in range(6):
+        x=round(2+i*2.4); y=round(8+(1.6 if i%2 else -1.6))
+        c.px(x,y+2 if i%2 else y-2,o)
+    return m,[(14,6)],1.0
+
+def troll(c,t,o):
+    m=sm(m_poly([(4,15),(4,6),(11,6),(12,15)]), m_ellipse(8,4,3.4,3))
+    m|=m_poly([(3,7),(1,12),(4,12)])|m_poly([(12,7),(15,12),(11,12)])
+    put(c,m,t,o)
+    c.rect(6,6,9,6,o)
+    return m,[(7,4),(10,4)],1.0
+
+def banshee(c,t,o):
+    m=sm(m_ellipse(8,5,3.2,3.4), m_poly([(4,7),(12,7),(10,15),(6,15)]))
+    m|=m_poly([(4,4),(5,10),(3,10)])|m_poly([(12,4),(13,10),(11,10)])   # 긴 머리카락
+    put(c,m,t,o)
+    return m,[(7,5),(10,5)],1.0
+
+def hornet(c,t,o):
+    m=sm(m_ellipse(6,10,4.2,3), m_ellipse(10,8,2.8,2.4), m_ellipse(13,7,2,1.8))
+    m|=m_poly([(7,5),(3,1),(9,4)])|m_poly([(9,5),(14,2),(11,4)])        # 날개
+    put(c,m,t,o)
+    for x in (4,6,8): c.rect(x,9,x,12,o)                                # 줄무늬
+    return m,[(13,6)],1.0
+
+def basilisk(c,t,o):
+    m=sm(m_ellipse(7,11,6,2.8), m_ellipse(12,8,3,2.6))
+    m|=m_poly([(10,6),(12,2),(14,6)])                                    # 볏
+    m|=m_poly([(1,11),(0,7),(3,11)])
+    m|=m_rect(4,13,5,15)|m_rect(9,13,10,15)
+    put(c,m,t,o)
+    return m,[(13,8)],1.0
+
+def mimic(c,t,o):
+    m=sm(m_rect(2,8,14,14), m_poly([(2,8),(3,4),(13,4),(14,8)]))
+    put(c,m,t,o)
+    for x in range(3,14,2): c.px(x,9,o); c.px(x+1,10,o)                  # 이빨
+    c.rect(2,11,14,11,o)
+    return m,[(5,6),(11,6)],1.0
+
+def ghoul(c,t,o):
+    m=sm(m_ellipse(6,7,2.8,2.6), m_poly([(4,9),(11,8),(13,13),(3,13)]))
+    m|=m_poly([(11,8),(15,5),(15,7)])
+    m|=m_rect(4,13,5,15)|m_rect(9,13,10,15)
+    put(c,m,t,o)
+    return m,[(6,7)],1.0
+
+def warden(c,t,o):
+    m=sm(m_rect(5,6,11,14), m_ellipse(8,4,3,2.8))
+    m|=m_rect(1,5,3,12)                                                  # 방패
+    put(c,m,t,o)
+    c.rect(2,7,2,10,o); c.rect(6,8,10,8,o)
+    m|=m_rect(1,5,3,12)
+    return m,[(7,4),(10,4)],1.0
+
+# ── 우주 ──────────────────────────────────
+def pulsar(c,t,o):
+    m=m_ellipse(8,8,3,3)
+    put(c,m,t,o)
+    for a in (0,1,2,3):
+        import math as _m
+        r=_m.pi/2*a
+        m2=m_line(8+3.4*_m.cos(r),8+3.4*_m.sin(r),8+7*_m.cos(r),8+7*_m.sin(r),1)
+        for px_ in m2: c.px(*px_,t[-1])
+    return m,[(8,8)],1.0
+
+def comet(c,t,o):
+    m=sm(m_ellipse(12,6,2.6,2.6))
+    tail=set()
+    for i in range(9): tail|=m_ellipse(11-i*1.2,7+i*0.9,1.6-i*0.12,1.4-i*0.1)
+    m|=smooth_mask(tail,rounds=1)
+    put(c,m,t,o)
+    return m,[(12,5)],1.0
+
+def ringworld(c,t,o):
+    m=(m_ellipse(8,8,7,3)-m_ellipse(8,8,4.6,1.4))
+    put(c,m,t,o)
+    for px_ in m_ellipse(8,8,1.8,1.8): c.px(*px_,t[-1])
+    return m,[(8,8)],1.0
+
+def magnetar(c,t,o):
+    m=m_ellipse(8,8,3.4,3.4)
+    put(c,m,t,o)
+    for r in (5.2,6.8):
+        for px_ in (m_ellipse(8,8,r,r*0.55)-m_ellipse(8,8,r-1,(r-1)*0.55)): c.px(*px_,t[0])
+    return m,[(8,8)],1.0
+
+# ── 심층 ──────────────────────────────────
+def maw(c,t,o):
+    m=sm(m_ellipse(8,9,6.5,5.5))
+    m-=m_poly([(8,9),(16,4),(16,14)])
+    put(c,m,t,o)
+    for i in range(4): c.px(11-i,6+i,o); c.px(11-i,12-i,o)
+    return m,[(5,8)],1.2
+
+def helix(c,t,o):
+    import math as _m
+    m=set()
+    for i in range(16):
+        y=1+i; x=8+3.6*_m.sin(i*0.7)
+        m|=m_ellipse(x,y,1.5,1.2)
+    m=smooth_mask(m,rounds=1)
+    put(c,m,t,o)
+    return m,[(8,4)],1.0
+
+def eidolon(c,t,o):
+    m=sm(m_ellipse(8,6,3.6,3.6), m_poly([(5,9),(11,9),(13,15),(3,15)]))
+    put(c,m,t,o)
+    for px_ in m_ellipse(8,6,1.6,1.6): c.px(*px_,t[-1])
+    return m,[(6,6),(10,6)],1.0
+
+def cinder(c,t,o):
+    m=sm(m_poly([(8,0),(12,7),(10,15),(6,15),(4,7)]))
+    put(c,m,t,o)
+    for y in (5,8,11): c.rect(6,y,10,y,o)
+    return m,[(8,6)],1.2
+
+# ── 최원 ──────────────────────────────────
+def braid(c,t,o):
+    import math as _m
+    m=set()
+    for k in (0,1):
+        for i in range(15):
+            m|=m_ellipse(8+3.4*_m.sin(i*0.62+k*3.14),1+i,1.4,1.2)
+    put(c,smooth_mask(m,rounds=1),t,o)
+    return m,[(8,8)],1.0
+
+def veil(c,t,o):
+    m=sm(m_poly([(1,3),(15,3),(13,15),(3,15)]))
+    put(c,m,t,o)
+    for x in (5,8,11):
+        for y in range(5,14,2): c.px(x,y,o)
+    return m,[(6,7),(10,7)],1.0
+
+def causal(c,t,o):
+    m=(m_ellipse(8,8,7,7)-m_ellipse(8,8,4.4,4.4))
+    m|=m_line(8,1,8,15,2)|m_line(1,8,15,8,2)
+    put(c,m,t,o)
+    return m,[(8,8)],1.0
+
+def firstlight(c,t,o):
+    import math as _m
+    m=m_ellipse(8,8,2.6,2.6)
+    for a in range(0,360,30):
+        r=_m.radians(a)
+        m|=m_line(8+2.6*_m.cos(r),8+2.6*_m.sin(r),8+7.2*_m.cos(r),8+7.2*_m.sin(r),1)
+    put(c,m,t,o)
+    for px_ in m_ellipse(8,8,1.4,1.4): c.px(*px_,t[-1])
+    return m,[(8,8)],1.0
+
+BASE={'slug':slug,'mantis':mantis,'boar':boar,'raven':raven,'centipede':centipede,
+      'troll':troll,'banshee':banshee,'hornet':hornet,'basilisk':basilisk,'mimic':mimic,
+      'ghoul':ghoul,'warden':warden,
+      'ooze':ooze,'bat':bat,'beast':beast,'wraith':wraith,'serpent':serpent,'golem':golem,
       'spider':spider,'imp':imp,'mushroom':mushroom,'eyeball':eyeball,'crab':crab,'worm':worm,
       'skeleton':skeleton,'zombie':zombie,'goblin':goblin,'rat':rat,'harpy':harpy,
       'treant':treant,'gargoyle':gargoyle,'lich':lich,'wisp':wisp,'scorpion':scorpion,
@@ -411,7 +599,8 @@ def sentinel(c,t,o):
     c.rect(5,7,10,7,o)
     return m,[(7,5),(9,5)],1.0
 
-COSMIC={'probe':probe,'asteroid':asteroid,'nebula':nebula,'stareater':stareater,
+COSMIC={'pulsar':pulsar,'comet':comet,'ringworld':ringworld,'magnetar':magnetar,
+        'probe':probe,'asteroid':asteroid,'nebula':nebula,'stareater':stareater,
         'satellite':satellite,'gravity':gravity,'blackhole':blackhole,'guardian':guardian,
         'rift':rift,'dyson':dyson,'spore':spore,'sentinel':sentinel}
 
@@ -527,7 +716,8 @@ def circuit(c,t,o):
     bands(c,m_ellipse(8,8,2,2),['d','e','f'],n=3,mode='glow',cx=8,cy=8,r=2.6)
     return m,[],1.0
 
-DEEP={'swarm':swarm,'tendril':tendril,'legion':legion,'darkmatter':darkmatter,
+DEEP={'maw':maw,'helix':helix,'eidolon':eidolon,'cinder':cinder,
+      'swarm':swarm,'tendril':tendril,'legion':legion,'darkmatter':darkmatter,
       'lens':lens,'breaker':breaker,'fracture':fracture,'primeval':primeval,
       'ascendant':ascendant,'wall':wall,'devourer':devourer,'circuit':circuit}
 
@@ -668,7 +858,8 @@ def theend(c,t,o):
     c.rect(2,7,13,8,t[2])
     return m,[],1.0
 
-FAR={'weaver':weaver,'knot':knot,'strand':strand,'lattice':lattice,
+FAR={'braid':braid,'veil':veil,'causal':causal,'firstlight':firstlight,
+     'weaver':weaver,'knot':knot,'strand':strand,'lattice':lattice,
      'spinner':spinner,'greatvoid':greatvoid,'pulse':pulse,'shroud':shroud,
      'horizon':horizon,'cosmiclens':cosmiclens,'firstecho':firstecho,'edgeofall':edgeofall,
      'mirroruni':mirroruni,'branching':branching,'uniswarm':uniswarm,'theend':theend}

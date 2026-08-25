@@ -21,19 +21,18 @@ export function tick(dt){
   if(S.exploring&&!(ch&&ch.rule.noDungeon)){
     /* 진행도를 절대 피해량으로 쌓으면 깊은 층에서 ∞ 가 된다.
        공격력과 체력의 자릿수 차이만 보고 0~1 비율로 채운다. */
-    let rem=d, steps=0;
-    while(rem>0&&steps<FLOOR_MAX_STEPS){
-      const gap=dungeonPowerLog()-floorHPLog(S.floor);
-      const per=gap>=8?1e8:(gap<=-300?0:Math.pow(10,gap));   // 초당 채우는 비율
-      const cd=Math.min(rem,S.floorCd||0);
-      if(cd>0){ rem-=cd; S.floorCd=(S.floorCd||0)-cd; S.prog=Math.min(1,S.prog+per*cd); }
-      if((S.floorCd||0)>0) break;
-      const need=Math.max(0,1-S.prog);
-      const t=need<=0?0:(per>0?need/per:Infinity);
-      if(!(t<=rem)){ S.prog=Math.min(1,S.prog+per*rem); rem=0; break; }
-      rem-=t; S.prog=0; S.floorCd=FLOOR_MIN_TIME; steps++;
+    /* 한 걸음이 화면에 머무는 시간은 게임 속도와 무관해야 한다. 예전에는
+       쿨다운을 속도가 곱해진 시간으로 깎아서, 속도 배율이 커지면 한 틱에
+       마흔 걸음이 몰렸고 승천 직후 0.5 초 만에 예전 최심층까지 되돌아갔다.
+       진행도는 속도를 타되(d), 걸음 사이 간격은 실제 시간(dt)으로만 식는다. */
+    const gap=dungeonPowerLog()-floorHPLog(S.floor);
+    const per=gap>=8?1e8:(gap<=-300?0:Math.pow(10,gap));   // 초당 채우는 비율
+    S.prog=Math.min(1,(S.prog||0)+per*d);
+    S.floorCd=Math.max(0,(S.floorCd||0)-dt);
+    if((S.floorCd||0)<=0&&S.prog>=1){
+      S.prog=0; S.floorCd=FLOOR_MIN_TIME;
       sweepFloors(sweepCount());
-      if(!autoOK('dungeon')){ S.exploring=false; break; }
+      if(!autoOK('dungeon')) S.exploring=false;
     }
     S.prog=Math.max(0,Math.min(1,S.prog||0));
   }

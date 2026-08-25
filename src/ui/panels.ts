@@ -12,7 +12,7 @@ import { COSMOS, COSMOS_MUL, COSMOS_SP, FOES, chapterOf, chapterSeen, cosmos, du
 import { ASCEND_REQ, REBIRTH_REQ, TRANS_REQ, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, offerGain, relicGain, reqTxt, soulGain, starGain } from '../prestige'
 import { AUTO_DEF, AUTO_DEFS, allAuto, autoUnlocked, buyBulkLog } from '../automation'
 import { $, btn, el, modal, toast } from './dom'
-import { card, levelGrid, memo, toggleRow } from './widgets'
+import { buyAmtRow, card, levelGrid, memo, toggleRow } from './widgets'
 import { refresh } from './render'
 
 /* ══════════════ 패널 ══════════════ */
@@ -186,6 +186,7 @@ export function buildDungeon(p){
 export function buildGear(p){
   const c2=card([X('장비',"Gear"),'staff'],X('던전에서 캐낸 <b class="crystal">결정</b>으로 벼려낸다. 승천해도 사라지지 않는 영구 강화.',"Forged from <b class='crystal'>crystals</b> mined in the dungeon. Kept forever, even through ascension."));
   const info2=el('div','row'); info2.style.marginBottom='9px'; c2.appendChild(info2);
+  c2.appendChild(buyAmtRow());
   const g2=el('div','grid wide');
   GEAR.forEach(gr=>{
     const b=document.createElement('button'); b.type='button'; b.className='up';
@@ -223,6 +224,7 @@ export function buildGear(p){
 export function buildRelics(p){
   const c=card([X('룬 석판',"Rune Tablets"),'rune_wealth'],X('환생에서 얻는 <b class="offer">오퍼링</b>으로 새긴다. 승천하면 사라진다.',"Engraved with <b class='offer'>offerings</b> earned on rebirth. Lost on ascension."));
   const info=el('div','row'); info.style.marginBottom='9px'; c.appendChild(info);
+  c.appendChild(buyAmtRow());
   const g=el('div','grid wide');
   RUNES.forEach(r=>{
     const b=document.createElement('button'); b.type='button'; b.className='up';
@@ -269,7 +271,7 @@ export function buildRebirth(p){
   });
   c.appendChild(b); p.appendChild(c);
   const uc=card([X('영혼 강화',"Soul Upgrades"),'gem'],X('환생해도 유지된다. 승천할 때만 초기화된다.',"Kept through rebirths. Only ascension resets them."));
-  uc.appendChild(levelGrid(SOUL_UPS,id=>S.soulUps[id]||0,'soul',(id,n)=>{S.soulUps[id]=(S.soulUps[id]||0)+(n||1)},'soul'));
+  uc.appendChild(buyAmtRow()); uc.appendChild(levelGrid(SOUL_UPS,id=>S.soulUps[id]||0,'soul',(id,n)=>{S.soulUps[id]=(S.soulUps[id]||0)+(n||1)},'soul'));
   p.appendChild(uc);
   updaters.push(()=>{
     const g=soulGain();
@@ -312,7 +314,7 @@ export function buildAscend(p){
   });
   c.appendChild(b); p.appendChild(c);
   const uc=card([X('유물 강화',"Relic Upgrades"),'relic'],X('무엇을 해도 사라지지 않는 영구 강화.',"Permanent upgrades that nothing ever takes away."));
-  uc.appendChild(levelGrid(RELIC_UPS,id=>S.relicUps[id]||0,'relic',(id,n)=>{S.relicUps[id]=(S.relicUps[id]||0)+(n||1)},'relic'));
+  uc.appendChild(buyAmtRow()); uc.appendChild(levelGrid(RELIC_UPS,id=>S.relicUps[id]||0,'relic',(id,n)=>{S.relicUps[id]=(S.relicUps[id]||0)+(n||1)},'relic'));
   p.appendChild(uc);
   updaters.push(()=>{
     const g=relicGain();
@@ -334,7 +336,7 @@ export function buildTrans(p){
   });
   c.appendChild(b); p.appendChild(c);
   const uc=card([X('별 강화',"Star Upgrades"),'sparkle'],X('가장 깊은 층의 강화. 초월해도 남는다.',"The deepest layer. Even transcending cannot take these away."));
-  uc.appendChild(levelGrid(STAR_UPS,id=>S.starUps[id]||0,'star',(id,n)=>{S.starUps[id]=(S.starUps[id]||0)+(n||1)},'star'));
+  uc.appendChild(buyAmtRow()); uc.appendChild(levelGrid(STAR_UPS,id=>S.starUps[id]||0,'star',(id,n)=>{S.starUps[id]=(S.starUps[id]||0)+(n||1)},'star'));
   p.appendChild(uc);
   updaters.push(()=>{
     const g=starGain();
@@ -365,7 +367,7 @@ export function buildInf(p){
       lc.appendChild(el('div','hint',X(`${L.ko}으로만 살 수 있다. 아래 계층을 통째로 갈아 넣고 얻는 것이라 효과가 크다.`,
                                        `Bought with ${L.en} alone. You fed whole layers into this, so it hits hard.`)));
       const eu=el('div'); eu.style.marginTop='8px';
-      eu.appendChild(levelGrid(L.ups(),id=>(S[L.store]||{})[id]||0,L.k,
+      eu.appendChild(buyAmtRow()); eu.appendChild(levelGrid(L.ups(),id=>(S[L.store]||{})[id]||0,L.k,
         (id,n)=>{(S[L.store]=S[L.store]||{})[id]=((S[L.store]||{})[id]||0)+(n||1)},L.sp));
       lc.appendChild(eu);
     }
@@ -450,8 +452,11 @@ export function buildAch(p){
       r.d.classList.toggle('got',got);
       const want=spriteURL(reveal?(r.a.sp||'medal'):'unknown');
       if(r.img.getAttribute('src')!==want) r.img.setAttribute('src',want);
+      /* 무엇을 요구하는지만 적혀 있고 무엇을 주는지는 어디에도 없었다.
+         업적은 하나당 마나 생산 +2% 다 — 줄마다 그 몫을 적어 준다. */
       r.t.innerHTML = reveal
-        ? `<div class="t">${NM(r.a.nm)}</div><div class="d">${DS(r.a)}</div>`
+        ? `<div class="t">${NM(r.a.nm)}</div><div class="d">${DS(r.a)}`
+          +`<span class="${got?'good':'dim'}" style="margin-left:6px">${X('마나 +2%','Mana +2%')}</span></div>`
         : `<div class="t">???</div><div class="d">${X('아직 알 수 없다',"Unknown")}</div>`;
     }
   });
