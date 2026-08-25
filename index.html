@@ -7,9 +7,9 @@
 <meta name="description" content="심연의 마탑을 세우고, 환생과 승천을 거듭하는 방치형 판타지 게임">
 <meta name="theme-color" content="#0b0b0d">
 <meta property="og:title" content="마탑: 심연의 왕국">
-<meta property="og:description" content="단일 HTML 판타지 방치형 게임, 도트 42종 직접 제작">
+<meta property="og:description" content="단일 HTML 판타지 방치형 게임, 도트 77종 직접 제작">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:,">
+<link rel="icon" type="image/png" href="art/sprites/tower.png">
 <style>
 /* ═══════════════════════════════════════════════
    마탑: 심연의 왕국 · 판타지 UI
@@ -177,7 +177,7 @@ main{min-width:0}
   border:1px solid #302d26;transition:border-color .12s,box-shadow .12s;
 }
 .unit.can{border-color:var(--edge2);box-shadow:0 0 0 1px rgba(212,169,74,.13) inset}
-.unit .ico{width:60px;height:60px;display:grid;place-items:center;border-radius:3px;
+.unit .ico{width:72px;height:72px;display:grid;place-items:center;border-radius:3px;
   background:radial-gradient(circle at 50% 38%, rgba(212,169,74,.16), rgba(0,0,0,.32));
   border:1px solid #3a372f}
 .unit .nm{font-family:var(--serif);font-size:15px;letter-spacing:.03em}
@@ -199,7 +199,7 @@ main{min-width:0}
 }
 .up:hover:not(:disabled){border-color:var(--edge2)}
 .up:active:not(:disabled){transform:translateY(1px)}
-.up .ic{width:42px;height:42px;display:grid;place-items:center;flex:none;border-radius:3px;
+.up .ic{width:54px;height:54px;display:grid;place-items:center;flex:none;border-radius:3px;
   background:radial-gradient(circle at 50% 40%, rgba(212,169,74,.14), rgba(0,0,0,.3));border:1px solid #37342c}
 .up .bd{min-width:0;flex:1}
 .up .t{font-family:var(--serif);font-size:13.5px;letter-spacing:.02em;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
@@ -218,7 +218,7 @@ main{min-width:0}
   padding:12px;border-radius:3px;border:1px solid #3a372f;
   background:radial-gradient(400px 130px at 22% 0%, rgba(176,74,58,.16), transparent 70%),
              linear-gradient(180deg,#17171b,#0e0e11)}
-.arena .foe{width:92px;height:92px;display:grid;place-items:center;border-radius:3px;
+.arena .foe{width:104px;height:104px;display:grid;place-items:center;border-radius:3px;
   background:radial-gradient(circle at 50% 42%, rgba(176,74,58,.20), rgba(0,0,0,.4));
   border:1px solid #3a2a26}
 .arena .foe.boss{border-color:#7a3a2c;box-shadow:0 0 18px rgba(176,74,58,.30)}
@@ -316,13 +316,87 @@ main{min-width:0}
   .grid{grid-template-columns:1fr}
   #brand h1{font-size:16px} #brand .sub{display:none}
 }
+
+/* ══ 도트 UI ═══════════════════════════════════
+   9-slice 테두리는 art/ui/*.png. 가운데는 비어 있어
+   원래 배경 그라디언트가 그대로 비친다.
+   tools/build_ui.py 로 다시 굽는다. */
+.card,#modal,.res,.btn,.tab,.unit,.up,.ach,.arena,#sidestat,.achpop,#toast div,.log,.hpbar{
+  border-radius:0;
+  image-rendering:pixelated;image-rendering:crisp-edges;
+}
+.card,.arena,#sidestat{
+  border:8px solid transparent;border-image:url('art/ui/panel.png') 8 stretch;
+}
+.card{padding:6px 8px 8px}
+.arena{padding:5px}
+#sidestat{padding:4px 5px}
+.card::before,.card::after{display:none}
+
+#modal{border:8px solid transparent;border-image:url('art/ui/modal.png') 8 stretch;padding:13px 15px}
+
+.res{border:6px solid transparent;border-image:url('art/ui/plate.png') 6 stretch;padding:2px 5px}
+
+.btn{border:6px solid transparent;border-image:url('art/ui/btn.png') 6 stretch;padding:3px 9px;
+     box-shadow:none}
+.btn:hover:not(:disabled){border-image:url('art/ui/btn_hover.png') 6 stretch;background:linear-gradient(180deg,#35333c,#1e1e24)}
+.btn:active:not(:disabled){border-image:url('art/ui/btn_active.png') 6 stretch;transform:none;box-shadow:none}
+.btn.gold,.btn.on{border-image:url('art/ui/btn_gold.png') 6 stretch;box-shadow:0 0 15px rgba(212,169,74,.14)}
+.btn.gold:hover:not(:disabled),.btn.on:hover:not(:disabled){border-image:url('art/ui/btn_gold_hover.png') 6 stretch}
+.btn.sm{min-height:30px;padding:1px 6px}
+.btn.big{min-height:52px}
+
+.tab{border:6px solid transparent;border-image:url('art/ui/tab.png') 6 stretch;padding:3px 6px}
+.tab.on{border-image:url('art/ui/tab_on.png') 6 stretch;box-shadow:none}
+.tab.on::after{display:none}
+.tab:hover:not(.on){border-image:url('art/ui/btn.png') 6 stretch}
+
+.unit{border:6px solid transparent;border-image:url('art/ui/unit.png') 6 stretch;padding:4px 7px}
+.unit.can{border-image:url('art/ui/up_afford.png') 6 stretch;box-shadow:none}
+
+.up{border:6px solid transparent;border-image:url('art/ui/up.png') 6 stretch;padding:5px 6px;box-shadow:none}
+.up.afford{border-image:url('art/ui/up_afford.png') 6 stretch;box-shadow:0 0 13px rgba(212,169,74,.10)}
+.up.done{border-image:url('art/ui/up_done.png') 6 stretch}
+.up:hover:not(:disabled){border-image:url('art/ui/btn_hover.png') 6 stretch}
+.up.afford:hover:not(:disabled),.up.done:hover:not(:disabled){border-image:url('art/ui/up_afford.png') 6 stretch}
+
+.ach{border:6px solid transparent;border-image:url('art/ui/unit.png') 6 stretch;padding:3px 5px}
+.ach.got{border-image:url('art/ui/up_afford.png') 6 stretch}
+
+.achpop{border:6px solid transparent;border-image:url('art/ui/btn_gold.png') 6 stretch;
+        padding:6px 15px 6px 10px;box-shadow:0 0 34px rgba(212,169,74,.26),0 12px 34px rgba(0,0,0,.6)}
+#toast div{border:6px solid transparent;border-image:url('art/ui/btn.png') 6 stretch;padding:2px 8px}
+
+.unit .ico,.up .ic,.arena .foe{border-radius:0;border:2px solid #3a372f;
+  box-shadow:inset 0 0 0 1px #0b0b0d}
+
+/* 로고 */
+#brand{padding:6px 16px 4px}
+#brandLogo{width:98px;height:43px;flex:none}
+#brand h1{margin:0;font-size:0;line-height:0}
+@media(max-width:640px){#brand{padding:4px 10px 2px}}
+
+/* 좁은 화면 가로 넘침 차단
+   1fr 트랙은 min-width:auto 라서 내용이 줄어들지 않는다. minmax(0,1fr) 로 바꾼다. */
+.unit{grid-template-columns:auto minmax(0,1fr) auto}
+.unit>*{min-width:0}
+.grid{grid-template-columns:repeat(auto-fill,minmax(228px,1fr))}
+.grid.wide{grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+@media(max-width:900px){
+  #shell{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:640px){
+  .unit{grid-template-columns:auto minmax(0,1fr)}
+  .grid,.grid.wide{grid-template-columns:minmax(0,1fr)}
+  .unit .buy{min-width:0}
+}
+
 </style>
 </head>
 <body>
 <div id="top">
   <div id="brand">
-    <img class="px" id="brandIco" width="24" height="24" alt="">
-    <h1>마탑: 심연의 왕국</h1>
+    <h1><img class="px" id="brandLogo" src="art/ui/logo.png" alt="마탑: 심연의 왕국" width="98" height="43"></h1>
     <span class="sub">TOWER OF THE ABYSS</span>
     <span class="ver" id="verTag"></span>
     <button type="button" class="btn sm" id="langBtn" style="margin-left:10px;min-height:26px;padding:3px 10px"></button>
@@ -372,7 +446,7 @@ function setLang(l){
    그림은 art/sprites/*.png 파일이다. tools/sprites.json 의 문자 격자를
    tools/build_sprites.py 가 바운딩 박스 기준으로 정중앙에 배치해 구워 낸다.
    여기에는 파일 이름과 원본 크기만 둔다. */
-const SPR={"abysseye":16,"academy":24,"amulet":16,"anvil":16,"apprentice":24,"banner":16,"bat":24,"beast":24,"bolt":16,"bone":16,"book":16,"brokencog":16,"chain":16,"chalice":16,"chisel":16,"clock":16,"cog":16,"coinpurse":16,"compass":16,"council":24,"crackedvial":16,"crown16":16,"crystal":24,"darkeye":16,"demon":24,"emptypouch":16,"engrave":16,"fastfwd":16,"feather":16,"flask":16,"gauntlet":16,"gem":16,"gift":16,"golem":24,"grimoire":16,"hourglass":16,"idol":16,"incense":16,"infinity":16,"lantern":16,"loupe":16,"mana":24,"map":16,"medal":16,"medal_b":16,"medal_s":16,"moon":16,"offering":24,"pickaxe":16,"portal":16,"relic":24,"rune_abyss":16,"rune_guard":16,"rune_speed":16,"rune_wealth":16,"rune_wisdom":16,"runebook":16,"runering":16,"scroll":16,"sealedbook":16,"seed":16,"serpent":24,"shield":16,"skull":24,"slime":24,"soul":24,"sparkle":16,"spiral":16,"staff":16,"star":16,"sword":24,"swordup":16,"tower":24,"treasure":16,"vial":16,"workshop":24,"wraith":24};
+const SPR={"abysseye":24,"academy":32,"amulet":24,"anvil":24,"apprentice":32,"banner":24,"bat":32,"beast":32,"bolt":24,"bone":24,"book":24,"brokencog":24,"chain":24,"chalice":24,"chisel":24,"clock":24,"cog":24,"coinpurse":24,"compass":24,"council":32,"crackedvial":24,"crown16":24,"crystal":32,"darkeye":24,"demon":32,"emptypouch":24,"engrave":24,"fastfwd":24,"feather":24,"flask":24,"gauntlet":24,"gem":24,"gift":24,"golem":32,"grimoire":24,"hourglass":24,"idol":24,"incense":24,"infinity":24,"lantern":24,"loupe":24,"mana":32,"map":24,"medal":24,"medal_b":24,"medal_s":24,"moon":24,"offering":32,"pickaxe":24,"portal":24,"relic":32,"rune_abyss":24,"rune_guard":24,"rune_speed":24,"rune_wealth":24,"rune_wisdom":24,"runebook":24,"runering":24,"scroll":24,"sealedbook":24,"seed":24,"serpent":32,"shield":24,"skull":32,"slime":32,"soul":32,"sparkle":24,"spiral":24,"staff":24,"star":24,"sword":32,"swordup":24,"tower":32,"treasure":24,"vial":24,"workshop":32,"wraith":32};
 const SPR_DIR='art/sprites/';
 const spriteURL = name => SPR_DIR + name + '.png';
 function ic(name,size){
@@ -382,7 +456,7 @@ function ic(name,size){
   return i;
 }
 function icHTML(name,size){
-  const n=size||((SPR[name]===24)?12:16);   // 글 속에서는 1배 또는 1/2배로만 (도트가 뭉개지지 않게)
+  const n=size||((SPR[name]===32)?16:12);   // 글 속에서는 1/2배로만 (도트가 뭉개지지 않게)
   return `<img class="px" src="${spriteURL(name)}" width="${n}" height="${n}" alt="">`;
 }
 
@@ -459,7 +533,7 @@ const RELIC_UPS=[
  {id:'a2', sp:'pickaxe',  nm:{ko:'영혼 광맥',en:"Soul Vein"},  max:Infinity,c:l=>2*Math.pow(3.2,l),  d:l=>`${X('영혼석 획득',"Soul Shards")} ×${fmt(Math.pow(2.5,l))} → ×${fmt(Math.pow(2.5,l+1))}`, apply:(m,l)=>m.soul*=Math.pow(2.5,l)},
  {id:'a3', sp:'clock',nm:{ko:'시간 가속',en:"Time Acceleration"},  max:10,      c:l=>3*Math.pow(4,l),    d:l=>`${X('게임 속도',"Game speed")} +${12*l}% → +${12*(l+1)}%`, apply:(m,l)=>m.speed*=1+0.12*l},
  {id:'a4', sp:'compass',  nm:{ko:'심연 항해',en:"Abyssal Voyage"},  max:Infinity,c:l=>4*Math.pow(3.4,l),  d:l=>`${X('던전 보상',"Dungeon rewards")} ×${fmt(Math.pow(3,l))} → ×${fmt(Math.pow(3,l+1))}`, apply:(m,l)=>m.floorLoot*=Math.pow(3,l)},
- {id:'a5', sp:'crown16',  nm:{ko:'왕국의 축복',en:"Kingdom's Blessing"},max:Infinity,c:l=>5*Math.pow(3.5,l),  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${8*l}${X("개","")} → ${8*(l+1)}${X("개 무료","free")}`, apply:()=>{}},
+ {id:'a5', sp:'crown16',  nm:{ko:'왕국의 축복',en:"Kingdom's Blessing"},max:Infinity,c:l=>5*Math.pow(3.5,l),  d:l=>X(`환생 후 각 시설 ${8*l}개 → ${8*(l+1)}개 무료`,`Free buildings after rebirth: ${8*l} → ${8*(l+1)}`), apply:()=>{}},
  {id:'a6', sp:'banner',      nm:{ko:'심연의 지도',en:"Map of the Abyss"},max:Infinity,c:l=>6*Math.pow(3.8,l),  d:l=>`${X('층당 배율',"Depth bonus")} +${2*l}%p → +${2*(l+1)}%p`, apply:(m,l)=>m.floorPct+=0.02*l},
  {id:'a7', sp:'engrave',nm:{ko:'룬 각인술',en:"Rune Inscription"}, max:5,       c:l=>10*Math.pow(4.5,l), d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${10*l} → +${10*(l+1)}`, apply:(m,l)=>m.runeCap+=10*l},
  {id:'a8', sp:'treasure',      nm:{ko:'보물 감식',en:"Treasure Appraisal"},  max:Infinity,c:l=>8*Math.pow(3.6,l),  d:l=>`${X('결정 획득',"Crystals")} ×${fmt(Math.pow(2,l))} → ×${fmt(Math.pow(2,l+1))}`, apply:(m,l)=>m.crystal*=Math.pow(2,l)},
@@ -899,7 +973,7 @@ function nextAch(){
   achBusy=true;
   const a=achQueue.shift();
   const w=el('div','achpop');
-  w.innerHTML=`<img class="px" src="${spriteURL(a.sprite||'medal')}" width="32" height="32" alt="">
+  w.innerHTML=`<img class="px" src="${spriteURL(a.sprite||'medal')}" width="48" height="48" alt="">
     <div><div class="ttl">${X('업적 달성','FEAT UNLOCKED')}</div><div class="nm">${a.title}</div><div class="ds">${a.desc}</div></div>`;
   document.body.appendChild(w);
   setTimeout(()=>w.classList.add('out'),2400);
@@ -942,7 +1016,7 @@ function buildTabs(){
     if(!t.open()) return;
     const b=el('button','tab'+(t.id===curTab?' on':'')+(alerts[t.id]?' alert':''));
     b.type='button';
-    b.appendChild(ic(t.sp,16));
+    b.appendChild(ic(t.sp,24));
     b.appendChild(el('span',null,NM(t.nm)));
     b.appendChild(el('span','n',i===9?'0':String(i+1)));
     b.appendChild(el('span','dot'));
@@ -959,7 +1033,7 @@ function switchTab(id){
 /* ══════════════ 공용 위젯 ══════════════ */
 function card(title,hint){
   const c=el('div','card');
-  if(title){const h=el('h2');h.appendChild(ic(title[1],16));h.appendChild(el('span',null,title[0]));c.appendChild(h)}
+  if(title){const h=el('h2');h.appendChild(ic(title[1],24));h.appendChild(el('span',null,title[0]));c.appendChild(h)}
   if(hint) c.appendChild(el('div','hint',hint));
   return c;
 }
@@ -970,7 +1044,7 @@ function levelGrid(defs,lvOf,curOf,pay,curSp){
     const b=document.createElement('button');
     b.type='button'; b.className='up';
     b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
-    b.querySelector('.ic').appendChild(ic(u.sp,32));
+    b.querySelector('.ic').appendChild(ic(u.sp,48));
     b.addEventListener('click',e=>{
       e.preventDefault();
       const l=lvOf(u.id);
@@ -1025,13 +1099,13 @@ function buildTower(p){
   const gb=btn('gold big','',()=>gather());
   gb.style.cssText='margin:11px auto 0;max-width:430px';
   c.appendChild(gb);
-  updaters.push(()=>{gb.innerHTML=`${icHTML('mana',24)} ${X('마나 채집','Gather Mana')} <span class="c">+${fmt(gatherAmount())}</span>`});
+  updaters.push(()=>{gb.innerHTML=`${icHTML('mana',32)} ${X('마나 채집','Gather Mana')} <span class="c">+${fmt(gatherAmount())}</span>`});
   p.appendChild(c);
 
   const list=el('div','card');
   PRODUCERS.forEach((pr,i)=>{
     const row=el('div','unit');
-    const icb=el('div','ico'); icb.appendChild(ic(pr.sp,48)); row.appendChild(icb);
+    const icb=el('div','ico'); icb.appendChild(ic(pr.sp,64)); row.appendChild(icb);
     const mid=el('div');
     mid.appendChild(el('div','nm',NM(pr.nm)));
     const dt=el('div','dt'), own=el('div','own');
@@ -1062,7 +1136,7 @@ function buildResearch(p){
     const b=document.createElement('button');
     b.type='button'; b.className='up';
     b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
-    b.querySelector('.ic').appendChild(ic(r.sp,32));
+    b.querySelector('.ic').appendChild(ic(r.sp,48));
     b.addEventListener('click',e=>{
       e.preventDefault();
       if(S.research[r.id]||S.mana<r.cost) return;
@@ -1092,7 +1166,7 @@ function buildResearch(p){
 function buildDungeon(p){
   const c=card([X('심연의 던전',"The Abyssal Dungeon"),'sword'],X('원정대의 공격력은 보유한 시설 총합에서 나온다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다.',"Your party power comes from every building you own. A <b class='bad'>boss</b> waits every 10th floor, and depth permanently raises your mana multiplier."));
   const ar=el('div','arena');
-  const foe=el('div','foe'); const foeIco=ic('slime',72); foe.appendChild(foeIco);
+  const foe=el('div','foe'); const foeIco=ic('slime',96); foe.appendChild(foeIco);
   const right=el('div');
   const ftitle=el('div'); ftitle.style.cssText='font-family:var(--serif);font-size:16px;margin-bottom:5px';
   const hp=el('div','hpbar','<i></i><span></span>');
@@ -1144,7 +1218,7 @@ function buildRelics(p){
   RUNES.forEach(r=>{
     const b=document.createElement('button'); b.type='button'; b.className='up';
     b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
-    b.querySelector('.ic').appendChild(ic(r.sp,32));
+    b.querySelector('.ic').appendChild(ic(r.sp,48));
     b.addEventListener('click',e=>{
       e.preventDefault();
       const l=S.runes[r.id]||0, cap=Math.floor(M().runeCap), cost=runeCost(l);
@@ -1171,7 +1245,7 @@ function buildRelics(p){
   GEAR.forEach(gr=>{
     const b=document.createElement('button'); b.type='button'; b.className='up';
     b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
-    b.querySelector('.ic').appendChild(ic(gr.sp,32));
+    b.querySelector('.ic').appendChild(ic(gr.sp,48));
     b.addEventListener('click',e=>{
       e.preventDefault();
       const l=S.gear[gr.id]||0, cost=gearCost(l);
@@ -1255,7 +1329,7 @@ function buildChal(p){
     updaters.push(()=>{
       const n=S.chalDone[ch.id]||0, maxed=n>=ch.max, active=S.chal===ch.id;
       b.querySelector('.t').innerHTML=`${NM(ch.nm)} <span class="lv">${n} / ${ch.max} 단계</span>`;
-      b.querySelector('.d').textContent=DS(ch);
+      b.querySelector('.d').textContent=DSF(ch.desc);
       b.querySelector('.goal').innerHTML=maxed?'':`목표 ${icHTML('mana')} ${fmt(chalGoal(ch,n))}`;
       b.querySelector('.c').innerHTML=maxed?`<span class="good">완주 · ${ch.rw(n)}</span>`
         :active?`<span class="bad">진행 중 · 눌러서 포기</span>`
@@ -1353,7 +1427,7 @@ function buildRes(){
   const box=$('res'); box.innerHTML=''; resNodes={};
   RES.forEach(r=>{
     const d=el('div','res '+r.cls);
-    d.appendChild(ic(r.sp,24));
+    d.appendChild(ic(r.sp,SPR[r.sp]||24));   // 원본 크기 그대로 (도트 보존)
     const t=el('div','txt');
     t.innerHTML=`<div class="lab">${NM(r.nm)}</div><div class="val"></div><div class="sub"></div>`;
     d.appendChild(t); box.appendChild(d);
@@ -1391,8 +1465,8 @@ function updateRes(){
 let tabSig='';
 function render(){
   const lb=$('langBtn'); if(lb) lb.textContent = LANG==='ko' ? 'EN' : '한국어';
-  const bt=document.querySelector('#brand h1'); if(bt) bt.textContent=X('마탑: 심연의 왕국','Tower of the Abyss');
-  const sb=document.querySelector('#brand .sub'); if(sb) sb.style.display=LANG==='en'?'none':'';
+  const bt=$('brandLogo'); if(bt) bt.alt=X('마탑: 심연의 왕국','Tower of the Abyss');
+  const sb=document.querySelector('#brand .sub'); if(sb) sb.style.display='none';
   const t=TABS.find(x=>x.id===curTab);
   if(!t||!t.open()) curTab='tower';
   updaters=[]; buildTabs();
@@ -1508,7 +1582,7 @@ $('verTag').textContent='v'+VERSION;
 $('langBtn').addEventListener('click',()=>setLang(LANG==='ko'?'en':'ko'));
 document.documentElement.lang=LANG;
 document.title=X('마탑: 심연의 왕국','Tower of the Abyss');
-$('brandIco').src=spriteURL('tower');
+
 { // 파비콘도 직접 찍은 도트로
   const fav=document.querySelector('link[rel="icon"]')||document.createElement('link');
   fav.rel='icon'; fav.type='image/png'; fav.href=spriteURL('tower');

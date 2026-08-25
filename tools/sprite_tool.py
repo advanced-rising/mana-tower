@@ -57,10 +57,10 @@ def guess_size(w, want=None):
     """그림 폭에서 원래 스프라이트 크기를 추정한다. want 가 있으면 그것을 우선한다."""
     if want and w % want == 0:
         return want
-    for base in (24, 16):
+    for base in (32, 24):
         if w % base == 0:
             return base
-    return 24 if w > 20 else 16
+    return 32 if w > 28 else 24
 
 def from_image(path, pal, want=None):
     img = Image.open(path).convert('RGBA')

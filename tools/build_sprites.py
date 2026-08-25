@@ -77,8 +77,10 @@ def main():
         manifest[name] = n
         if not check:
             render(g, n, pal).save(os.path.join(OUT, f'{name}.png'), optimize=True)
-    print(f'스프라이트 {len(sprites)}종 (24x24 {sum(1 for v in sprites.values() if v["size"]==24)}, '
-          f'16x16 {sum(1 for v in sprites.values() if v["size"]==16)})')
+    from collections import Counter
+    cnt = Counter(v['size'] for v in sprites.values())
+    detail = ', '.join(f'{k}x{k} {n}' for k, n in sorted(cnt.items(), reverse=True))
+    print(f'스프라이트 {len(sprites)}종 ({detail})')
     if moved:
         print(f'가운데로 옮긴 그림 {len(moved)}종:')
         for nm, dx, dy in moved[:60]:
