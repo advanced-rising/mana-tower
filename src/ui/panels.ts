@@ -7,7 +7,7 @@ import { ACHS, CHALLENGES, GEAR, MILESTONES, RELIC_UPS, RESEARCH, RUNES, SOUL_UP
 import { LOG, S } from '../state'
 import { achCount, chalTotal, cntLog, curChal, fmt, fmtLog, fmtTime, gearTotal, logSub, numLog, pctTxt, powTxt, runeTotal } from '../num'
 import { M, buyProducer, costLogOf, gather, gatherAmountLog, manaRateLog, maxAfford, recalc, tierLocked } from '../multipliers'
-import { COSMOS, COSMOS_MUL, COSMOS_SP, FOES, chapterSeen, cosmos, dungeonPowerLog, floorHPLog, floorLoot, foeOf, isBoss } from '../dungeon'
+import { COSMOS, COSMOS_MUL, COSMOS_SP, FOES, chapterOf, chapterSeen, cosmos, dungeonPowerLog, floorHPLog, floorLoot, foeOf, isBoss } from '../dungeon'
 import { ASCEND_REQ, INF_LAYERS, REBIRTH_REQ, TRANS_REQ, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, offerGain, relicGain, reqTxt, soulGain, starGain } from '../prestige'
 import { AUTO_DEF, AUTO_DEFS, allAuto, autoUnlocked } from '../automation'
 import { $, btn, el, modal, toast } from './dom'
@@ -154,6 +154,8 @@ export function buildDungeon(p){
     foe.classList.toggle('boss',boss);
     const fo=foeOf(f), want=spriteURL(fo.sp);
     if(foeIco.src!==want) foeIco.src=want;
+    const ach=String(chapterOf(Math.max(1,f)));      // 무대 배경도 계층을 따라간다
+    if(ar.dataset.ch!==ach) ar.dataset.ch=ach;
     /* 층수가 열 자리를 넘으면 이름에 그대로 붙어 읽히지 않는다.
        줄을 갈라 놓고 숫자는 짧은 표기로 적는다. */
     ftitle.innerHTML=`<b class="gold">${NM(fo.nm)}</b>${boss?' <span class="tag bad" style="vertical-align:2px">'+X('보스','BOSS')+'</span>':''}`

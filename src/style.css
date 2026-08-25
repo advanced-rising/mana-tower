@@ -498,3 +498,49 @@ html[data-chapter="11"]{--gold:#c07ae0;--gold2:#e6b6f6;--goldDk:#703f8a}
   .res{flex:1 1 132px;min-width:126px}
   .res .val{font-size:13.5px}
 }
+
+/* 던전 무대는 지금 밟고 있는 계층의 하늘을 깐다. 층이 한 칸 오를 때마다
+   배경이 바뀌어서, 숫자를 읽지 않아도 어디쯤인지 눈에 들어온다. */
+.arena{position:relative;overflow:hidden;transition:background-color .6s ease}
+.arena>*{position:relative;z-index:1}
+.arena::before{content:'';position:absolute;inset:0;z-index:0;opacity:.55;
+  background-repeat:repeat;image-rendering:pixelated;transition:opacity .6s ease}
+.arena::after{content:'';position:absolute;left:0;right:0;top:0;height:46px;z-index:0;
+  background-repeat:repeat-x;image-rendering:pixelated;opacity:.7;pointer-events:none}
+
+.arena[data-ch="0"]{background-color:#0e0e11}
+.arena[data-ch="0"]::before{background-image:url('../art/ui/bg_ch0.png')}
+.arena[data-ch="0"]::after{background-image:url('../art/ui/glow_ch0.png')}
+.arena[data-ch="1"]{background-color:#0b1113}
+.arena[data-ch="1"]::before{background-image:url('../art/ui/bg_ch1.png')}
+.arena[data-ch="1"]::after{background-image:url('../art/ui/glow_ch1.png')}
+.arena[data-ch="2"]{background-color:#130f0b}
+.arena[data-ch="2"]::before{background-image:url('../art/ui/bg_ch2.png')}
+.arena[data-ch="2"]::after{background-image:url('../art/ui/glow_ch2.png')}
+.arena[data-ch="3"]{background-color:#110b13}
+.arena[data-ch="3"]::before{background-image:url('../art/ui/bg_ch3.png')}
+.arena[data-ch="3"]::after{background-image:url('../art/ui/glow_ch3.png')}
+.arena[data-ch="4"]{background-color:#0b0d15}
+.arena[data-ch="4"]::before{background-image:url('../art/ui/bg_ch4.png')}
+.arena[data-ch="4"]::after{background-image:url('../art/ui/glow_ch4.png')}
+.arena[data-ch="5"]{background-color:#130b11}
+.arena[data-ch="5"]::before{background-image:url('../art/ui/bg_ch5.png')}
+.arena[data-ch="5"]::after{background-image:url('../art/ui/glow_ch5.png')}
+.arena[data-ch="6"]{background-color:#0b1215}
+.arena[data-ch="6"]::before{background-image:url('../art/ui/bg_ch6.png')}
+.arena[data-ch="6"]::after{background-image:url('../art/ui/glow_ch6.png')}
+.arena[data-ch="7"]{background-color:#141109}
+.arena[data-ch="7"]::before{background-image:url('../art/ui/bg_ch7.png')}
+.arena[data-ch="7"]::after{background-image:url('../art/ui/glow_ch7.png')}
+.arena[data-ch="8"]{background-color:#150a0d}
+.arena[data-ch="8"]::before{background-image:url('../art/ui/bg_ch8.png')}
+.arena[data-ch="8"]::after{background-image:url('../art/ui/glow_ch8.png')}
+.arena[data-ch="9"]{background-color:#0b1410}
+.arena[data-ch="9"]::before{background-image:url('../art/ui/bg_ch9.png')}
+.arena[data-ch="9"]::after{background-image:url('../art/ui/glow_ch9.png')}
+.arena[data-ch="10"]{background-color:#111318}
+.arena[data-ch="10"]::before{background-image:url('../art/ui/bg_ch10.png')}
+.arena[data-ch="10"]::after{background-image:url('../art/ui/glow_ch10.png')}
+.arena[data-ch="11"]{background-color:#120b16}
+.arena[data-ch="11"]::before{background-image:url('../art/ui/bg_ch11.png')}
+.arena[data-ch="11"]::after{background-image:url('../art/ui/glow_ch11.png')}

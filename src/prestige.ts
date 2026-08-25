@@ -74,7 +74,7 @@ export const INF_LAYERS=[
  {k:'eter', ko:'영원',  en:"Eternity",  from:()=>S.inf,      sp:'hourglass', ups:()=>ETER_UPS,  store:'eterUps'},
  {k:'real', ko:'현실',  en:"Reality",   from:()=>S.eter,     sp:'portal',   ups:()=>REAL_UPS,  store:'realUps'},
  {k:'void', ko:'공허',  en:"The Void",  from:()=>S.real,     sp:'abysseye', ups:()=>VOID_UPS,  store:'voidUps'},
- {k:'origin',ko:'근원', en:"Origin",    from:()=>S.void,     sp:'star',     ups:()=>ORIGIN_UPS,store:'originUps'},
+ {k:'origin',ko:'근원', en:"Origin",    from:()=>S.void,     sp:'orig_tree',ups:()=>ORIGIN_UPS,store:'originUps'},
 ];
 /* 무한만 마나가 넘칠 때 열린다. 그 위로는 아래 계층을 열 개 모아야 한 칸 오른다. */
 export const INF_STACK=10;
