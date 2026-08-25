@@ -1,137 +1,152 @@
-# 마탑: 심연의 왕국 (Tower of the Abyss)
+# Tower of Infinity
 
-심연 위에 마탑을 세우고, 환생과 승천을 거듭하는 **판타지 방치형(인크리멘탈) 게임**.
-`index.html` 하나로 끝. 빌드 도구도, 인터넷 연결도, 외부 라이브러리도 필요 없습니다.
+A fantasy idle/incremental game that grows from a single tower into the structure of the
+cosmos. One `index.html`. No build step, no dependencies, no network — open the file and play.
 
-플레이: <https://advanced-rising.github.io/mana-tower/>
+Play: <https://advanced-rising.github.io/mana-tower/>
 
-## 어떻게 굴러가는가
+## The shape of a run
 
 ```
-🪄 마나 채집(직접)
-   └ 🧙 견습 마법사 → ⚒️ 마법 공방 → 🗼 마탑 → 🏛️ 아카데미 → 👑 대현자 회의
-        (윗 단계 시설이 아랫 단계를 스스로 지어 올린다. 마나를 직접 뽑는 건 견습 마법사뿐)
+🪄 Gather mana (by hand)
+   └ 🧙 Apprentice → ⚒️ Workshop → 🗼 Tower → 🏛️ Academy → 👑 Conclave → ✨ Starlit Spire
+        Each tier builds the one below it. Only the Apprentice draws mana directly.
 
-⚗️ 연구 20종        마나로 사는 일회성 강화 (환생하면 사라진다)
-⚔️ 던전             시설 총합 = 공격력. 10층마다 보스. 깊이가 곧 영구 배율
-                    보상: 마나 + 결정(장비 재료), 보스는 오퍼링까지
+⚗️ Research        one-off purchases, spent in mana, lost on rebirth
+⚔️ The Delve       your buildings are your attack power. Bosses every 10 floors.
+                   Depth itself is a permanent multiplier.
 
-🔮 환생  →  영혼석 + 오퍼링    ── 영혼 강화 10종 / 룬 석판 5종
-🏺 승천  →  유물               ── 유물 강화 10종 (영구)
-⛓ 시련  →  6종 × 5단계        제약을 걸고 목표 마나 도달 시 영구 보상
-🏅 업적 30종                   하나당 마나 생산 +2%
+🔮 Rebirth      → Soul Stones + Offerings   ── soul upgrades, runes
+🏺 Ascension    → Relics                    ── relic upgrades (permanent)
+⭐ Transcendence → Stardust                  ── star upgrades
+⛓ Trials        constraints in exchange for permanent rewards
+🏅 Achievements  each one lifts mana output
 ```
 
-## 자동화는 보상이다
+## Past the ceiling
 
-처음에는 채집·건설·연구·던전을 **직접** 해야 합니다. 진행할수록 하나씩 열립니다.
+A double-precision number stops at about `1.8e308`. The game does not stop there.
 
-| 자동화 | 해금 조건 |
+Mana, costs, dungeon HP and attack power are all carried as **base-10 logarithms**, added
+and subtracted in log space (`logAdd`, `logSub`, `geoSumLog`). Nothing in the ledger has a
+maximum. When a quantity does reach infinity, that is not an error state — it is a door.
+
+```
+Rebirth → Ascension → Transcendence → ∞ Infinity → Eternity → Reality → Void → Origin
+                                       └ 10 Infinities open one Eternity
+```
+
+Each layer resets everything under it and pays out its own currency with its own upgrade
+tree. Infinity keeps your stardust; Eternity and above fold even that away and start over
+in earnest. The first break of any layer must be done by hand — after that it automates.
+
+### How numbers are written
+
+```
+1,234 → 1.23M → 1.23B → 1.23T → 1.23aa … 1.23zz (1e2,040)
+      → 1.23aaa … 1.23zzz (1e54,768) → e54,771 → ee4.74 → eee … → (e^12)3.4
+```
+
+Letters run three deep; above that the exponent itself is stacked into layers. There is no
+last notation.
+
+### The cosmic ladder
+
+Delve depth is read as twelve nested tiers — the digits of the floor number are the
+address of where you are.
+
+```
+floor → planet → system → cluster → galaxy → group → galactic cluster
+      → supercluster → filament → cosmic web → observable universe → multiverse
+```
+
+Crossing a tier changes the chapter: the background, the palette and the framing of the UI
+all move with you. Tiers you have not reached yet are shown as `?` — you are not told what
+is up there until you arrive.
+
+## Content
+
+| Block | Count |
 |---|---|
-| 마나 채집 | 누적 마나 1,000 |
-| 시설 건설 | 누적 마나 2만 |
-| 던전 연속 탐험 | 20층 돌파 |
-| 연구 구매 | 환생 5회 |
-| 룬 · 장비 | 승천 1회 |
-| 영혼 강화 구매 | 환생 10회 |
-| 자동 환생 | 환생 20회 |
-| 유물 강화 구매 | 승천 2회 |
-| 자동 승천 | 승천 3회 |
-| 자동 시련 | 시련 3단계 완료 |
+| `PRODUCERS` | 6 |
+| `RESEARCH` | 21 |
+| `RUNES` / `GEAR` | 12 / 18 |
+| `SOUL_UPS` / `RELIC_UPS` / `STAR_UPS` | 16 / 24 / 16 |
+| `INF_UPS` / `ETER_UPS` / `REAL_UPS` / `VOID_UPS` / `ORIGIN_UPS` | 10 / 16 / 10 / 8 / 6 |
+| `CHALLENGES` | 20 |
+| `ACHS` | 37 |
 
-## 도트 이미지
+Every item has its own name and its own sprite — no two share either.
 
-77종 전부 직접 찍었습니다. 그림은 `art/sprites/*.png` 실제 파일이고,
-원본은 `tools/sprites.json` 의 문자 격자입니다.
+## Automation is a reward
+
+You gather, build, research and delve by hand at first. Each automation unlocks as you go,
+and every one of them can be switched on and off individually in the Automation tab. Once
+all of them are open the game will run unattended indefinitely. Breaking a prestige layer
+once by hand is what unlocks automating that layer.
+
+## Pixel art
+
+907 images, all generated. The source of truth is code, not a canvas.
 
 ```
-tools/sprites.json   문자 격자 + 59색 팔레트 (원본)
-      ↓  python3 tools/build_sprites.py
-art/sprites/*.png    게임이 읽는 실제 이미지 (77개)
-                     시설·몬스터·자원 19종은 32×32, 아이콘 58종은 24×24
+tools/pixkit.py        drawing toolkit — masks, tone bands, majority smoothing, outlines
+tools/foes.py          192 monsters: 24 base forms × 8 elemental affixes
+tools/build_sprites.py art/sprites/*.png   (844 files, 16×16)
+tools/build_ui.py      art/ui/*.png        (59 files — 9-slice frames, chapter tiles, logo)
 ```
 
-빌드할 때 각 그림의 **바운딩 박스를 계산해 캔버스 정중앙에 배치**합니다.
-격자를 왼쪽 위부터 대충 채워도 결과물은 항상 가운데 정렬됩니다.
-광원은 좌상단 고정입니다. 명암은 실루엣 안에서 광원 방향으로 나가는 거리를 재
-색 ramp 에 대응시키는 방식이라, 임의 모양에도 형태가 살아 있는 음영이 붙습니다.
-스스로 빛나는 것(영혼·차원문·룬)은 중심이 가장 밝은 방사 그라디언트를 씁니다.
+Everything is 16×16 and drawn side-on, in the register of a 2000s Korean action MMO.
+Shading is a small number of flat tone bands rather than a gradient, passed through a
+majority filter to kill stray pixels, and closed with a visible outline. Monster parts —
+flames, venom drips, frost shards — anchor to the silhouette's contour so nothing clips.
 
-### 그림 고치기 (Aseprite 필요 없음)
+UI frames are CSS `border-image` 9-slices with hollow centres, so the page's own background
+shows through. The logo is a TrueType face rendered without antialiasing, thresholded to
+one bit and given a gold ramp.
 
 ```bash
-python3 tools/sprite_tool.py list                    # 77종 목록
-python3 tools/sprite_tool.py palette                 # art/mana-tower.gpl (에디터용 팔레트)
-python3 tools/sprite_tool.py export tower --scale 8  # 8배로 확대해 PNG 추출
-#   Pixelorama / Piskel / GIMP / 포토샵 등 아무 에디터로 수정
-python3 tools/sprite_tool.py import art/tower.png tower --apply
-python3 tools/build_sprites.py                       # 전체 다시 굽기
+python3 tools/build_sprites.py    # rebuild all sprites
+python3 tools/build_ui.py         # rebuild frames, chapter tiles and logo
+python3 tools/foes.py             # rebuild the bestiary
 ```
 
-1배·4배·8배 어느 배율로 그려도 정수배로 정확히 축소해 받습니다.
-팔레트에 없는 색은 가장 가까운 색으로 자동 대응됩니다.
+Sprites are only ever displayed at integer multiples of their native size.
 
-게임에서는 원본 크기의 **정수배로만** 띄웁니다(32→32/64/96, 24→24/48).
-크기를 바꾸면 `SPR` 표와 호출부 배율을 함께 맞춰야 도트가 뭉개지지 않습니다.
+## Korean / English
 
-## UI 도트 · 로고
+Both languages live in the one file. The switch is at the top right and the choice is
+remembered. On first open it follows the browser (`ko*` → Korean, otherwise English).
 
-버튼·탭·카드·모달의 테두리도 도트입니다. `art/ui/*.png` 를 CSS `border-image`
-9-slice 로 붙였고, 가운데는 비워 두어 원래 배경 그라디언트가 그대로 비칩니다.
-로고는 트루타입을 안티에일리어스 없이 도트로 굳힌 뒤 금색 ramp 를 입힌 것입니다.
-
-```bash
-python3 tools/build_ui.py     # art/ui/*.png (테두리 15종 + logo.png)
-```
-
-### 다시 그릴 때
-
-`tools/pixkit.py` 는 격자를 손으로 찍는 대신 마스크(타원·다각형·선)를 짜고
-광원 계산으로 명암을 입히는 드로잉 툴킷입니다. 현재 77종이 이걸로 그려졌습니다.
-결과는 `sprites.json` 에 구워져 남으므로 게임 실행에는 필요 없습니다.
-
-## 한국어 / English
-
-한 파일에 두 언어가 들어 있습니다. 우측 상단 버튼으로 전환하고, 선택은 브라우저에 저장됩니다.
-처음 열 때는 브라우저 언어를 따릅니다 (`ko` 로 시작하면 한국어, 아니면 영어).
-
-번역은 콘텐츠 정의 안에 함께 있습니다.
+Translations sit inside the content definitions themselves:
 
 ```js
-nm:{ko:'견습 마법사', en:"Apprentice Mage"}          // 이름
-d:()=>X('마나 생산 ×2', "Mana output ×2")           // 설명 (호출 시점에 번역)
+nm:{ko:'견습 마법사', en:"Apprentice Mage"}       // name
+d:()=>X('마나 생산 ×2', "Mana output ×2")        // description, translated when called
 ```
 
-`X(ko, en)` 은 현재 언어를 그때그때 읽으므로, 항목을 추가할 때 두 문자열만 넣으면 됩니다.
+`X(ko, en)` reads the current language at call time, so a new item needs only two strings.
 
-## 수치를 고치려면
+## Changing the numbers
 
-파일 위쪽 `콘텐츠 정의` 블록만 보면 됩니다. 모든 항목이 `apply(m, lv)`로
-배율 객체를 직접 수정하는 구조라, **배열에 한 줄 추가하면 UI와 계산에 자동 반영**됩니다.
+Everything lives in the content-definition block near the top of the file. Each entry
+mutates a multiplier object in `apply(m, lv)`, so **adding one line to an array reaches
+both the UI and the maths**.
 
-| 블록 | 무엇 |
-|---|---|
-| `PRODUCERS` | 시설 5종 · 기본가 `base`, 가격 증가율 `g`, 생산속도 `rate` |
-| `RESEARCH` | 연구 20종 · 가격 `cost`, 선행 `req`, 효과 `apply` |
-| `RUNES` / `GEAR` | 룬 5종 / 장비 3종 |
-| `SOUL_UPS` / `RELIC_UPS` | 영혼·유물 강화 각 10종 |
-| `CHALLENGES` | 시련 6종 · 제약 `rule`, 목표 `base`, 보상 `apply` |
-| `ACHS` | 업적 30종 |
-| `computeM()` | 모든 배율이 합쳐지는 곳 |
-| `AUTO_DEFS` | 자동화 항목과 해금 조건 |
-
-예) 새 연구 추가:
 ```js
-{id:'q21', sp:'star', nm:'별의 계약', cost:1e21, d:'마나 생산 ×100',
- req:'q20', apply:m=>m.prod*=100},
+{id:'q22', sp:'star', nm:{ko:'별의 계약',en:"Star Compact"}, cost:1e21,
+ d:()=>X('마나 생산 ×100',"Mana output ×100"), req:'q21', apply:m=>m.prod*=100},
 ```
 
-## 세이브
+`computeM()` is where every multiplier is combined; `AUTO_DEFS` holds the automation
+entries and their unlock conditions.
 
-- `localStorage`에 15초마다 자동 저장 (창을 닫거나 탭을 가릴 때도 저장)
-- 설정 탭에서 `.txt` 내보내기 / 불러오기 (base64 JSON)
-- 오프라인 진행 기본 4시간, 영혼 강화 `오프라인 계약`으로 최대 24시간
+## Saves
 
-## 단축키
+- Written to `localStorage` every 15 seconds, and on tab hide or close
+- Export / import as `.txt` (base64 JSON) from the Settings tab
+- Offline progress runs 4 hours by default, up to 24 with the offline soul upgrade
 
-`1~9`,`0` 탭 이동 · `스페이스` 채집 · `B` 구매 수량 · `E` 탐험 토글 · `S` 저장
+## Hotkeys
+
+`1`–`9`, `0` switch tabs · `Space` gather · `B` buy quantity · `E` toggle delving · `S` save
