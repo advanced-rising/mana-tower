@@ -1,0 +1,1801 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>마탑: 심연의 왕국</title>
+<meta name="description" content="심연의 마탑을 세우고, 환생과 승천을 거듭하는 방치형 판타지 게임">
+<style>
+/* ═══════════════════════════════════════════════
+   마탑: 심연의 왕국 — 판타지 UI
+   ═══════════════════════════════════════════════ */
+:root{
+  --ink:#0b0b0d; --ink2:#111114;
+  --stone:#1a1a1f; --stone2:#22222a; --stone3:#2e2e37;
+  --edge:#3d3a33; --edge2:#5c5748;
+  --gold:#d4a94a; --gold2:#ecd08a; --goldDk:#7a5f28;
+  --txt:#ddd6c6; --dim:#8c9b8f; --faint:#5d6259;
+  --mana:#9fc4d8; --soul:#a89bbd; --relic:#c96a52;
+  --offer:#e0b95f; --crystal:#b8dbe8;
+  --good:#8fae86; --bad:#b04a3a;
+  /* 전부 sans — 제목은 굵기·자간으로만 구분한다 */
+  --sans:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --serif:var(--sans);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  background:
+    radial-gradient(900px 460px at 50% -160px, rgba(212,169,74,.10), transparent 72%),
+    radial-gradient(760px 420px at 10% 108%, rgba(140,155,143,.05), transparent 72%),
+    repeating-linear-gradient(112deg, rgba(255,255,255,.012) 0 2px, transparent 2px 8px),
+    linear-gradient(180deg,#101013,#08080a);
+  background-attachment:fixed;
+  color:var(--txt); font-family:var(--sans); font-size:14.5px; line-height:1.55;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+button{font-family:inherit;color:inherit;font-size:inherit}
+h1,h2,h3{margin:0;font-family:var(--sans);font-weight:700;letter-spacing:.01em}
+img{display:block}
+.px{image-rendering:pixelated;image-rendering:crisp-edges;flex:none}
+
+/* ── 상단 ─────────────────────────── */
+#top{
+  position:sticky;top:0;z-index:60;
+  background:linear-gradient(180deg,rgba(10,7,20,.97),rgba(10,7,20,.86));
+  border-bottom:1px solid var(--edge);
+  box-shadow:0 10px 26px rgba(0,0,0,.6), 0 1px 0 rgba(212,169,74,.16);
+  backdrop-filter:blur(10px);
+}
+#brand{display:flex;align-items:center;gap:10px;padding:9px 16px 4px;max-width:1180px;margin:0 auto}
+#brand h1{font-size:19px;letter-spacing:.06em;
+  background:linear-gradient(180deg,var(--gold2),var(--gold) 55%,#a9822f);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 1px 0 rgba(0,0,0,.5)}
+#brand .sub{font-size:11px;color:var(--faint);font-family:var(--serif);letter-spacing:.14em}
+#brand .ver{margin-left:auto;font-size:10.5px;color:var(--faint)}
+
+#res{display:flex;gap:8px;padding:4px 16px 10px;max-width:1180px;margin:0 auto;
+  overflow-x:auto;scrollbar-width:none}
+#res::-webkit-scrollbar{display:none}
+.res{
+  flex:1 1 150px;min-width:132px;
+  background:linear-gradient(180deg,rgba(255,255,255,.055),transparent 60%),linear-gradient(180deg,var(--stone2),var(--stone));
+  border:1px solid var(--edge);border-radius:3px;padding:6px 10px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09), inset 0 0 0 1px rgba(212,169,74,.06), 0 3px 10px rgba(0,0,0,.45);
+  display:flex;gap:9px;align-items:center;
+}
+.res .txt{min-width:0;flex:1}
+.res .lab{font-size:10.5px;color:var(--dim);letter-spacing:.06em;font-family:var(--serif)}
+.res .val{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
+.res .sub{font-size:10.5px;color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.res.mana .val{color:var(--mana);text-shadow:0 0 14px rgba(159,196,216,.26)}
+.res.offer .val{color:var(--offer)}
+.res.crystal .val{color:var(--crystal)}
+.res.soul .val{color:var(--soul);text-shadow:0 0 14px rgba(168,155,189,.28)}
+.res.relic .val{color:var(--relic)}
+.res.floor .val{color:var(--gold)}
+
+/* ── 탭 ─────────────────────────── */
+#tabs{display:flex;gap:3px;padding:0 12px;max-width:1180px;margin:0 auto;overflow-x:auto;scrollbar-width:none}
+#tabs::-webkit-scrollbar{display:none}
+.tab{
+  position:relative;background:linear-gradient(180deg,var(--stone),rgba(12,9,22,.5));
+  border:1px solid transparent;border-bottom:none;border-radius:4px 4px 0 0;
+  padding:7px 13px 8px;color:var(--dim);white-space:nowrap;cursor:pointer;
+  display:flex;align-items:center;gap:6px;font-family:var(--serif);font-size:13.5px;letter-spacing:.03em;
+  user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:color .12s,background .12s;
+}
+.tab:hover{color:var(--txt);background:linear-gradient(180deg,var(--stone2),rgba(12,9,22,.5))}
+.tab.on{
+  color:var(--gold);border-color:var(--edge);
+  background:linear-gradient(180deg,var(--stone3),var(--stone));
+  box-shadow:inset 0 1px 0 rgba(212,169,74,.25);
+}
+.tab.on::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.tab.locked{opacity:.32;pointer-events:none;filter:grayscale(.7)}
+.tab .n{font-size:9.5px;color:var(--faint);font-family:var(--sans)}
+.tab .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 7px var(--gold);display:none}
+.tab.alert .dot{display:block}
+
+/* ── 본문 ─────────────────────────── */
+main{max-width:1180px;margin:0 auto;padding:14px 16px 60px}
+.panel{display:none} .panel.on{display:block}
+
+.card{
+  position:relative;margin-bottom:12px;padding:13px 15px 15px;border-radius:4px;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),transparent 44%),linear-gradient(180deg,var(--stone2),var(--stone));
+  border:1px solid var(--edge);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08), inset 0 0 34px rgba(0,0,0,.34), 0 5px 18px rgba(0,0,0,.5);
+}
+/* 네 귀퉁이 금장식 */
+.card::before,.card::after{content:'';position:absolute;width:11px;height:11px;pointer-events:none;opacity:.75}
+.card::before{top:3px;left:3px;border-top:1px solid var(--goldDk);border-left:1px solid var(--goldDk)}
+.card::after{bottom:3px;right:3px;border-bottom:1px solid var(--goldDk);border-right:1px solid var(--goldDk)}
+.card > h2{
+  display:flex;align-items:center;gap:8px;font-size:15px;color:var(--gold);
+  letter-spacing:.05em;margin-bottom:3px;
+}
+.card > h2::after{content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,rgba(212,169,74,.5),rgba(212,169,74,.05))}
+.hint{font-size:12px;color:var(--dim);margin-bottom:11px;line-height:1.6}
+.hint b{color:var(--gold2);font-weight:600}
+.row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+
+/* ── 버튼 ─────────────────────────── */
+.btn{
+  position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:38px;padding:8px 14px;border-radius:3px;cursor:pointer;
+  background:linear-gradient(180deg,var(--stone3),var(--stone));
+  border:1px solid var(--edge2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13), 0 2px 0 rgba(0,0,0,.45);
+  font-variant-numeric:tabular-nums;user-select:none;-webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;transition:border-color .1s,background .1s,transform .05s;
+}
+.btn:hover:not(:disabled){border-color:var(--gold);background:linear-gradient(180deg,#35333c,#1e1e24)}
+.btn:active:not(:disabled){transform:translateY(1px);box-shadow:inset 0 2px 5px rgba(0,0,0,.55)}
+.btn:disabled{opacity:.4;cursor:default;filter:grayscale(.45)}
+.btn.gold{border-color:var(--gold);color:var(--gold2);
+  background:linear-gradient(180deg,#453619,#241c0e);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 0 15px rgba(212,169,74,.16), 0 2px 0 rgba(0,0,0,.45)}
+.btn.gold:hover:not(:disabled){background:linear-gradient(180deg,#574421,#2d2312)}
+.btn.big{width:100%;min-height:52px;font-size:15px;font-family:var(--serif);letter-spacing:.05em}
+.btn.sm{min-height:30px;padding:4px 10px;font-size:12px;border-radius:3px}
+.btn.on{border-color:var(--gold);color:var(--gold2);background:linear-gradient(180deg,#3a2e14,#211a0c)}
+.btn.off{color:var(--faint)}
+.btn .c{font-size:11.5px;color:var(--dim);font-weight:400}
+.btn.can .c{color:var(--gold2)}
+
+/* ── 시설 목록 ─────────────────────── */
+.unit{
+  display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+  padding:9px 12px;margin-bottom:7px;border-radius:3px;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 60%),var(--stone);
+  border:1px solid #302d26;transition:border-color .12s,box-shadow .12s;
+}
+.unit.can{border-color:var(--edge2);box-shadow:0 0 0 1px rgba(212,169,74,.13) inset}
+.unit .ico{width:60px;height:60px;display:grid;place-items:center;border-radius:3px;
+  background:radial-gradient(circle at 50% 38%, rgba(212,169,74,.16), rgba(0,0,0,.32));
+  border:1px solid #3a372f}
+.unit .nm{font-family:var(--serif);font-size:15px;letter-spacing:.03em}
+.unit .dt{font-size:12px;color:var(--mana);font-variant-numeric:tabular-nums}
+.unit .own{font-size:11.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+.unit .buy{min-width:150px;flex-direction:column;gap:1px}
+
+/* ── 업그레이드 격자 ─────────────────── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:8px}
+.grid.wide{grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+.up{
+  display:flex;gap:10px;align-items:flex-start;text-align:left;padding:10px 11px;min-height:74px;
+  border-radius:3px;cursor:pointer;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 55%),var(--stone);
+  border:1px solid #302d26;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055);
+  user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  transition:border-color .12s,box-shadow .12s,transform .05s;
+}
+.up:hover:not(:disabled){border-color:var(--edge2)}
+.up:active:not(:disabled){transform:translateY(1px)}
+.up .ic{width:42px;height:42px;display:grid;place-items:center;flex:none;border-radius:3px;
+  background:radial-gradient(circle at 50% 40%, rgba(212,169,74,.14), rgba(0,0,0,.3));border:1px solid #37342c}
+.up .bd{min-width:0;flex:1}
+.up .t{font-family:var(--serif);font-size:13.5px;letter-spacing:.02em;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.up .lv{font-size:10.5px;color:var(--faint);font-family:var(--sans)}
+.up .d{font-size:11.5px;color:var(--dim);line-height:1.45;margin:1px 0 3px}
+.up .c{font-size:11.5px;font-variant-numeric:tabular-nums;color:var(--dim);display:flex;align-items:center;gap:4px}
+.up.afford{border-color:var(--gold);box-shadow:inset 0 0 0 1px rgba(212,169,74,.2), 0 0 13px rgba(212,169,74,.09)}
+.up.afford .c{color:var(--gold2)}
+.up.done{border-color:#4e6b46;background:linear-gradient(180deg,rgba(143,174,134,.09),transparent 60%),var(--stone)}
+.up.done .c{color:var(--good)}
+.up.lock{opacity:.4;cursor:default}
+.up:disabled{cursor:default}
+
+/* ── 던전 ─────────────────────────── */
+.arena{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;
+  padding:12px;border-radius:3px;border:1px solid #3a372f;
+  background:radial-gradient(400px 130px at 22% 0%, rgba(176,74,58,.16), transparent 70%),
+             linear-gradient(180deg,#17171b,#0e0e11)}
+.arena .foe{width:92px;height:92px;display:grid;place-items:center;border-radius:3px;
+  background:radial-gradient(circle at 50% 42%, rgba(176,74,58,.20), rgba(0,0,0,.4));
+  border:1px solid #3a2a26}
+.arena .foe.boss{border-color:#7a3a2c;box-shadow:0 0 18px rgba(176,74,58,.30)}
+.hpbar{height:19px;border-radius:2px;overflow:hidden;position:relative;
+  background:#0c0c0e;border:1px solid #3a372f;box-shadow:inset 0 2px 5px rgba(0,0,0,.6)}
+.hpbar>i{display:block;height:100%;width:0;transition:width .1s linear;
+  background:linear-gradient(180deg,#cf7a63,#7a2a20);box-shadow:0 0 12px rgba(207,122,99,.35)}
+.hpbar>span{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;
+  font-variant-numeric:tabular-nums;text-shadow:0 1px 3px #000;letter-spacing:.03em}
+.log{font-size:11.5px;color:var(--dim);background:#0c0c0e;border:1px solid #302d26;border-radius:3px;
+  padding:8px 10px;height:150px;overflow-y:auto;font-variant-numeric:tabular-nums;line-height:1.65}
+.log b{color:var(--txt)} .log .hl{color:var(--gold2)}
+.log img{display:inline-block;vertical-align:-2px;margin-right:2px}
+
+/* ── 업적 / 도전 ───────────────────── */
+.ach{display:flex;gap:9px;align-items:center;padding:8px 10px;border-radius:3px;
+  background:var(--stone);border:1px solid #26242a;opacity:.42;transition:.15s}
+.ach.got{opacity:1;border-color:var(--goldDk);
+  background:linear-gradient(180deg,rgba(212,169,74,.08),transparent 60%),var(--stone)}
+.ach .t{font-family:var(--serif);font-size:13px}
+.ach .d{font-size:11px;color:var(--dim)}
+.chal{padding:11px 12px}
+.chal .goal{font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+.chal.active{border-color:var(--bad);box-shadow:0 0 0 1px rgba(176,74,58,.32) inset}
+
+/* ── 기타 ─────────────────────────── */
+.tag{font-size:11px;padding:2px 9px;border-radius:2px;border:1px solid #3a372f;color:var(--dim);
+  background:rgba(0,0,0,.25);font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:5px}
+.tag b{color:var(--txt)}
+.divider{height:1px;margin:11px 0;background:linear-gradient(90deg,transparent,var(--edge),transparent)}
+.gold{color:var(--gold2)} .dim{color:var(--dim)} .good{color:var(--good)} .bad{color:var(--bad)}
+.mana{color:var(--mana)} .soul{color:var(--soul)} .relic{color:var(--relic)}
+.offer{color:var(--offer)} .crystal{color:var(--crystal)}
+.sw{display:inline-flex;align-items:center;gap:5px;vertical-align:-3px}
+
+#modalWrap{position:fixed;inset:0;background:rgba(5,3,10,.8);display:none;align-items:center;
+  justify-content:center;padding:20px;z-index:200;backdrop-filter:blur(3px)}
+#modalWrap.on{display:flex}
+#modal{max-width:470px;width:100%;max-height:82vh;overflow:auto;padding:20px 22px;border-radius:4px;
+  background:linear-gradient(180deg,var(--stone2),var(--stone));border:1px solid var(--edge2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1), 0 24px 60px rgba(0,0,0,.75)}
+#modal h3{color:var(--gold);font-size:17px;letter-spacing:.05em;margin-bottom:9px}
+#modal .body{font-size:13px;color:var(--dim);line-height:1.8;margin-bottom:16px;font-variant-numeric:tabular-nums}
+#modal .body b{color:var(--txt)}
+/* 업적 배너 */
+.achpop{
+  position:fixed;left:50%;bottom:74px;transform:translate(-50%,16px);z-index:230;
+  display:flex;align-items:center;gap:12px;padding:11px 20px 11px 15px;border-radius:4px;
+  background:linear-gradient(180deg,#3a2d18,#221a0e);
+  border:1px solid var(--gold);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2), 0 0 34px rgba(212,169,74,.28), 0 12px 34px rgba(0,0,0,.65);
+  opacity:0;animation:achIn .38s cubic-bezier(.2,1.3,.4,1) forwards;pointer-events:none;max-width:92vw;
+}
+.achpop.out{animation:achOut .45s ease-in forwards}
+.achpop .ttl{font-size:10px;letter-spacing:.28em;color:var(--gold);font-family:var(--serif)}
+.achpop .nm{font-family:var(--serif);font-size:16px;color:var(--gold2);letter-spacing:.03em}
+.achpop .ds{font-size:11.5px;color:#cbb98e}
+@keyframes achIn{from{opacity:0;transform:translate(-50%,22px) scale(.94)}
+  to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes achOut{to{opacity:0;transform:translate(-50%,16px) scale(.97)}}
+
+#toast{position:fixed;right:14px;bottom:14px;z-index:220;display:flex;flex-direction:column;
+  gap:6px;align-items:flex-end;pointer-events:none}
+#toast div{display:flex;align-items:center;gap:7px;font-size:12.5px;padding:7px 13px;border-radius:3px;
+  background:linear-gradient(180deg,var(--stone3),var(--stone));border:1px solid var(--edge2);
+  box-shadow:0 6px 18px rgba(0,0,0,.6);animation:pop .22s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+
+/* ── 스크롤바 ─────────────────────── */
+*{scrollbar-width:thin;scrollbar-color:#4a4740 #0c0c0e}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:#0c0c0e;border-left:1px solid #26241f}
+::-webkit-scrollbar-thumb{
+  border-radius:2px;border:2px solid #0c0c0e;
+  background:linear-gradient(180deg,#5c5748,#37342d);
+  box-shadow:inset 0 1px 0 rgba(212,169,74,.25)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#6e6a58,#46433a)}
+::-webkit-scrollbar-corner{background:#0c0c0e}
+.log::-webkit-scrollbar{width:9px}
+::selection{background:rgba(212,169,74,.28);color:#fff}
+
+@media(max-width:640px){
+  main{padding:10px}
+  .res{flex:1 1 128px;min-width:118px}
+  .unit{grid-template-columns:auto 1fr;row-gap:8px}
+  .unit .buy{grid-column:1/-1;width:100%}
+  .grid{grid-template-columns:1fr}
+  #brand h1{font-size:16px} #brand .sub{display:none}
+}
+</style>
+</head>
+<body>
+<div id="top">
+  <div id="brand">
+    <img class="px" id="brandIco" width="24" height="24" alt="">
+    <h1>마탑: 심연의 왕국</h1>
+    <span class="sub">TOWER OF THE ABYSS</span>
+    <span class="ver" id="verTag"></span>
+  </div>
+  <div id="res"></div>
+  <div id="tabs"></div>
+</div>
+<main id="main"></main>
+<div id="modalWrap"><div id="modal">
+  <h3 id="modalTitle"></h3>
+  <div class="body" id="modalBody"></div>
+  <div class="row"><span style="flex:1"></span>
+    <button type="button" class="btn" id="modalNo" style="display:none">취소</button>
+    <button type="button" class="btn gold" id="modalOk">확인</button></div>
+</div></div>
+<div id="toast"></div>
+<input type="file" id="fileIn" accept=".txt,.json" style="display:none">
+
+<script>
+'use strict';
+/* ══════════════════════════════════════════════════════════════
+   마탑: 심연의 왕국  v2
+   단일 HTML · 외부 의존 없음 · 모든 시스템 자동화 지원
+   ══════════════════════════════════════════════════════════════ */
+const VERSION='2.0.0', SAVE_KEY='manaTowerSave2';
+
+/* ───────── 도트 스프라이트 (직접 제작) ───────── */
+const PAL={'.':null,
+ /* 아웃라인·돌 */
+ '0':'#08080a','1':'#16161b','2':'#24242c','3':'#35353f','4':'#4a4a57','5':'#66667a','6':'#8a8a9a','7':'#b6b6c2',
+ /* 금 */
+ a:'#3d2f14',b:'#6b5222',c:'#a8823a',d:'#d4a94a',e:'#ecd08a',f:'#fbeec2',
+ /* 회녹 (보조) */
+ g:'#26302a',h:'#46524a',i:'#6b7d6f',j:'#8c9b8f',k:'#b4c0b6',
+ /* 녹슬적 (포인트) */
+ l:'#3a1a16',m:'#6b2a22',n:'#b04a3a',o:'#d97a63',
+ /* 냉기 (마나·결정) */
+ p:'#17303d',q:'#2e5a6e',r:'#5a93a8',s:'#9fc4d8',t:'#d8ecf4',
+ /* 자수정 (영혼) */
+ u:'#2a2233',v:'#4a3d59',w:'#7a6b8f',x:'#a89bbd',y:'#d6cde6',
+ /* 상아 */
+ z:'#efe9dd'};
+
+const SPR24={
+mana:[
+'...........0',
+'..........0s0',
+'..........0s0',
+'.........0ts0',
+'.........0tss0',
+'........0tsss0',
+'........0tssss0',
+'.......0tsssss0',
+'.......0tssssss0',
+'......0tsssssss0',
+'......0tssssssrq0',
+'.....0tsssssssrq0',
+'.....0tsssssssrq0',
+'....0tssssssssrq0',
+'....0tssssssssrqq0',
+'....0sssssssssrqq0',
+'....0qsssssssrrqq0',
+'....0qrsssssrrqp0',
+'.....0qrrrrrrqp0',
+'......0qqqqqqp0',
+'.......0ppppp0',
+'........00000',
+],
+offering:[
+'..........0',
+'.........0f0',
+'.........0e0',
+'........0efd0',
+'........0edc0',
+'.........0d0',
+'.........0c0',
+'.......000z000',
+'......0zzzzzz0',
+'......0fzzzzz60',
+'......0fzzzzz60',
+'......0fzzzzz60',
+'......0fzzzzz60',
+'......0fzzzzz60',
+'......0fzzzzz60',
+'......0fzzzzz60',
+'......0fzzzzz60',
+'.....00fzzzzz600',
+'.....0dddddddd0',
+'.....0cbbbbbbc0',
+'.....0aaaaaaaa0',
+'......00000000',
+],
+crystal:[
+'..........0',
+'.........0t0',
+'........0tst0',
+'........0tss0',
+'.......0tsss0',
+'.......0tssss0',
+'......0tsssss0',
+'......0tssssss0',
+'.....0tsssssss0',
+'.....0tssssssrq0',
+'....0tsssssssrq0',
+'....0ssssssssrq0',
+'....0qsssssssrq0',
+'.....0qssssssrq0',
+'.....0qrssssrq0',
+'......0qrssrq0',
+'......0qrrrq0',
+'.......0qrq0',
+'.......0qq0',
+'........00',
+],
+soul:[
+'.........0',
+'........0y0',
+'.......0yxw0',
+'......0yxxww0',
+'.....0yxxxxww0',
+'....0yxxxxxxww0',
+'...0yxxxxxxxxww0',
+'..0yxxxxxxxxxxww0',
+'.0yxxxxxxxxxxxxwv0',
+'0yxxxxxxxxxxxxxxwv0',
+'0xxxxxxxxxxxxxxwvv0',
+'0vxxxxxxxxxxxxwvvu0',
+'.0vxxxxxxxxxxwvvu0',
+'..0vxxxxxxxxwvvu0',
+'...0vxxxxxxwvvu0',
+'....0vxxxxwvvu0',
+'.....0vxxwvvu0',
+'......0vxwvu0',
+'.......0vwu0',
+'........0v0',
+'.........0',
+],
+relic:[
+'.......000000',
+'......0dcccbb0',
+'......0ecbbbba0',
+'.......0cbbba0',
+'.......0dbbba0',
+'......0ddcccba0',
+'.....0donnnnmma0',
+'....0donnnnnnmml0',
+'...0deonnnnnnnmml0',
+'...0deonnnnnnnnmml0',
+'...0donnnnnnnnnmml0',
+'...0donnnnnnnnnmml0',
+'...0donnnnnnnnnmml0',
+'...0dmnnnnnnnnmmll0',
+'....0mnnnnnnnmmll0',
+'.....0mmnnnnmmll0',
+'......0mmmmmml0',
+'.......0llllll0',
+'........000000',
+],
+sword:[
+'..................000',
+'.................07760',
+'................077760',
+'...............0777760',
+'..............07777600',
+'.............07777600',
+'............07777600',
+'...........07777600',
+'..........07777600',
+'.........07777600',
+'........07777600',
+'.......07777600',
+'......077776000',
+'.....0dd77760',
+'....0ddd77600',
+'...0dddddd60',
+'..0ddd00dd0',
+'..0dd0..00',
+'..0cb0',
+'..0cb0',
+'..0cb0',
+'...00',
+],
+apprentice:[
+'..........0',
+'.........0v0',
+'........0vwv0',
+'.......0vwwvv0',
+'......0vwwwvvu0',
+'.....0vwwwwvvuu0',
+'....0vwwwwwvvvuu0',
+'...0vwwwwwwvvvuuu0',
+'..0zzzzzzzzzzzzzz0',
+'...0zzzzzzzzzz660',
+'.....0zffffz60',
+'.....0fz00z0f0',
+'.....0ffdddff0',
+'......0fffff0',
+'.....0vwwwwvvu0',
+'....0vwwwwwvvvu0',
+'...0vwwwwwwvvvuu0',
+'...0vwwwwwwvvvuu0',
+'....0vw0..0vvuu0',
+'.....000..0000',
+'.....0b0..0b0',
+'.....000..000',
+],
+workshop:[
+'.........000',
+'........06660',
+'.......0667760',
+'......066677600',
+'.....0666776000',
+'.....0cb666000',
+'.....0cb00',
+'.....0cb0',
+'..000006600000',
+'.06666666666660',
+'0777766666666660',
+'077766666666655440',
+'.0666666666665440',
+'..044444444455440',
+'....04444444440',
+'...044444444440',
+'..0444444444440',
+'.04444444444440',
+'0444444444444440',
+'0333333333333330',
+'.00000000000000',
+],
+tower:[
+'..........0',
+'.........0d0',
+'........0dfd0',
+'.......0dccbd0',
+'......0ddccbba0',
+'.....066666554400',
+'....06666655544300',
+'...0666666555443300',
+'...0166666555443310',
+'...016600665544331 0',
+'...0166ss6655443310',
+'...0166ss6655443310',
+'...0166006655443310',
+'...0166666555443310',
+'...0166666555443310',
+'...0166006655443310',
+'...0166ss6655443310',
+'...0166ss6655443310',
+'...0166006655443310',
+'...0111111111111110',
+'..011111111111111110',
+'..000000000000000000',
+],
+academy:[
+'..........0',
+'.........0d0',
+'........0dfd0',
+'.......0ddccb0',
+'....00000000000000',
+'...0zzzzzzzzzz6660',
+'..0zzzzzzzzzzz66660',
+'.0zzzzzzzzzzzzz666 0',
+'00000000000000000000',
+'0z00z00z00z00z00z660',
+'0z00z00z00z00z00z660',
+'0z00z00z00z00z00z660',
+'0z00z00z00z00z00z660',
+'0z00z00z00z00z00z660',
+'0z00z00z00z00z00z660',
+'0z00z00z00z00z00z660',
+'00000000000000000000',
+'0zzzzzzzzzzzzzz66660',
+'0666666666666666 660',
+'00000000000000000000',
+],
+council:[
+'..0.......0.......0',
+'.0d0.....0d0.....0d0',
+'0dfd0...0dfd0...0dfd0',
+'0ddd0.0.0ddd0.0.0ddd0',
+'0ddd00d00ddd00d00ddd0',
+'0ddd0dfd0ddd0dfd0ddd0',
+'0dddddddddddddddddd0',
+'0eddddddddddddddddcb0',
+'0eddddnddddddnddddcb0',
+'0edddddddddddddddcbb0',
+'0ecccccccccccccccbba0',
+'0ecbbbbbbbbbbbbbbbaa0',
+'0ednddddnddddnddncba0',
+'0ccbbbbbbbbbbbbbbbba0',
+'0aaaaaaaaaaaaaaaaaaa0',
+'.000000000000000000',
+],
+
+beast:[
+'.....0.............0',
+'....0v0...........0v0',
+'...0vwv0.........0vwv0',
+'...0vwwv0.......0vwwv0',
+'..0vwwwvv0.....0vwwvv0',
+'..0vwwwwvv00000vwwvvu0',
+'.0vwwwwwwvvvvvvwwvvuu0',
+'0vwwwwwwwwwwwwwwwvvuu0',
+'0vwwnnwwwwwwwwnnwvvuu0',
+'0vwwnowwwwwwwwnowvvuu0',
+'0vwwwwwwwwwwwwwwwvvuu0',
+'0vwwwwwwwwwwwwwwwvvuu0',
+'0vwww00ww00ww00wwvvuu0',
+'0vvwwwwwwwwwwwwwvvuuu0',
+'.0vvwwwwwwwwwwwvvuuu0',
+'..0vvwwwwwwwwwvvuuu0',
+'...0vvvwwwwwvvvuuu0',
+'.....0vvvvvvvuuu0',
+'.......0000000',
+],
+skull:[
+'......0000000',
+'.....0zzzzzzz0',
+'....0zzzzzzzzz0',
+'...0zzzzzzzzzzz0',
+'..0zzzzzzzzzzzz60',
+'..0zzzzzzzzzzzz60',
+'..0zz0000zz0000660',
+'..0z0mnn00z0mnn060',
+'..0z0noo00z0noo060',
+'..0z0mnn00z0mnn060',
+'..0zz0000zz0000660',
+'..0zzzzz00zzzzz660',
+'...0zzzz00zzzz660',
+'...0zzzzzzzzzz660',
+'....0z0z0z0z0z60',
+'....0z0z0z0z0660',
+'.....0000000000',
+],
+};
+
+const SPR16={
+flask:['.....000','.....0s0','.....0s0','....00s00','....0ssss0','...0stssss0','..0sttsssss0','..0ssssssrq0','..0qssssssq0','..0qrsssssq0','...0qrrrrq0','....000000'],
+feather:['..........00','.........0z70','........0zz70','.......0zzz70','......0zzz760','.....0zzz7660','....0zzz76600','...0zzz766000','..0zz7660','.0z7660','0b660','0ab0','000'],
+book:['0000000000000','0dccccccccccd0','0dz11111111zd0','0dzzzzzzzzzzd0','0dz11111111zd0','0dzzzzzzzzzzd0','0dz11111111zd0','0dzzzzzzzzzzd0','0dcccccccccccd0','0aaaaaaaaaaaa0','000000000000'],
+cog:['...00..00','..066006 60','..06600660','0000000000000','06666666666 0','0666000666 0','066000006660','066000006660','0666000666 0','06666666666 0','0000000000000','..06600660','..06600660','...00..00'],
+spiral:['...0000000','..0wxxxxxw0','.0wx00000xw0','0wx0vvvvv0x0','0wx0v000v0x0','0wx0v0y0v0x0','0wx0v000v0x0','0wx0vvvv00x0','.0wx000000x0','..0wxxxxxx0','...00000000'],
+lantern:['.....000','....0dd0','...0000000','..0ddddddd0','.0dbfffffbd0','0dbffefffbd0','0dbffefffbd0','0dbfffffffbd0','.0dbfffffbd0','..0ddddddd0','...0aaaaa0','....00000'],
+bolt:['......000','.....0ef0','....0edf0','...0eddf0','..0edddf00','.0eddddf0','0eeeddd0','000ddf0','...0df0','..0df0','.0df0','0f0','00'],
+hourglass:['00000000000','0ddddddddd0','0aefffffea0','.0aeffea0','..0aefa0','...0aa0','...0aa0','..0affa0','.0affffa0','0affffffa0','0dddddddd0','00000000000'],
+vial:['...0000','...0jj0','...0ij0','...0hj0','..00hj00','.0jjhjjj0','0jkjhjjjh0','0jjjjjjjjh0','0hjjjjjjhh0','0hhjjjjhhg0','.0hhhhhhg0','..0000000'],
+portal:['....00000','..00xxxxx00','.0xwvvvvvwx0','0xw0000000wx0','0xw0uuuuu0wx0','0xw0u000u0wx0','0xw0uuuuu0wx0','0xw0000000wx0','.0xwvvvvvwx0','..00xxxxx00','....00000'],
+infinity:['.00000...00000','0xxxxx00xxxxx0','0x000xxxx000x0','0x0u0x00x0u0x0','0x000xxxx000x0','0xxxxx00xxxxx0','.00000...00000'],
+star:['.......00','......0ef0','......0ef0','.....0eeff0','00000eeeff00000','0dddeeefffdddd0','.0ddeefffddd0','..0deefffdd0','...0deffdd0','..0deef0fdd0','.0dee00.00dd0','0dd0......0dd0','000........000'],
+gem:['....000','...0yxx0','..0yxxxw0','.0yxxxxww0','0yxxxxxxwv0','0xxxxxxwvv0','0vxxxxwvvu0','.0vxxwvvu0','..0vxwvu0','...0vwu0','....0u0','.....0'],
+scroll:['.00000000000','0bzzzzzzzzb0','0bz00000zzb0','0bzzzzzzzzb0','0bz0000000zb0','0bzzzzzzzzzb0','0bz00000zzb0','0bzzzzzzzzb0','0baaaaaaaab0','.00000000000'],
+sparkle:['......0','.....0f0','......0','..0..0f0..0','.0f0.0f0.0f0','0fef0fef0fef0','.0f0.0f0.0f0','..0..0f0..0','......0','.....0f0','......0'],
+swordup:['........000','.......07760','......077760','.....0777600','....0777600','...0777600','..0dd7600','.0ddd600','0dd00d60','00..0b0','.....0b0','.....000'],
+moon:['....0000','..00effe0','.0effe00','0effe0','0effe0','0effe0','0effe0','0effe0','.0effe00','..00effe0','....0000'],
+gift:['..000..000','.0nno00onn0','.0nnnnnnnn0','0000000000000','0dddnnndddd0','0dddnnndddd0','0000000000000','0dddnnndddd0','0dddnnndddd0','0dddnnndddd0','0000000000000'],
+pickaxe:['000........000','06660....06660','.0666000006660','..066666666660','...0044440','.....0bb0','.....0bb0','.....0bb0','.....0bb0','.....0bb0','......00'],
+fastfwd:['.0.....0','.0d0...0d0','.0dd0..0dd0','.0ddd0.0ddd0','.0dddd0dddd0','.0ddde0ddde0','.0ddd0.0ddd0','.0dd0..0dd0','.0d0...0d0','.0.....0'],
+compass:['....00000','..00777700','.07766667700','076666666670','07666n66670','0766n0n6670','07666n66670','076666666670','.0776666770','..00777700','....00000'],
+map:['00000000000000','0bzzzzzzzzzzb0','0bz0n0zzzzzzb0','0bzz0zzzzzzzb0','0bzzz0z0zzzzb0','0bzzzz0zzzzzb0','0bzzzzz0n0zzb0','0bzzzzzzzzzzb0','0baaaaaaaaaab0','00000000000000'],
+medal:['.0s0...0s0','.0s0...0s0','..0s000s0','..0000000','.0dddddd0','0dcfffcd0','0dcfefcd0','0dcfffcd0','.0dddddd0','..0000000'],
+anvil:['...00000000','..066666660','.06666666660','07766666666 0','.0554444440','...05444440','..0544444440','.05444444440','0444444444440','0333333333330','.00000000000'],
+staff:['....00','...0y0','..0yxw0','..0yxw0','...0wv0','....0b0','....0b0','....0b0','....0b0','....0b0','....0b0','....0b0','....0a0','....00'],
+amulet:['.0d0.....0d0','..0d0...0d0','...0d0.0d0','....0d0d0','.....0d0','....0ddd0','...0dfxxfd0','..0dfxyxfd0','...0dfxxfd0','....0ddd0','.....000'],
+grimoire:['.00000000000','0uvvvvvvvvu0','0uv0ddddd0vu0','0uv0d000d0vu0','0uv0d0y0d0vu0','0uv0d000d0vu0','0uv0ddddd0vu0','0uvvvvvvvvvu0','0uuuuuuuuuuu0','.00000000000'],
+chain:['....0000','...066660','..0660066 0','..0660.0660','.00000000000','.0dddddddd0','.0dd0000dd0','.0dd0..0dd0','.0dd0..0dd0','.0dddddddd0','.0cbbbbbbc0','.00000000000'],
+shield:['0000000000000','0jkkkkkkkkkj0','0jkhhkkkhhkj0','0jkkkkkkkkkj0','0jkhhkkkhhkj0','.0jkkkkkkkj0','.0jkhhhhhkj0','..0jkkkkkj0','...0jkkkj0','....0jkj0','.....0j0','......0'],
+};
+/* 룬 석판 — 글리프만 다른 5종 */
+{
+ const GLY={speed:['..66','.66','6666','..66','.66'],wealth:['.666','6..6','6..6','6..6','.666'],
+   wisdom:['66666','..6','..6','..6','66666'],guard:['66666','6...6','66666','.6.6','..6'],
+   abyss:['66666','....6','.6666','.6','.6666']};
+ const COL={speed:'s',wealth:'d',wisdom:'x',guard:'j',abyss:'n'};
+ for(const k in GLY){
+   const rows=['00000000000','0777777777 0','0755555555 70'];
+   for(let i=0;i<5;i++) rows.push('07554'+(GLY[k][i]||'').padEnd(5,'.').replace(/6/g,COL[k]).replace(/\./g,'4')+'4550');
+   rows.push('0755555555570','07777777777 0','00000000000');
+   SPR16['rune_'+k]=rows;
+ }
+}
+
+/* 스프라이트 → data URI 캐시 */
+const _spCache={};
+function spriteURL(name){
+  if(_spCache[name]) return _spCache[name];
+  const rows=SPR24[name]||SPR16[name];
+  if(!rows) return _spCache[name]='';
+  const n=SPR24[name]?24:16;
+  const cv=document.createElement('canvas'); cv.width=cv.height=n;
+  const cx=cv.getContext('2d');
+  for(let y=0;y<n;y++){
+    const line=(rows[y]||'').padEnd(n,'.');
+    for(let x=0;x<n;x++){ const col=PAL[line[x]]; if(col){ cx.fillStyle=col; cx.fillRect(x,y,1,1); } }
+  }
+  return _spCache[name]=cv.toDataURL();
+}
+function ic(name,size){
+  const s2=size||(SPR24[name]?24:16);
+  const i=document.createElement('img');
+  i.className='px'; i.src=spriteURL(name); i.width=s2; i.height=s2; i.alt='';
+  return i;
+}
+function icHTML(name,size){
+  const s2=size||(SPR24[name]?12:16);   // 도트가 뭉개지지 않게 정수배(또는 1/2배)만 사용
+  return `<img class="px" src="${spriteURL(name)}" width="${s2}" height="${s2}" alt="">`;
+}
+
+/* ══════════════ 콘텐츠 정의 ══════════════
+   모든 항목은 apply(m, lv)로 배율 객체 m을 직접 수정한다.
+   새 요소는 배열에 한 줄 추가하면 UI·계산에 자동 반영. */
+
+const PRODUCERS=[
+ {id:'apprentice',sp:'apprentice',nm:'견습 마법사',base:15,   g:1.15,rate:1,    makes:'마나'},
+ {id:'workshop',  sp:'workshop',  nm:'마법 공방',  base:400,  g:1.18,rate:0.12, makes:'견습 마법사'},
+ {id:'tower',     sp:'tower',     nm:'마탑',       base:2.5e4,g:1.21,rate:0.07, makes:'마법 공방'},
+ {id:'academy',   sp:'academy',   nm:'아카데미',   base:3e6,  g:1.25,rate:0.045,makes:'마탑'},
+ {id:'council',   sp:'council',   nm:'대현자 회의',base:1.5e9,g:1.30,rate:0.03, makes:'아카데미'},
+];
+
+const RESEARCH=[
+ {id:'q1', sp:'flask',    nm:'마나 정제',   cost:100,  d:'마나 생산 ×2',        apply:m=>m.prod*=2},
+ {id:'q2', sp:'feather',  nm:'룬 각인',     cost:4e3,  d:'마나 생산 ×2.5', req:'q1', apply:m=>m.prod*=2.5},
+ {id:'q3', sp:'book',     nm:'견습 훈련소', cost:5e4,  d:'견습 마법사 효율 ×3', req:'q1', apply:m=>m.t0*=3},
+ {id:'q4', sp:'cog',      nm:'공방 확장',   cost:8e5,  d:'상위 시설 효율 ×2.5', req:'q2', apply:m=>m.tUp*=2.5},
+ {id:'q5', sp:'spiral',   nm:'자동 소환진', cost:1e7,  d:'자동 구매가 한 번에 최대 수량 구매', apply:m=>m.autoMax=true},
+ {id:'q6', sp:'lantern',  nm:'심연의 등불', cost:1e8,  d:'던전 공격력 ×3',      apply:m=>m.dungeon*=3},
+ {id:'q7', sp:'offering', nm:'봉헌의 예법', cost:6e8,  d:'오퍼링 획득 ×2',      apply:m=>m.offer*=2},
+ {id:'q8', sp:'bolt',     nm:'마나 폭풍',   cost:2e9,  d:'마나 생산 ×4',   req:'q4', apply:m=>m.prod*=4},
+ {id:'q9', sp:'hourglass',nm:'시간 왜곡',   cost:5e10, d:'게임 속도 ×1.25',     apply:m=>m.speed*=1.25},
+ {id:'q10',sp:'crystal',  nm:'결정 감정법', cost:2e11, d:'결정 획득 ×2',        apply:m=>m.crystal*=2},
+ {id:'q11',sp:'vial',     nm:'영혼 추출기', cost:1e12, d:'영혼석 획득 ×1.5',    apply:m=>m.soul*=1.5},
+ {id:'q12',sp:'swordup',  nm:'심연 검술',   cost:5e12, d:'던전 공격력 ×5', req:'q6', apply:m=>m.dungeon*=5},
+ {id:'q13',sp:'star',     nm:'대마법 이론', cost:2e13, d:'마나 생산 ×8',   req:'q8', apply:m=>m.prod*=8},
+ {id:'q14',sp:'rune_wisdom',nm:'룬 해독학', cost:1e14, d:'룬 최대 레벨 +10',    apply:m=>m.runeCap+=10},
+ {id:'q15',sp:'map',      nm:'무한 회랑',   cost:5e14, d:'층당 배율 2% → 5%',   apply:m=>m.floorPct=Math.max(m.floorPct,0.05)},
+ {id:'q16',sp:'scroll',   nm:'봉헌 의식',   cost:2e15, d:'오퍼링 획득 ×3', req:'q7', apply:m=>m.offer*=3},
+ {id:'q17',sp:'grimoire', nm:'장비 연성',   cost:1e16, d:'장비 효과 지수 ×1.5', apply:m=>m.gearPow*=1.5},
+ {id:'q18',sp:'portal',   nm:'차원 균열',   cost:5e16, d:'마나 생산 ×15', req:'q13',apply:m=>m.prod*=15},
+ {id:'q19',sp:'skull',    nm:'보스 해부학', cost:5e17, d:'보스 보상 ×5',        apply:m=>m.boss*=5},
+ {id:'q20',sp:'infinity', nm:'무한의 계시', cost:1e19, d:'마나 생산 ×50', req:'q18',apply:m=>m.prod*=50},
+];
+
+/* 룬 — 오퍼링으로 강화, 승천 시 초기화 */
+const RUNES=[
+ {id:'speed', sp:'rune_speed', nm:'신속의 룬', d:l=>`게임 속도 +${(1.5*l).toFixed(1)}%`,        apply:(m,l)=>m.speed*=1+0.015*l},
+ {id:'wealth',sp:'rune_wealth',nm:'풍요의 룬', d:l=>`마나 생산 ×${fmt(Math.pow(1.06,l))}`,      apply:(m,l)=>m.prod*=Math.pow(1.06,l)},
+ {id:'wisdom',sp:'rune_wisdom',nm:'지혜의 룬', d:l=>`오퍼링 획득 +${(8*l)}%`,                   apply:(m,l)=>m.offer*=1+0.08*l},
+ {id:'guard', sp:'rune_guard', nm:'수호의 룬', d:l=>`던전 공격력 ×${fmt(Math.pow(1.12,l))}`,    apply:(m,l)=>m.dungeon*=Math.pow(1.12,l)},
+ {id:'abyss', sp:'rune_abyss', nm:'심연의 룬', d:l=>`영혼석 획득 ×${fmt(Math.pow(1.08,l))}`,    apply:(m,l)=>m.soul*=Math.pow(1.08,l)},
+];
+const runeCost=l=>12*Math.pow(1.30,l);
+
+/* 장비 — 결정으로 강화, 영구 유지 */
+const GEAR=[
+ {id:'grimoire',sp:'grimoire',nm:'마도서', d:(l,p)=>`마나 생산 ×${fmt(Math.pow(1.15,l*p))}`,    apply:(m,l)=>m.prod*=Math.pow(1.15,l*m.gearPow)},
+ {id:'staff',   sp:'staff',   nm:'지팡이', d:(l,p)=>`던전 공격력 ×${fmt(Math.pow(1.25,l*p))}`,  apply:(m,l)=>m.dungeon*=Math.pow(1.25,l*m.gearPow)},
+ {id:'amulet',  sp:'amulet',  nm:'부적',   d:(l,p)=>`결정·오퍼링 ×${fmt(Math.pow(1.12,l*p))}`,  apply:(m,l)=>{const v=Math.pow(1.12,l*m.gearPow);m.crystal*=v;m.offer*=v;}},
+];
+const gearCost=l=>8*Math.pow(1.6,l);
+
+/* 영혼 강화 — 환생 통화, 승천 시 초기화 */
+const SOUL_UPS=[
+ {id:'s1', sp:'gem',      nm:'영혼 각인',  max:Infinity,c:l=>2*Math.pow(1.7,l),  d:l=>`마나 생산 ×${fmt(Math.pow(1.15,l))} → ×${fmt(Math.pow(1.15,l+1))}`, apply:(m,l)=>m.prod*=Math.pow(1.15,l)},
+ {id:'s2', sp:'scroll',   nm:'값싼 주문서',max:12,      c:l=>6*Math.pow(2.1,l),  d:l=>`시설 비용 증가율 -${(1.2*l).toFixed(1)}%p → -${(1.2*(l+1)).toFixed(1)}%p`, apply:(m,l)=>m.costGrow-=0.012*l},
+ {id:'s3', sp:'fastfwd',  nm:'신속한 손길',max:8,       c:l=>10*Math.pow(2,l),   d:l=>`자동화 주기 ${(1-0.1*l)*100|0}% → ${(1-0.1*(l+1))*100|0}%`, apply:(m,l)=>m.autoSpeed*=1-0.1*l},
+ {id:'s4', sp:'sparkle',  nm:'영혼 공명',  max:Infinity,c:l=>14*Math.pow(2.2,l), d:l=>`영혼석 획득 ×${fmt(Math.pow(1.3,l))} → ×${fmt(Math.pow(1.3,l+1))}`, apply:(m,l)=>m.soul*=Math.pow(1.3,l)},
+ {id:'s5', sp:'swordup',  nm:'던전 숙련',  max:Infinity,c:l=>9*Math.pow(1.95,l), d:l=>`던전 공격력 ×${fmt(Math.pow(1.35,l))} → ×${fmt(Math.pow(1.35,l+1))}`, apply:(m,l)=>m.dungeon*=Math.pow(1.35,l)},
+ {id:'s6', sp:'moon',     nm:'오프라인 계약',max:10,    c:l=>18*Math.pow(1.8,l), d:l=>`오프라인 상한 ${4+2*l}시간 → ${6+2*l}시간`, apply:(m,l)=>m.offline=4+2*l},
+ {id:'s7', sp:'gift',     nm:'시작 지원금',max:Infinity,c:l=>22*Math.pow(2.6,l), d:l=>`환생 직후 마나 ${fmt(startMana(l))} → ${fmt(startMana(l+1))}`, apply:()=>{}},
+ {id:'s8', sp:'rune_wealth',nm:'룬 친화', max:10,       c:l=>25*Math.pow(2.4,l), d:l=>`룬 최대 레벨 +${5*l} → +${5*(l+1)}`, apply:(m,l)=>m.runeCap+=5*l},
+ {id:'s9', sp:'crystal',  nm:'결정 세공',  max:Infinity,c:l=>16*Math.pow(2.3,l), d:l=>`결정 획득 ×${fmt(Math.pow(1.5,l))} → ×${fmt(Math.pow(1.5,l+1))}`, apply:(m,l)=>m.crystal*=Math.pow(1.5,l)},
+ {id:'s10',sp:'offering', nm:'봉헌의 축복',max:Infinity,c:l=>20*Math.pow(2.35,l),d:l=>`오퍼링 획득 ×${fmt(Math.pow(1.4,l))} → ×${fmt(Math.pow(1.4,l+1))}`, apply:(m,l)=>m.offer*=Math.pow(1.4,l)},
+];
+
+/* 유물 강화 — 승천 통화, 영구 */
+const RELIC_UPS=[
+ {id:'a1', sp:'relic',    nm:'고대 유물',  max:Infinity,c:l=>1*Math.pow(3,l),    d:l=>`마나 생산 ×${fmt(Math.pow(2,l))} → ×${fmt(Math.pow(2,l+1))}`, apply:(m,l)=>m.prod*=Math.pow(2,l)},
+ {id:'a2', sp:'pickaxe',  nm:'영혼 광맥',  max:Infinity,c:l=>2*Math.pow(3.2,l),  d:l=>`영혼석 획득 ×${fmt(Math.pow(2.5,l))} → ×${fmt(Math.pow(2.5,l+1))}`, apply:(m,l)=>m.soul*=Math.pow(2.5,l)},
+ {id:'a3', sp:'hourglass',nm:'시간 가속',  max:10,      c:l=>3*Math.pow(4,l),    d:l=>`게임 속도 +${12*l}% → +${12*(l+1)}%`, apply:(m,l)=>m.speed*=1+0.12*l},
+ {id:'a4', sp:'compass',  nm:'심연 항해',  max:Infinity,c:l=>4*Math.pow(3.4,l),  d:l=>`던전 보상 ×${fmt(Math.pow(3,l))} → ×${fmt(Math.pow(3,l+1))}`, apply:(m,l)=>m.floorLoot*=Math.pow(3,l)},
+ {id:'a5', sp:'council',  nm:'왕국의 축복',max:Infinity,c:l=>5*Math.pow(3.5,l),  d:l=>`환생 후 각 시설 ${8*l}개 → ${8*(l+1)}개 무료`, apply:()=>{}},
+ {id:'a6', sp:'map',      nm:'심연의 지도',max:Infinity,c:l=>6*Math.pow(3.8,l),  d:l=>`층당 배율 +${2*l}%p → +${2*(l+1)}%p`, apply:(m,l)=>m.floorPct+=0.02*l},
+ {id:'a7', sp:'rune_abyss',nm:'룬 각인술', max:5,       c:l=>10*Math.pow(4.5,l), d:l=>`룬 최대 레벨 +${10*l} → +${10*(l+1)}`, apply:(m,l)=>m.runeCap+=10*l},
+ {id:'a8', sp:'gem',      nm:'보물 감식',  max:Infinity,c:l=>8*Math.pow(3.6,l),  d:l=>`결정 획득 ×${fmt(Math.pow(2,l))} → ×${fmt(Math.pow(2,l+1))}`, apply:(m,l)=>m.crystal*=Math.pow(2,l)},
+ {id:'a9', sp:'chain',    nm:'시련의 인장',max:Infinity,c:l=>12*Math.pow(4,l),   d:l=>`도전 보상 ×${fmt(Math.pow(1.5,l))} → ×${fmt(Math.pow(1.5,l+1))}`, apply:(m,l)=>m.chalPow*=Math.pow(1.5,l)},
+ {id:'a10',sp:'star',     nm:'초월의 씨앗',max:Infinity,c:l=>20*Math.pow(5,l),   d:l=>`모든 생산·획득 ×${fmt(Math.pow(1.35,l))} → ×${fmt(Math.pow(1.35,l+1))}`, apply:(m,l)=>{const v=Math.pow(1.35,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+];
+
+/* 도전 — 승천 1회 후 해금. 제약을 걸고 목표 마나 달성 시 영구 보상 */
+const CHALLENGES=[
+ {id:'c1',sp:'book',   nm:'침묵의 시련', rule:{noResearch:1}, base:1e9,  max:5,
+  desc:'연구를 사용할 수 없다',            rw:c=>`마나 생산 ×${fmt(Math.pow(1.8,c))}`, apply:(m,c)=>m.prod*=Math.pow(1.8,c)},
+ {id:'c2',sp:'gift',   nm:'빈곤의 시련', rule:{maxTier:2},    base:1e8,  max:5,
+  desc:'마탑 이상 시설을 지을 수 없다',    rw:c=>`시설 비용 증가율 -${(1.5*c).toFixed(1)}%p`, apply:(m,c)=>m.costGrow-=0.015*c},
+ {id:'c3',sp:'cog',    nm:'고독의 시련', rule:{noAuto:1},     base:1e10, max:5,
+  desc:'모든 자동화가 멈춘다',             rw:c=>`자동화 주기 -${(10*c)}%`, apply:(m,c)=>m.autoSpeed*=Math.pow(0.9,c)},
+ {id:'c4',sp:'sword',  nm:'어둠의 시련', rule:{noDungeon:1},  base:1e12, max:5,
+  desc:'던전에 들어갈 수 없다',            rw:c=>`던전 공격력 ×${fmt(Math.pow(2.2,c))}`, apply:(m,c)=>m.dungeon*=Math.pow(2.2,c)},
+ {id:'c5',sp:'vial',   nm:'고갈의 시련', rule:{drain:1e3},    base:1e7,  max:5,
+  desc:'마나 생산이 1000분의 1로 줄어든다',rw:c=>`오퍼링 획득 ×${fmt(Math.pow(2,c))}`, apply:(m,c)=>m.offer*=Math.pow(2,c)},
+ {id:'c6',sp:'skull',  nm:'심연의 시련', rule:{noResearch:1,noAuto:1,noDungeon:1,drain:10}, base:1e13, max:5,
+  desc:'위의 시련이 한꺼번에 몰아친다',    rw:c=>`모든 생산·획득 ×${fmt(Math.pow(2,c))}`, apply:(m,c)=>{const v=Math.pow(2,c);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+];
+const chalGoal=(ch,c)=>ch.base*Math.pow(120,c);
+
+const ACHS=[
+ {id:'h1', nm:'첫 걸음',      d:'견습 마법사 고용',      f:()=>S.bought[0]>=1},
+ {id:'h2', nm:'소규모 길드',  d:'마나 1,000',            f:()=>S.manaEver>=1e3},
+ {id:'h3', nm:'마나 부자',    d:'마나 1e6',              f:()=>S.manaEver>=1e6},
+ {id:'h4', nm:'대부호',       d:'마나 1e12',             f:()=>S.manaEver>=1e12},
+ {id:'h5', nm:'천문학자',     d:'마나 1e20',             f:()=>S.manaEver>=1e20},
+ {id:'h6', nm:'무한의 문턱',  d:'마나 1e40',             f:()=>S.manaEver>=1e40},
+ {id:'h7', nm:'공방장',       d:'마법 공방 25개',        f:()=>cnt(1)>=25},
+ {id:'h8', nm:'탑주',         d:'마탑 25개',             f:()=>cnt(2)>=25},
+ {id:'h9', nm:'학장',         d:'아카데미 25개',         f:()=>cnt(3)>=25},
+ {id:'h10',nm:'대현자',       d:'대현자 회의 10개',      f:()=>cnt(4)>=10},
+ {id:'h11',nm:'첫 환생',      d:'환생 1회',              f:()=>S.rebirths>=1},
+ {id:'h12',nm:'윤회',         d:'환생 25회',             f:()=>S.rebirths>=25},
+ {id:'h13',nm:'영원한 순환',  d:'환생 100회',            f:()=>S.rebirths>=100},
+ {id:'h14',nm:'승천자',       d:'승천 1회',              f:()=>S.ascensions>=1},
+ {id:'h15',nm:'초월자',       d:'승천 10회',             f:()=>S.ascensions>=10},
+ {id:'h16',nm:'탐험가',       d:'던전 10층',             f:()=>S.deepest>=10},
+ {id:'h17',nm:'보스 사냥꾼',  d:'던전 30층',             f:()=>S.deepest>=30},
+ {id:'h18',nm:'심연 정복자',  d:'던전 75층',             f:()=>S.deepest>=75},
+ {id:'h19',nm:'룬 수집가',    d:'룬 합계 레벨 25',       f:()=>runeTotal()>=25},
+ {id:'h20',nm:'룬 대가',      d:'룬 합계 레벨 100',      f:()=>runeTotal()>=100},
+ {id:'h21',nm:'무장',         d:'장비 합계 레벨 15',     f:()=>gearTotal()>=15},
+ {id:'h22',nm:'전설의 장비',  d:'장비 합계 레벨 45',     f:()=>gearTotal()>=45},
+ {id:'h23',nm:'학자',         d:'연구 10개 완료',        f:()=>Object.keys(S.research).length>=10},
+ {id:'h24',nm:'전지',         d:'연구 20개 모두 완료',   f:()=>Object.keys(S.research).length>=20},
+ {id:'h25',nm:'봉헌자',       d:'오퍼링 1,000 획득',     f:()=>S.offerEver>=1e3},
+ {id:'h26',nm:'보석상',       d:'결정 1,000 획득',       f:()=>S.crystalEver>=1e3},
+ {id:'h27',nm:'도전자',       d:'도전 1회 완료',         f:()=>chalTotal()>=1},
+ {id:'h28',nm:'시련의 주인',  d:'도전 15회 완료',        f:()=>chalTotal()>=15},
+ {id:'h29',nm:'유물 사냥꾼',  d:'유물 50개 획득',        f:()=>S.relicEver>=50},
+ {id:'h30',nm:'왕국의 지배자',d:'전체 배율 1e6 돌파',    f:()=>M().prod>=1e6},
+];
+
+/* ══════════════ 상태 ══════════════ */
+function newState(){return{
+  v:VERSION,
+  mana:0, manaRun:0, manaEver:0,
+  offering:0, offerEver:0, crystal:0, crystalEver:0,
+  bought:[0,0,0,0,0], gen:[0,0,0,0,0],
+  research:{}, runes:{}, gear:{},
+  soul:0, soulAsc:0, soulEver:0, soulUps:{},
+  relic:0, relicEver:0, relicUps:{},
+  rebirths:0, ascensions:0, lastSoulGain:0, lastRelicGain:0,
+  sinceRebirth:0, sinceAscend:0,
+  deepest:0, floor:1, prog:0, exploring:false,
+  chal:null, chalDone:{}, chalTime:0, bestRun:0,
+  achs:{},
+  auto:{gather:1,build:1,research:1,rune:1,gear:1,dungeon:1,soulup:1,rebirth:1,relicup:1,ascend:1,chal:1},
+  timers:{build:0,research:0,rune:0,gear:0,gather:0},
+  buyAmt:'max',
+  started:Date.now(), lastTick:Date.now(), playtime:0, clicks:0,
+}}
+let S=newState(), LOG=[], MC=null;
+
+/* ══════════════ 유틸 ══════════════ */
+function fmt(n){
+  if(n===Infinity) return '∞';
+  if(!isFinite(n)||isNaN(n)) return '0';
+  if(n<0) return '-'+fmt(-n);
+  if(n===0) return '0';
+  if(n<1e3){
+    if(n<10) return (Math.round(n*100)/100).toString();
+    if(n<100) return (Math.round(n*10)/10).toString();
+    return Math.floor(n).toString();
+  }
+  if(n<1e6) return Math.floor(n).toLocaleString('ko-KR');
+  const e=Math.floor(Math.log10(n));
+  return (n/Math.pow(10,e)).toFixed(2)+'e'+e;
+}
+function fmtTime(s){
+  s=Math.floor(s);
+  if(s<60) return s+'초';
+  if(s<3600) return Math.floor(s/60)+'분 '+(s%60)+'초';
+  if(s<86400) return Math.floor(s/3600)+'시간 '+Math.floor(s%3600/60)+'분';
+  return Math.floor(s/86400)+'일 '+Math.floor(s%86400/3600)+'시간';
+}
+const cnt=i=>S.bought[i]+S.gen[i];
+const achCount=()=>Object.keys(S.achs).length;
+const runeTotal=()=>RUNES.reduce((a,r)=>a+(S.runes[r.id]||0),0);
+const gearTotal=()=>GEAR.reduce((a,g)=>a+(S.gear[g.id]||0),0);
+const chalTotal=()=>CHALLENGES.reduce((a,c)=>a+(S.chalDone[c.id]||0),0);
+const curChal=()=>S.chal?CHALLENGES.find(c=>c.id===S.chal):null;
+function startMana(l){return l<=0?0:Math.pow(10,2*l)}
+
+/* ══════════════ 배율 계산 ══════════════ */
+function computeM(){
+  const m={prod:1,t0:1,tUp:1,speed:1,soul:1,offer:1,crystal:1,dungeon:1,
+    floorPct:0.02,floorLoot:1,boss:1,costGrow:0,runeCap:25,gearPow:1,
+    autoSpeed:1,offline:4,chalPow:1,autoMax:false};
+  const ch=curChal();
+  if(!(ch&&ch.rule.noResearch)) for(const r of RESEARCH) if(S.research[r.id]) r.apply(m);
+  for(const r of RUNES){const l=S.runes[r.id]||0; if(l) r.apply(m,l);}
+  for(const g of GEAR){const l=S.gear[g.id]||0; if(l) g.apply(m,l);}
+  for(const u of SOUL_UPS){const l=S.soulUps[u.id]||0; if(l) u.apply(m,l);}
+  for(const u of RELIC_UPS){const l=S.relicUps[u.id]||0; if(l) u.apply(m,l);}
+  for(const c of CHALLENGES){const n=S.chalDone[c.id]||0; if(n) c.apply(m,n*m.chalPow);}
+  m.prod*=1+0.02*achCount();
+  m.prod*=1+0.05*S.rebirths;
+  m.prod*=1+m.floorPct*S.deepest;
+  m.dungeon*=1+0.03*S.deepest;
+  if(ch&&ch.rule.drain) m.prod/=ch.rule.drain;
+  m.autoSpeed=Math.max(0.15,m.autoSpeed);
+  return m;
+}
+function recalc(){MC=computeM()}
+function M(){return MC||(MC=computeM())}
+
+function growth(i){return Math.max(1.05,PRODUCERS[i].g+M().costGrow)}
+function costOf(i,n){
+  const g=growth(i),b=S.bought[i];
+  return PRODUCERS[i].base*Math.pow(g,b)*(Math.pow(g,n)-1)/(g-1);
+}
+function maxAfford(i){
+  const g=growth(i),b=S.bought[i];
+  const v=S.mana*(g-1)/(PRODUCERS[i].base*Math.pow(g,b))+1;
+  return v<=1?0:Math.max(0,Math.floor(Math.log(v)/Math.log(g)));
+}
+function tierLocked(i){const ch=curChal();return !!(ch&&ch.rule.maxTier!==undefined&&i>ch.rule.maxTier)}
+function buyProducer(i){
+  if(tierLocked(i)) return false;
+  const n=S.buyAmt==='max'?maxAfford(i):S.buyAmt;
+  if(n<=0) return false;
+  const c=costOf(i,n);
+  if(S.mana<c) return false;
+  S.mana-=c; S.bought[i]+=n; recalc(); return true;
+}
+function manaRate(){const m=M();return cnt(0)*PRODUCERS[0].rate*m.t0*m.prod}
+function gatherAmount(){return Math.max(1,manaRate()*0.5)}
+function gather(){const g=gatherAmount();addMana(g);S.clicks++}
+function addMana(v){S.mana+=v;S.manaRun+=v;S.manaEver+=v}
+
+/* ══════════════ 던전 ══════════════ */
+const isBoss=f=>f%10===0;
+function dungeonPower(){
+  let u=0;for(let i=0;i<5;i++)u+=cnt(i);
+  return (1+Math.pow(u,0.45))*M().dungeon;
+}
+function floorHP(f){return 40*Math.pow(1.35,f-1)*(isBoss(f)?8:1)}
+function floorLoot(f){
+  const m=M(),b=isBoss(f)?10*m.boss:1;
+  return{
+    mana:80*Math.pow(1.40,f-1)*m.prod*m.floorLoot*b,
+    crystal:Math.max(1,Math.floor((1+f*0.5)*m.crystal*m.floorLoot*b/8)),
+    offering:isBoss(f)?Math.max(1,Math.floor(f*0.8*m.offer*b/6)):0,
+  };
+}
+function clearFloor(){
+  const f=S.floor,l=floorLoot(f);
+  addMana(l.mana);
+  S.crystal+=l.crystal; S.crystalEver+=l.crystal;
+  if(l.offering){S.offering+=l.offering;S.offerEver+=l.offering}
+  const nw=f>S.deepest;
+  if(nw) S.deepest=f;
+  log(`${icHTML('sword')}${isBoss(f)?'<b class="bad">보스</b> ':''}<b>${f}층</b> 격파 — ${icHTML('mana')}${fmt(l.mana)} ${icHTML('crystal')}${fmt(l.crystal)}${l.offering?' '+icHTML('offering')+fmt(l.offering):''}`, isBoss(f));
+  S.floor=f+1; recalc();
+}
+
+/* ══════════════ 프레스티지 ══════════════ */
+const REBIRTH_REQ=1e6, ASCEND_REQ=1000;
+function soulGain(){
+  if(S.manaRun<REBIRTH_REQ) return 0;
+  return Math.floor(3*Math.pow(S.manaRun/REBIRTH_REQ,0.3)*M().soul);
+}
+function offerGain(){
+  if(S.manaRun<REBIRTH_REQ) return 0;
+  return Math.floor(2*Math.pow(S.manaRun/REBIRTH_REQ,0.22)*M().offer);
+}
+function relicGain(){
+  if(S.soulAsc<ASCEND_REQ) return 0;
+  return Math.floor(2*Math.pow(S.soulAsc/ASCEND_REQ,0.35));
+}
+function softReset(){
+  const free=8*(S.relicUps.a5||0);
+  S.mana=Math.max(25,startMana(S.soulUps.s7||0));
+  S.manaRun=S.mana;
+  S.bought=[0,0,0,0,0]; S.gen=[0,0,0,0,0];
+  for(let i=0;i<5;i++) S.bought[i]=free;
+  S.bought[0]=Math.max(1,free);
+  S.research={}; S.floor=1; S.prog=0; S.sinceRebirth=0;
+  recalc();
+}
+function doRebirth(silent){
+  const g=soulGain(), o=offerGain();
+  if(g<=0) return false;
+  S.soul+=g; S.soulAsc+=g; S.soulEver+=g; S.lastSoulGain=g;
+  S.offering+=o; S.offerEver+=o;
+  S.rebirths++;
+  if(S.chal) exitChallenge(false);
+  softReset();
+  log(`${icHTML('soul')}<b>환생</b> — 영혼석 <b class="soul">+${fmt(g)}</b> · 오퍼링 <b class="offer">+${fmt(o)}</b>`,true);
+  if(!silent) toast(icHTML('soul')+` 환생 · 영혼석 +${fmt(g)}`);
+  if(autoOK('chal')) autoEnterChallenge();
+  return true;
+}
+function doAscend(silent){
+  const g=relicGain();
+  if(g<=0) return false;
+  S.relic+=g; S.relicEver+=g; S.lastRelicGain=g; S.ascensions++;
+  S.soul=0; S.soulAsc=0; S.soulUps={}; S.runes={};
+  S.rebirths=0; S.deepest=0; S.offering=0; S.lastSoulGain=0; S.sinceAscend=0;
+  if(S.chal) exitChallenge(false);
+  softReset();
+  log(`${icHTML('relic')}<b>승천</b> — 유물 <b class="relic">+${fmt(g)}</b> · 영혼석과 룬이 초기화되었다`,true);
+  if(!silent) toast(icHTML('relic')+` 승천 · 유물 +${fmt(g)}`);
+  return true;
+}
+
+/* ══════════════ 도전 ══════════════ */
+const chalUnlocked=()=>S.ascensions>=1||chalTotal()>0;
+function enterChallenge(id){
+  const ch=CHALLENGES.find(c=>c.id===id);
+  if(!ch||!chalUnlocked()) return;
+  if((S.chalDone[id]||0)>=ch.max) return;
+  S.chal=id; S.chalTime=0; softReset();
+  log(`${icHTML('chain')}<b>${ch.nm}</b> 시작 — 목표 ${icHTML('mana')}${fmt(chalGoal(ch,S.chalDone[id]||0))}`,true);
+  toast(icHTML('chain')+' '+ch.nm+' 시작');
+}
+function exitChallenge(reset=true){
+  S.chal=null; S.chalTime=0;
+  if(reset) softReset();
+  recalc();
+}
+function checkChallenge(){
+  const ch=curChal(); if(!ch) return;
+  const c=S.chalDone[ch.id]||0;
+  if(S.manaRun>=chalGoal(ch,c)){
+    S.chalDone[ch.id]=c+1;
+    log(`${icHTML('medal')}<b class="gold">${ch.nm} ${c+1}단계 돌파!</b> — ${ch.rw(c+1)}`,true);
+    achToast(ch.nm+' 돌파', ch.rw(c+1),'medal');
+    exitChallenge(true);
+    if(autoOK('chal')) autoEnterChallenge();
+  }
+}
+/* 도달 가능성 판정 — 최고 회차 기록 대비 목표가 현실적인 시련만 고른다 */
+function chalReachable(ch){
+  const n=S.chalDone[ch.id]||0;
+  if(n>=ch.max) return false;
+  const penalty=(ch.rule.drain||1)*(ch.rule.noResearch?4:1)*(ch.rule.noAuto?3:1)*(ch.rule.maxTier!==undefined?3:1);
+  return chalGoal(ch,n)*penalty <= S.bestRun*0.6;
+}
+function autoEnterChallenge(){
+  if(!chalUnlocked()||S.chal) return;
+  const avail=CHALLENGES.filter(chalReachable);
+  if(!avail.length) return;
+  avail.sort((a,b)=>(S.chalDone[a.id]||0)-(S.chalDone[b.id]||0)||a.base-b.base);
+  enterChallenge(avail[0].id);
+}
+
+/* ══════════════ 자동화 ══════════════
+   자동화는 기본값이 아니라 진행으로 얻는 보상이다.
+   초반에는 채집·건설·연구·던전을 직접 해야 한다. */
+const AUTO_DEFS=[
+ {k:'gather', nm:'마나 채집',     d:'채집 버튼을 대신 눌러 준다',                unlock:()=>S.manaEver>=1e3,                  req:'누적 마나 1,000'},
+ {k:'build',  nm:'시설 건설',     d:'여유 마나로 가장 비싼 시설부터 사들인다',   unlock:()=>S.manaEver>=2e4,                  req:'누적 마나 2만'},
+ {k:'dungeon',nm:'던전 연속 탐험',d:'층을 깬 뒤 멈추지 않고 계속 내려간다',       unlock:()=>S.deepest>=20,                    req:'던전 20층 돌파'},
+ {k:'research',nm:'연구 구매',    d:'조건을 만족한 연구를 순서대로 사들인다',     unlock:()=>S.rebirths>=5||S.ascensions>0,    req:'환생 5회'},
+ {k:'rune',   nm:'룬 강화',       d:'오퍼링으로 가장 싼 룬부터 새긴다',           unlock:()=>S.ascensions>=1,                  req:'승천 1회'},
+ {k:'gear',   nm:'장비 제작',     d:'결정으로 가장 싼 장비부터 벼린다',           unlock:()=>S.ascensions>=1,                  req:'승천 1회'},
+ {k:'soulup', nm:'영혼 강화 구매',d:'영혼석으로 가장 싼 강화를 사들인다',         unlock:()=>S.rebirths>=10||S.ascensions>0,   req:'환생 10회'},
+ {k:'rebirth',nm:'자동 환생',     d:'직전 회차보다 1.5배 이상 벌릴 때 환생한다',  unlock:()=>S.rebirths>=20||S.ascensions>0,   req:'환생 20회'},
+ {k:'relicup',nm:'유물 강화 구매',d:'유물로 가장 싼 강화를 사들인다',             unlock:()=>S.ascensions>=2,                  req:'승천 2회'},
+ {k:'ascend', nm:'자동 승천',     d:'유물이 충분히 쌓이면 승천한다',              unlock:()=>S.ascensions>=3,                  req:'승천 3회'},
+ {k:'chal',   nm:'자동 시련',     d:'환생할 때마다 감당 가능한 시련에 들어간다',  unlock:()=>chalTotal()>=3,                   req:'시련 3단계 완료'},
+];
+const AUTO_DEF=k=>AUTO_DEFS.find(a=>a.k===k);
+const autoOK=k=>{const d=AUTO_DEF(k);return !!(S.auto[k]&&d&&d.unlock())};
+const AUTO_INTERVAL={gather:0.2,build:0.25,research:0.8,rune:1.2,gear:1.5};
+function runAutomation(dt){
+  const m=M(), ch=curChal();
+  if(ch&&ch.rule.noAuto) return;
+  const t=S.timers;
+  for(const k in AUTO_INTERVAL) t[k]=(t[k]||0)+dt;
+  const iv=k=>AUTO_INTERVAL[k]*m.autoSpeed;
+
+  if(autoOK('gather')&&t.gather>=iv('gather')){t.gather=0;gather()}
+  if(autoOK('build')&&t.build>=iv('build')){
+    t.build=0;
+    for(let i=PRODUCERS.length-1;i>=0;i--){
+      if(tierLocked(i)) continue;
+      if(m.autoMax){
+        const n=maxAfford(i);
+        if(n>0&&costOf(i,n)<=S.mana*0.5){S.mana-=costOf(i,n);S.bought[i]+=n;recalc();break}
+      }
+      const c=costOf(i,1);
+      if(c<=S.mana*0.25){S.mana-=c;S.bought[i]++;recalc();break}
+    }
+  }
+  if(autoOK('research')&&t.research>=iv('research')){
+    t.research=0;
+    if(!(ch&&ch.rule.noResearch))
+      for(const r of RESEARCH){
+        if(S.research[r.id]||(r.req&&!S.research[r.req])) continue;
+        if(S.mana>=r.cost){S.mana-=r.cost;S.research[r.id]=1;recalc();break}
+      }
+  }
+  if(autoOK('rune')&&t.rune>=iv('rune')){
+    t.rune=0;
+    const cap=Math.floor(m.runeCap);
+    let best=null,bc=Infinity;
+    for(const r of RUNES){const l=S.runes[r.id]||0;if(l>=cap)continue;const c=runeCost(l);if(c<bc){bc=c;best=r}}
+    if(best&&S.offering>=bc){S.offering-=bc;S.runes[best.id]=(S.runes[best.id]||0)+1;recalc()}
+  }
+  if(autoOK('gear')&&t.gear>=iv('gear')){
+    t.gear=0;
+    let best=null,bc=Infinity;
+    for(const g of GEAR){const l=S.gear[g.id]||0;const c=gearCost(l);if(c<bc){bc=c;best=g}}
+    if(best&&S.crystal>=bc){S.crystal-=bc;S.gear[best.id]=(S.gear[best.id]||0)+1;recalc()}
+  }
+  // 영혼 / 유물 강화 자동 (가장 싼 것부터)
+  if(autoOK('soulup')){
+    let best=null,bc=Infinity;
+    for(const u of SOUL_UPS){const l=S.soulUps[u.id]||0;if(l>=u.max)continue;const c=u.c(l);if(c<bc){bc=c;best=u}}
+    if(best&&S.soul>=bc){S.soul-=bc;S.soulUps[best.id]=(S.soulUps[best.id]||0)+1;recalc()}
+  }
+  if(autoOK('relicup')){
+    let best=null,bc=Infinity;
+    for(const u of RELIC_UPS){const l=S.relicUps[u.id]||0;if(l>=u.max)continue;const c=u.c(l);if(c<bc){bc=c;best=u}}
+    if(best&&S.relic>=bc){S.relic-=bc;S.relicUps[best.id]=(S.relicUps[best.id]||0)+1;recalc()}
+  }
+  // 환생 / 승천 — 직전 회차보다 확실히 나아졌을 때만
+  if(autoOK('rebirth')&&S.sinceRebirth>20){
+    const g=soulGain();
+    if(g>=10&&g>=1.5*(S.lastSoulGain||0)) doRebirth(true);
+  }
+  if(autoOK('ascend')&&S.sinceAscend>120){
+    const g=relicGain();
+    if(g>=3&&g>=1.5*(S.lastRelicGain||0)) doAscend(true);
+  }
+}
+
+/* ══════════════ 진행 ══════════════ */
+function tick(dt){
+  const m=M(), d=dt*m.speed, ch=curChal();
+  for(let i=PRODUCERS.length-1;i>=1;i--) S.gen[i-1]+=cnt(i)*PRODUCERS[i].rate*m.tUp*d;
+  addMana(cnt(0)*PRODUCERS[0].rate*m.t0*m.prod*d);
+  if(S.exploring&&!(ch&&ch.rule.noDungeon)){
+    S.prog+=dungeonPower()*d;
+    let guard=0;
+    while(S.prog>=floorHP(S.floor)&&guard++<400){
+      S.prog-=floorHP(S.floor); clearFloor();
+      if(!autoOK('dungeon')){ S.exploring=false; S.prog=0; break; }   // 수동: 한 층마다 직접 다시 출격
+    }
+  }
+  runAutomation(dt);
+  if(ch){
+    S.chalTime+=dt;
+    // 15분 안에 못 깨면 승산이 없다고 보고 물러난다
+    if(S.chalTime>900){
+      log(`${icHTML('chain')}<b>${ch.nm}</b> 철수 — 아직 감당할 수 없다`,true);
+      exitChallenge(true);
+    }
+  }else{
+    S.chalTime=0;
+    if(S.manaRun>S.bestRun) S.bestRun=S.manaRun;
+  }
+  checkChallenge();
+  S.playtime+=dt; S.sinceRebirth+=dt; S.sinceAscend+=dt;
+  checkAchs();
+  recalc();
+}
+function checkAchs(){
+  for(const a of ACHS) if(!S.achs[a.id]&&a.f()){
+    S.achs[a.id]=1;
+    achToast(a.nm,a.d+' · 마나 생산 +2%','medal');
+    log(`${icHTML('medal')}업적 <b class="gold">${a.nm}</b> 달성 — 마나 생산 +2%`,true);
+    flagTab('ach');
+  }
+}
+function log(html,hl){
+  LOG.unshift({html,hl}); if(LOG.length>80) LOG.pop();
+  const el=document.getElementById('dlog');
+  if(el) el.innerHTML=LOG.map(l=>`<div class="${l.hl?'hl':''}">${l.html}</div>`).join('');
+}
+
+/* ══════════════ DOM 헬퍼 ══════════════ */
+const $=id=>document.getElementById(id);
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
+function btn(cls,html,onClick){
+  const b=document.createElement('button');
+  b.type='button'; b.className='btn '+(cls||''); if(html!=null)b.innerHTML=html;
+  if(onClick) b.addEventListener('click',e=>{e.preventDefault();onClick();refresh()});
+  return b;
+}
+function toast(html){
+  const box=$('toast'), t=el('div',null,html);
+  box.appendChild(t); while(box.children.length>4) box.firstChild.remove();
+  setTimeout(()=>t.remove(),2600);
+}
+/* 업적 배너 (큰 알림) */
+let achQueue=[],achBusy=false;
+function achToast(title,desc,sprite){
+  achQueue.push({title,desc,sprite}); if(!achBusy) nextAch();
+}
+function nextAch(){
+  if(!achQueue.length){achBusy=false;return}
+  achBusy=true;
+  const a=achQueue.shift();
+  const w=el('div','achpop');
+  w.innerHTML=`<img class="px" src="${spriteURL(a.sprite||'medal')}" width="32" height="32" alt="">
+    <div><div class="ttl">업적 달성</div><div class="nm">${a.title}</div><div class="ds">${a.desc}</div></div>`;
+  document.body.appendChild(w);
+  setTimeout(()=>w.classList.add('out'),2400);
+  setTimeout(()=>{w.remove();nextAch()},2900);
+}
+let modalCb=null;
+function modal(title,body,onOk){
+  $('modalTitle').innerHTML=title; $('modalBody').innerHTML=body;
+  $('modalWrap').classList.add('on');
+  $('modalNo').style.display=onOk?'':'none';
+  modalCb=onOk||null;
+}
+$('modalOk').addEventListener('click',()=>{
+  $('modalWrap').classList.remove('on');
+  const f=modalCb; modalCb=null; if(f){f();render()}
+});
+$('modalNo').addEventListener('click',()=>{$('modalWrap').classList.remove('on');modalCb=null});
+$('modalWrap').addEventListener('click',e=>{if(e.target.id==='modalWrap'){$('modalWrap').classList.remove('on');modalCb=null}});
+
+/* ══════════════ 탭 ══════════════ */
+const TABS=[
+ {id:'tower',   sp:'tower',    nm:'마탑',      open:()=>true},
+ {id:'research',sp:'flask',    nm:'연구',      open:()=>S.manaEver>=100},
+ {id:'dungeon', sp:'sword',    nm:'던전',      open:()=>S.manaEver>=5e3},
+ {id:'relics',  sp:'rune_wealth',nm:'룬 · 장비',open:()=>S.offerEver>0||S.crystalEver>0},
+ {id:'rebirth', sp:'soul',     nm:'환생',      open:()=>S.manaEver>=REBIRTH_REQ/20||S.rebirths>0||S.soulEver>0},
+ {id:'ascend',  sp:'relic',    nm:'승천',      open:()=>S.soulEver>=ASCEND_REQ/10||S.ascensions>0||S.relicEver>0},
+ {id:'chal',    sp:'chain',    nm:'도전',      open:()=>chalUnlocked()},
+ {id:'ach',     sp:'medal',    nm:'업적',      open:()=>true},
+ {id:'auto',    sp:'cog',      nm:'자동화',    open:()=>true},
+ {id:'settings',sp:'anvil',    nm:'설정',      open:()=>true},
+];
+let curTab='tower', updaters=[], alerts={}, pointerDown=false, needRebuild=false;
+document.addEventListener('pointerdown',()=>{pointerDown=true});
+document.addEventListener('pointerup',()=>{pointerDown=false;if(needRebuild){needRebuild=false;render()}});
+function flagTab(id){if(curTab!==id){alerts[id]=1;buildTabs()}}
+function buildTabs(){
+  const box=$('tabs'); box.innerHTML='';
+  TABS.forEach((t,i)=>{
+    if(!t.open()) return;
+    const b=el('button','tab'+(t.id===curTab?' on':'')+(alerts[t.id]?' alert':''));
+    b.type='button';
+    b.appendChild(ic(t.sp,16));
+    b.appendChild(el('span',null,t.nm));
+    b.appendChild(el('span','n',i===9?'0':String(i+1)));
+    b.appendChild(el('span','dot'));
+    b.addEventListener('click',()=>switchTab(t.id));
+    box.appendChild(b);
+  });
+}
+function switchTab(id){
+  const t=TABS.find(x=>x.id===id);
+  if(!t||!t.open()) return;
+  curTab=id; delete alerts[id]; render();
+}
+
+/* ══════════════ 공용 위젯 ══════════════ */
+function card(title,hint){
+  const c=el('div','card');
+  if(title){const h=el('h2');h.appendChild(ic(title[1],16));h.appendChild(el('span',null,title[0]));c.appendChild(h)}
+  if(hint) c.appendChild(el('div','hint',hint));
+  return c;
+}
+/* 레벨식 업그레이드 격자 (영혼/유물 공용) */
+function levelGrid(defs,lvOf,curOf,pay,curSp){
+  const g=el('div','grid wide');
+  defs.forEach(u=>{
+    const b=document.createElement('button');
+    b.type='button'; b.className='up';
+    b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
+    b.querySelector('.ic').appendChild(ic(u.sp,32));
+    b.addEventListener('click',e=>{
+      e.preventDefault();
+      const l=lvOf(u.id);
+      if(l>=u.max) return;
+      const c=u.c(l);
+      if(curOf()<c) return;
+      pay(c,u.id); recalc(); refresh();
+      toast(icHTML(u.sp)+' '+u.nm+' Lv.'+(l+1));
+    });
+    g.appendChild(b);
+    updaters.push(()=>{
+      const l=lvOf(u.id),maxed=l>=u.max,c=u.c(l),afford=!maxed&&curOf()>=c;
+      b.querySelector('.t').innerHTML=`${u.nm} <span class="lv">Lv.${fmt(l)}${u.max!==Infinity?' / '+u.max:''}</span>`;
+      b.querySelector('.d').textContent=u.d(l);
+      b.querySelector('.c').innerHTML=maxed?'<span class="good">최대치 도달</span>':`${icHTML(curSp)} ${fmt(c)}`;
+      b.classList.toggle('done',maxed); b.classList.toggle('afford',afford); b.disabled=maxed;
+    });
+  });
+  return g;
+}
+function toggleRow(def){
+  const r=el('div','row');
+  r.style.cssText='justify-content:space-between;padding:7px 2px;gap:12px';
+  const left=el('div'); left.style.minWidth='0';
+  const nm=el('div'); nm.style.cssText='font-family:var(--serif);font-size:14px';
+  const ds=el('div','hint'); ds.style.margin='0';
+  left.append(nm,ds);
+  const b=btn('sm','',()=>{ if(def.unlock()) S.auto[def.k]=S.auto[def.k]?0:1; });
+  r.append(left,b);
+  updaters.push(()=>{
+    const un=def.unlock(), on=!!S.auto[def.k]&&un;
+    nm.innerHTML=def.nm+(un?'':' <span class="lv">🔒</span>');
+    ds.innerHTML=un?def.d:`<span class="dim">해금 조건: <b>${def.req}</b></span>`;
+    b.disabled=!un;
+    b.className='btn sm '+(on?'on':'off');
+    b.textContent=un?(on?'자동 ON':'수동 OFF'):'잠김';
+  });
+  return r;
+}
+
+/* ══════════════ 패널 ══════════════ */
+function buildTower(p){
+  const c=card(['마탑 운영','tower'],'윗 단계 시설이 아랫 단계를 스스로 지어 올린다. 마나를 직접 뽑아내는 것은 견습 마법사뿐이다.');
+  const ctrl=el('div','row');
+  ctrl.appendChild(el('span','dim','구매 수량'));
+  [1,10,100,'max'].forEach(v=>{
+    const b=btn('sm',v==='max'?'최대':'×'+v,()=>{S.buyAmt=v});
+    updaters.push(()=>b.className='btn sm '+(S.buyAmt===v?'on':''));
+    ctrl.appendChild(b);
+  });
+  c.appendChild(ctrl);
+  const gb=btn('gold big','',()=>gather());
+  gb.style.cssText='margin:11px auto 0;max-width:430px';
+  c.appendChild(gb);
+  updaters.push(()=>{gb.innerHTML=`${icHTML('mana',24)} 마나 채집 <span class="c">+${fmt(gatherAmount())}</span>`});
+  p.appendChild(c);
+
+  const list=el('div','card');
+  PRODUCERS.forEach((pr,i)=>{
+    const row=el('div','unit');
+    const icb=el('div','ico'); icb.appendChild(ic(pr.sp,48)); row.appendChild(icb);
+    const mid=el('div');
+    mid.appendChild(el('div','nm',pr.nm));
+    const dt=el('div','dt'), own=el('div','own');
+    mid.append(dt,own); row.appendChild(mid);
+    const b=btn('buy','',()=>buyProducer(i));
+    row.appendChild(b);
+    list.appendChild(row);
+    updaters.push(()=>{
+      const m=M(), lock=tierLocked(i);
+      const n=S.buyAmt==='max'?Math.max(1,maxAfford(i)):S.buyAmt;
+      const c2=costOf(i,n);
+      const per=i===0?cnt(0)*pr.rate*m.t0*m.prod:cnt(i)*pr.rate*m.tUp;
+      dt.innerHTML=`${pr.makes} <b>+${fmt(per)}</b> /초`;
+      own.textContent=`보유 ${fmt(cnt(i))} · 구매 ${fmt(S.bought[i])} · 생성 ${fmt(S.gen[i])}`;
+      b.innerHTML=lock?'<span class="c">시련으로 봉인됨</span>':`×${fmt(n)} 고용<span class="c">${icHTML('mana')} ${fmt(c2)}</span>`;
+      const can=!lock&&S.mana>=c2&&n>0;
+      b.disabled=!can; b.classList.toggle('can',can); b.classList.toggle('gold',can);
+      row.classList.toggle('can',can);
+    });
+  });
+  p.appendChild(list);
+}
+
+function buildResearch(p){
+  const c=card(['마법 연구','flask'],'마나로 사들이는 일회성 강화. <b>환생하면 전부 사라진다</b> — 매 회차 다시 사들이게 된다.');
+  const g=el('div','grid');
+  RESEARCH.forEach(r=>{
+    const b=document.createElement('button');
+    b.type='button'; b.className='up';
+    b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t">${r.nm}</span><span class="d">${r.d}</span><span class="c"></span></span>`;
+    b.querySelector('.ic').appendChild(ic(r.sp,32));
+    b.addEventListener('click',e=>{
+      e.preventDefault();
+      if(S.research[r.id]||S.mana<r.cost) return;
+      if(r.req&&!S.research[r.req]) return;
+      const ch=curChal(); if(ch&&ch.rule.noResearch) return;
+      S.mana-=r.cost; S.research[r.id]=1; recalc(); refresh();
+      toast(icHTML(r.sp)+' '+r.nm+' 완료');
+    });
+    g.appendChild(b);
+    updaters.push(()=>{
+      const done=!!S.research[r.id], lock=r.req&&!S.research[r.req];
+      const ch=curChal(), banned=ch&&ch.rule.noResearch;
+      const afford=!done&&!lock&&!banned&&S.mana>=r.cost;
+      b.querySelector('.c').innerHTML=done?'<span class="good">연구 완료</span>'
+        :banned?'<span class="bad">시련으로 봉인됨</span>'
+        :lock?`<span class="dim">선행: ${RESEARCH.find(x=>x.id===r.req).nm}</span>`
+        :`${icHTML('mana')} ${fmt(r.cost)}`;
+      b.classList.toggle('done',done); b.classList.toggle('lock',!!lock||!!banned);
+      b.classList.toggle('afford',afford); b.disabled=done||!!lock||!!banned;
+    });
+  });
+  c.appendChild(g); p.appendChild(c);
+}
+
+function buildDungeon(p){
+  const c=card(['심연의 던전','sword'],'원정대의 공격력은 보유한 시설 총합에서 나온다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다.');
+  const ar=el('div','arena');
+  const foe=el('div','foe'); const foeIco=ic('beast',72); foe.appendChild(foeIco);
+  const right=el('div');
+  const ftitle=el('div'); ftitle.style.cssText='font-family:var(--serif);font-size:16px;margin-bottom:5px';
+  const hp=el('div','hpbar','<i></i><span></span>');
+  const stat=el('div','row'); stat.style.marginTop='7px';
+  right.append(ftitle,hp,stat);
+  ar.append(foe,right); c.appendChild(ar);
+
+  const ctl=el('div','row'); ctl.style.marginTop='10px';
+  const bDown=btn('sm','◀ 이전 층',()=>{if(S.floor>1){S.floor--;S.prog=0}});
+  const bUp=btn('sm','다음 층 ▶',()=>{if(S.floor<=S.deepest){S.floor++;S.prog=0}});
+  const go=btn('','',()=>{S.exploring=!S.exploring;if(!S.exploring)S.prog=0});
+  const auto=btn('sm','',()=>{S.auto.dungeon=S.auto.dungeon?0:1});
+  ctl.append(bDown,bUp,go,auto); c.appendChild(ctl);
+  p.appendChild(c);
+
+  const lc=card(['탐험 기록','scroll']);
+  const lg=el('div','log'); lg.id='dlog';
+  lg.innerHTML=LOG.map(l=>`<div class="${l.hl?'hl':''}">${l.html}</div>`).join('');
+  lc.appendChild(lg); p.appendChild(lc);
+
+  updaters.push(()=>{
+    const f=S.floor,h=floorHP(f),pw=dungeonPower(),l=floorLoot(f),boss=isBoss(f);
+    foe.classList.toggle('boss',boss);
+    const want=spriteURL(boss?'skull':'beast');
+    if(foeIco.src!==want) foeIco.src=want;
+    ftitle.innerHTML=`${boss?'<b class="bad">보스 층</b> · ':''}<b class="gold">${f}층</b> <span class="dim" style="font-size:12px">최심층 ${S.deepest}층</span>`;
+    const r=Math.max(0,Math.min(1,S.prog/h));
+    hp.querySelector('i').style.width=(r*100).toFixed(1)+'%';
+    hp.querySelector('span').textContent=`${fmt(S.prog)} / ${fmt(h)} (${(r*100).toFixed(1)}%)`;
+    stat.innerHTML=`<span class="tag">공격력 <b>${fmt(pw)}</b>/초</span>
+      <span class="tag">소요 <b>${fmtTime(h/Math.max(pw,1e-9))}</b></span>
+      <span class="tag">${icHTML('mana')}<b>${fmt(l.mana)}</b></span>
+      <span class="tag">${icHTML('crystal')}<b>${fmt(l.crystal)}</b></span>
+      ${l.offering?`<span class="tag">${icHTML('offering')}<b>${fmt(l.offering)}</b></span>`:''}`;
+    bDown.disabled=S.floor<=1; bUp.disabled=S.floor>S.deepest;
+    go.textContent=S.exploring?'탐험 중단':'탐험 시작';
+    go.className='btn '+(S.exploring?'':'gold');
+    const ud=AUTO_DEF('dungeon').unlock();
+    auto.disabled=!ud;
+    auto.className='btn sm '+(!ud?'off':(S.auto.dungeon?'on':'off'));
+    auto.textContent=!ud?'연속 탐험 잠김 (20층 돌파)':(S.auto.dungeon?'연속 탐험 ON':'연속 탐험 OFF');
+  });
+}
+
+function buildRelics(p){
+  const c=card(['룬 석판','rune_wealth'],'환생에서 얻는 <b class="offer">오퍼링</b>으로 새긴다. 승천하면 사라진다.');
+  const info=el('div','row'); info.style.marginBottom='9px'; c.appendChild(info);
+  const g=el('div','grid wide');
+  RUNES.forEach(r=>{
+    const b=document.createElement('button'); b.type='button'; b.className='up';
+    b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
+    b.querySelector('.ic').appendChild(ic(r.sp,32));
+    b.addEventListener('click',e=>{
+      e.preventDefault();
+      const l=S.runes[r.id]||0, cap=Math.floor(M().runeCap), cost=runeCost(l);
+      if(l>=cap||S.offering<cost) return;
+      S.offering-=cost; S.runes[r.id]=l+1; recalc(); refresh();
+    });
+    g.appendChild(b);
+    updaters.push(()=>{
+      const l=S.runes[r.id]||0, cap=Math.floor(M().runeCap), cost=runeCost(l), maxed=l>=cap;
+      b.querySelector('.t').innerHTML=`${r.nm} <span class="lv">Lv.${l} / ${cap}</span>`;
+      b.querySelector('.d').textContent=r.d(l);
+      b.querySelector('.c').innerHTML=maxed?'<span class="good">최대 레벨</span>':`${icHTML('offering')} ${fmt(cost)}`;
+      b.classList.toggle('done',maxed); b.classList.toggle('afford',!maxed&&S.offering>=cost); b.disabled=maxed;
+    });
+  });
+  c.appendChild(g); p.appendChild(c);
+  updaters.push(()=>{info.innerHTML=`<span class="tag">${icHTML('offering')} 보유 <b>${fmt(S.offering)}</b></span>
+    <span class="tag">합계 레벨 <b>${runeTotal()}</b></span>
+    <span class="tag">최대 레벨 <b>${Math.floor(M().runeCap)}</b></span>`});
+
+  const c2=card(['장비','staff'],'던전에서 캐낸 <b class="crystal">결정</b>으로 벼려낸다. 승천해도 사라지지 않는 영구 강화.');
+  const info2=el('div','row'); info2.style.marginBottom='9px'; c2.appendChild(info2);
+  const g2=el('div','grid wide');
+  GEAR.forEach(gr=>{
+    const b=document.createElement('button'); b.type='button'; b.className='up';
+    b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
+    b.querySelector('.ic').appendChild(ic(gr.sp,32));
+    b.addEventListener('click',e=>{
+      e.preventDefault();
+      const l=S.gear[gr.id]||0, cost=gearCost(l);
+      if(S.crystal<cost) return;
+      S.crystal-=cost; S.gear[gr.id]=l+1; recalc(); refresh();
+    });
+    g2.appendChild(b);
+    updaters.push(()=>{
+      const l=S.gear[gr.id]||0, cost=gearCost(l), pw=M().gearPow;
+      b.querySelector('.t').innerHTML=`${gr.nm} <span class="lv">Lv.${l}</span>`;
+      b.querySelector('.d').textContent=gr.d(l,pw);
+      b.querySelector('.c').innerHTML=`${icHTML('crystal')} ${fmt(cost)}`;
+      b.classList.toggle('afford',S.crystal>=cost);
+    });
+  });
+  c2.appendChild(g2); p.appendChild(c2);
+  updaters.push(()=>{info2.innerHTML=`<span class="tag">${icHTML('crystal')} 보유 <b>${fmt(S.crystal)}</b></span>
+    <span class="tag">합계 레벨 <b>${gearTotal()}</b></span>
+    <span class="tag">효과 지수 <b>×${fmt(M().gearPow)}</b></span>`});
+}
+
+function buildRebirth(p){
+  const c=card(['환생','soul'],`마나·시설·연구를 모두 버리고 <b class="soul">영혼석</b>과 <b class="offer">오퍼링</b>을 얻는다. 영혼 강화는 승천 전까지 남는다.<br>필요 조건: 이번 회차 누적 마나 ${fmt(REBIRTH_REQ)}`);
+  const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
+  const b=btn('gold big','',()=>{
+    if(soulGain()<=0) return;
+    modal('환생하시겠습니까?',`영혼석 <b class="soul">${fmt(soulGain())}</b> · 오퍼링 <b class="offer">${fmt(offerGain())}</b>을 얻고<br>마나 · 시설 · 연구가 초기화됩니다.`,()=>doRebirth());
+  });
+  c.appendChild(b); p.appendChild(c);
+  const uc=card(['영혼 강화','gem'],'환생해도 유지된다. 승천할 때만 초기화된다.');
+  uc.appendChild(levelGrid(SOUL_UPS,id=>S.soulUps[id]||0,()=>S.soul,(c2,id)=>{S.soul-=c2;S.soulUps[id]=(S.soulUps[id]||0)+1},'soul'));
+  p.appendChild(uc);
+  updaters.push(()=>{
+    const g=soulGain();
+    info.innerHTML=`<span class="tag">회차 누적 ${icHTML('mana')}<b>${fmt(S.manaRun)}</b></span>
+      <span class="tag">획득 예정 ${icHTML('soul')}<b class="soul">${fmt(g)}</b></span>
+      <span class="tag">${icHTML('offering')}<b class="offer">${fmt(offerGain())}</b></span>
+      <span class="tag">영혼석 배율 <b>×${fmt(M().soul)}</b></span>
+      <span class="tag">환생 <b>${S.rebirths}</b>회 · 생산 +${5*S.rebirths}%</span>`;
+    b.disabled=g<=0;
+    b.innerHTML=g>0?`${icHTML('soul',24)} 환생하여 영혼석 ${fmt(g)} 획득`:`${icHTML('soul',24)} 누적 마나 ${fmt(REBIRTH_REQ)} 필요`;
+  });
+}
+
+function buildAscend(p){
+  const c=card(['승천','relic'],`영혼석·영혼 강화·룬·최심층까지 전부 버리고 <b class="relic">유물</b>을 얻는다. 유물 강화는 <b>영원히</b> 남는다.<br>필요 조건: 이번 주기 누적 영혼석 ${fmt(ASCEND_REQ)}`);
+  const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
+  const b=btn('gold big','',()=>{
+    if(relicGain()<=0) return;
+    modal('승천하시겠습니까?',`유물 <b class="relic">${fmt(relicGain())}</b>을 얻고<br>영혼석 · 영혼 강화 · 룬 · 최심층이 초기화됩니다.`,()=>doAscend());
+  });
+  c.appendChild(b); p.appendChild(c);
+  const uc=card(['유물 강화','relic'],'무엇을 해도 사라지지 않는 영구 강화.');
+  uc.appendChild(levelGrid(RELIC_UPS,id=>S.relicUps[id]||0,()=>S.relic,(c2,id)=>{S.relic-=c2;S.relicUps[id]=(S.relicUps[id]||0)+1},'relic'));
+  p.appendChild(uc);
+  updaters.push(()=>{
+    const g=relicGain();
+    info.innerHTML=`<span class="tag">주기 누적 ${icHTML('soul')}<b>${fmt(S.soulAsc)}</b></span>
+      <span class="tag">획득 예정 ${icHTML('relic')}<b class="relic">${fmt(g)}</b></span>
+      <span class="tag">승천 <b>${S.ascensions}</b>회</span>`;
+    b.disabled=g<=0;
+    b.innerHTML=g>0?`${icHTML('relic',24)} 승천하여 유물 ${fmt(g)} 획득`:`${icHTML('relic',24)} 누적 영혼석 ${fmt(ASCEND_REQ)} 필요`;
+  });
+}
+
+function buildChal(p){
+  const c=card(['시련','chain'],'제약을 받아들이고 목표 마나에 도달하면 <b>영구 보상</b>을 얻는다. 시련에 들어가거나 나오면 회차가 초기화된다.');
+  const info=el('div','row'); info.style.marginBottom='9px'; c.appendChild(info);
+  const g=el('div','grid wide');
+  CHALLENGES.forEach(ch=>{
+    const b=document.createElement('button'); b.type='button'; b.className='up chal';
+    b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="goal"></span><span class="c"></span></span>`;
+    b.querySelector('.ic').appendChild(ic(ch.sp,32));
+    b.addEventListener('click',e=>{
+      e.preventDefault();
+      if(S.chal===ch.id){exitChallenge(true);toast('시련 포기');refresh();return}
+      if((S.chalDone[ch.id]||0)>=ch.max) return;
+      enterChallenge(ch.id); refresh();
+    });
+    g.appendChild(b);
+    updaters.push(()=>{
+      const n=S.chalDone[ch.id]||0, maxed=n>=ch.max, active=S.chal===ch.id;
+      b.querySelector('.t').innerHTML=`${ch.nm} <span class="lv">${n} / ${ch.max} 단계</span>`;
+      b.querySelector('.d').textContent=ch.desc;
+      b.querySelector('.goal').innerHTML=maxed?'':`목표 ${icHTML('mana')} ${fmt(chalGoal(ch,n))}`;
+      b.querySelector('.c').innerHTML=maxed?`<span class="good">완주 · ${ch.rw(n)}</span>`
+        :active?`<span class="bad">진행 중 — 눌러서 포기</span>`
+        :`현재 보상 ${n?ch.rw(n):'없음'}`;
+      b.classList.toggle('done',maxed); b.classList.toggle('active',active); b.disabled=maxed;
+    });
+  });
+  c.appendChild(g); p.appendChild(c);
+  updaters.push(()=>{
+    const ch=curChal();
+    info.innerHTML=`<span class="tag">완료 <b>${chalTotal()}</b> / ${CHALLENGES.reduce((a,c2)=>a+c2.max,0)}</span>
+      <span class="tag">보상 지수 <b>×${fmt(M().chalPow)}</b></span>
+      ${ch?`<span class="tag bad">진행 중: <b>${ch.nm}</b> — ${icHTML('mana')}${fmt(S.manaRun)} / ${fmt(chalGoal(ch,S.chalDone[ch.id]||0))}</span>`:''}`;
+  });
+}
+
+function buildAch(p){
+  const c=card(['업적','medal']);
+  const sub=el('div','hint'); c.appendChild(sub);
+  const g=el('div','grid');
+  ACHS.forEach(a=>{
+    const d=el('div','ach');
+    d.appendChild(ic('medal',32));
+    const t=el('div'); t.innerHTML=`<div class="t">${a.nm}</div><div class="d">${a.d}</div>`;
+    d.appendChild(t); g.appendChild(d);
+    updaters.push(()=>d.classList.toggle('got',!!S.achs[a.id]));
+  });
+  c.appendChild(g); p.appendChild(c);
+  updaters.push(()=>{sub.innerHTML=`달성 <b class="gold">${achCount()}</b> / ${ACHS.length} — 하나당 마나 생산 <b>+2%</b> (현재 +${2*achCount()}%)`});
+}
+
+function buildAuto(p){
+  const c=card(['자동화','cog'],'자동화는 <b>진행으로 얻어내는 보상</b>이다. 처음에는 채집·건설·연구·던전을 직접 해야 하고, 조건을 만족할 때마다 하나씩 열린다.');
+  AUTO_DEFS.forEach((def,i)=>{
+    c.appendChild(toggleRow(def));
+    if(i<AUTO_DEFS.length-1) c.appendChild(el('div','divider'));
+  });
+  p.appendChild(c);
+  const s=card(['자동화 상태','fastfwd']);
+  const st=el('div','row'); s.appendChild(st); p.appendChild(s);
+  updaters.push(()=>{
+    const m=M();
+    st.innerHTML=`<span class="tag">자동화 주기 <b>×${m.autoSpeed.toFixed(2)}</b></span>
+      <span class="tag">마지막 환생 이후 <b>${fmtTime(S.sinceRebirth)}</b></span>
+      <span class="tag">마지막 승천 이후 <b>${fmtTime(S.sinceAscend)}</b></span>
+      <span class="tag">직전 환생 보상 <b>${fmt(S.lastSoulGain)}</b></span>`;
+  });
+}
+
+function buildSettings(p){
+  const c=card(['세이브','anvil'],'15초마다, 그리고 창을 닫을 때 자동 저장된다.');
+  const row=el('div','row');
+  row.append(
+    btn('sm','지금 저장',()=>save()),
+    btn('sm','파일로 내보내기',()=>exportSave()),
+    btn('sm','파일에서 불러오기',()=>$('fileIn').click()),
+    btn('sm','처음부터 다시',()=>modal('정말 초기화할까요?','유물까지 <b>전부</b> 사라지며 되돌릴 수 없습니다.<br>먼저 내보내기로 백업해 두세요.',hardReset))
+  );
+  c.appendChild(row); p.appendChild(c);
+  const sc=card(['기록','scroll']);
+  const st=el('div','hint'); st.style.cssText='margin:0;line-height:2'; sc.appendChild(st); p.appendChild(sc);
+  const hc=card(['단축키','book']);
+  hc.appendChild(el('div','hint','<b>1~9, 0</b> 탭 이동 · <b>스페이스</b> 마나 채집 · <b>B</b> 구매 수량 · <b>E</b> 탐험 토글 · <b>S</b> 저장'));
+  p.appendChild(hc);
+  updaters.push(()=>{
+    const m=M();
+    st.innerHTML=`플레이 시간 <b>${fmtTime(S.playtime)}</b> · 채집 <b>${fmt(S.clicks)}</b>회<br>
+      누적 ${icHTML('mana')}<b>${fmt(S.manaEver)}</b> · ${icHTML('offering')}<b>${fmt(S.offerEver)}</b> · ${icHTML('crystal')}<b>${fmt(S.crystalEver)}</b> · ${icHTML('soul')}<b>${fmt(S.soulEver)}</b> · ${icHTML('relic')}<b>${fmt(S.relicEver)}</b><br>
+      환생 <b>${S.rebirths}</b>회 · 승천 <b>${S.ascensions}</b>회 · 최심층 <b class="gold">${S.deepest}층</b> · 시련 <b>${chalTotal()}</b>단계<br>
+      마나 배율 <b class="gold">×${fmt(m.prod)}</b> · 게임 속도 <b>×${m.speed.toFixed(2)}</b> · 던전 배율 <b>×${fmt(m.dungeon)}</b><br>
+      오프라인 상한 <b>${m.offline}시간</b> · 버전 <b>v${VERSION}</b>`;
+  });
+}
+
+const BUILDERS={tower:buildTower,research:buildResearch,dungeon:buildDungeon,relics:buildRelics,
+  rebirth:buildRebirth,ascend:buildAscend,chal:buildChal,ach:buildAch,auto:buildAuto,settings:buildSettings};
+
+/* ══════════════ 자원 바 ══════════════ */
+const RES=[
+ {id:'mana',   sp:'mana',   nm:'마나',   cls:'mana',   show:()=>true,
+  val:()=>fmt(S.mana), sub:()=>'+'+fmt(manaRate())+' /초'},
+ {id:'offer',  sp:'offering',nm:'오퍼링',cls:'offer',  show:()=>S.offerEver>0,
+  val:()=>fmt(S.offering), sub:()=>'룬 합계 Lv.'+runeTotal()},
+ {id:'crystal',sp:'crystal',nm:'결정',   cls:'crystal',show:()=>S.crystalEver>0,
+  val:()=>fmt(S.crystal), sub:()=>'장비 합계 Lv.'+gearTotal()},
+ {id:'soul',   sp:'soul',   nm:'영혼석', cls:'soul',   show:()=>S.soulEver>0||S.rebirths>0,
+  val:()=>fmt(S.soul), sub:()=>`환생 ${S.rebirths}회 · 주기 ${fmt(S.soulAsc)}`},
+ {id:'relic',  sp:'relic',  nm:'유물',   cls:'relic',  show:()=>S.relicEver>0||S.ascensions>0,
+  val:()=>fmt(S.relic), sub:()=>`승천 ${S.ascensions}회`},
+ {id:'floor',  sp:'sword',  nm:'최심층', cls:'floor',  show:()=>S.manaEver>=5e3,
+  val:()=>S.deepest+'층', sub:()=>'전체 배율 ×'+fmt(M().prod)},
+];
+let resNodes={};
+function buildRes(){
+  const box=$('res'); box.innerHTML=''; resNodes={};
+  RES.forEach(r=>{
+    const d=el('div','res '+r.cls);
+    d.appendChild(ic(r.sp,24));
+    const t=el('div','txt');
+    t.innerHTML=`<div class="lab">${r.nm}</div><div class="val"></div><div class="sub"></div>`;
+    d.appendChild(t); box.appendChild(d);
+    resNodes[r.id]={box:d,val:t.querySelector('.val'),sub:t.querySelector('.sub')};
+  });
+}
+function updateRes(){
+  RES.forEach(r=>{
+    const n=resNodes[r.id]; if(!n) return;
+    const sh=r.show();
+    n.box.style.display=sh?'':'none';
+    if(sh){n.val.textContent=r.val();n.sub.textContent=r.sub()}
+  });
+}
+
+/* ══════════════ 렌더 ══════════════ */
+let tabSig='';
+function render(){
+  const t=TABS.find(x=>x.id===curTab);
+  if(!t||!t.open()) curTab='tower';
+  updaters=[]; buildTabs();
+  const main=$('main'); main.innerHTML='';
+  const p=el('div','panel on'); p.id='p-'+curTab;
+  BUILDERS[curTab](p); main.appendChild(p);
+  refresh();
+}
+function refresh(){
+  recalc(); updateRes();
+  for(const u of updaters){try{u()}catch(e){console.error(e)}}
+  const sig=TABS.map(t=>t.open()?1:0).join('');
+  if(sig!==tabSig){tabSig=sig;buildTabs()}
+}
+
+/* ══════════════ 세이브 ══════════════ */
+const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+const dec=s=>JSON.parse(decodeURIComponent(escape(atob(s.trim()))));
+function save(quiet){
+  S.lastTick=Date.now();
+  try{localStorage.setItem(SAVE_KEY,enc(S)); if(!quiet)toast('저장했습니다'); return true}
+  catch(e){toast('저장 실패: '+e.message); return false}
+}
+function load(){
+  const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false;
+  try{
+    S=mergeState(dec(raw)); return true;
+  }catch(e){console.error(e);toast('세이브를 읽지 못했습니다');return false}
+}
+function mergeState(o){
+  const base=newState(), s=Object.assign(base,o);
+  for(const k of ['bought','gen']) if(!Array.isArray(s[k])||s[k].length!==5) s[k]=[0,0,0,0,0];
+  for(const k of ['research','runes','gear','soulUps','relicUps','achs','chalDone'])
+    if(!s[k]||typeof s[k]!=='object') s[k]={};
+  s.auto=Object.assign(newState().auto,o.auto||{});
+  s.timers=Object.assign({build:0,research:0,rune:0,gear:0,gather:0},o.timers||{});
+  return s;
+}
+function offlineCatchUp(){
+  recalc();
+  const cap=M().offline*3600;
+  const dt=Math.min(cap,Math.max(0,(Date.now()-(S.lastTick||Date.now()))/1000));
+  if(dt<60) return;
+  const b={mana:S.mana,soul:S.soulEver,deep:S.deepest,reb:S.rebirths,cry:S.crystalEver};
+  const steps=140;
+  for(let i=0;i<steps;i++) tick(dt/steps);
+  modal(`${icHTML('moon',16)} 자리를 비운 사이`,`
+    경과 <b>${fmtTime(dt)}</b> <span class="dim">(상한 ${fmtTime(cap)})</span><br>
+    ${icHTML('mana')} 마나 <b class="mana">+${fmt(S.mana-b.mana)}</b><br>
+    ${icHTML('crystal')} 결정 <b class="crystal">+${fmt(S.crystalEver-b.cry)}</b><br>
+    ${icHTML('soul')} 영혼석 <b class="soul">+${fmt(S.soulEver-b.soul)}</b> <span class="dim">(환생 ${S.rebirths-b.reb}회)</span><br>
+    ${S.deepest>b.deep?`${icHTML('sword')} 최심층 <b class="gold">${b.deep}층 → ${S.deepest}층</b>`:''}
+  `);
+}
+function exportSave(){
+  const blob=new Blob([enc(S)],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  const t=new Date(),p=n=>String(n).padStart(2,'0');
+  a.download=`마탑-세이브-${t.getFullYear()}${p(t.getMonth()+1)}${p(t.getDate())}-${p(t.getHours())}${p(t.getMinutes())}.txt`;
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast('세이브를 내보냈습니다');
+}
+function importSave(txt){
+  try{
+    const o=dec(txt);
+    if(typeof o!=='object'||!('mana' in o)) throw new Error('형식이 다릅니다');
+    S=mergeState(o); save(true); render();
+    modal('불러오기 완료','세이브를 성공적으로 불러왔습니다.');
+  }catch(e){modal('불러오기 실패','올바른 마탑 세이브 파일이 아닙니다.<br><span class="dim">'+e.message+'</span>')}
+}
+function hardReset(){
+  localStorage.removeItem(SAVE_KEY); S=newState(); LOG=[]; recalc(); render();
+  toast('처음부터 다시 시작합니다');
+}
+
+/* ══════════════ 루프 & 입력 ══════════════ */
+let lastFrame=Date.now();
+setInterval(()=>{
+  const now=Date.now();
+  let dt=(now-lastFrame)/1000; lastFrame=now;
+  if(dt<0) dt=0; if(dt>2) dt=2;
+  tick(dt);
+},50);
+setInterval(refresh,100);
+setInterval(()=>save(true),15000);
+window.addEventListener('beforeunload',()=>save(true));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)save(true)});
+
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  if(e.target.tagName==='INPUT') return;
+  if(/^[0-9]$/.test(e.key)){
+    const i=e.key==='0'?9:(+e.key-1);
+    if(TABS[i]) switchTab(TABS[i].id);
+    return;
+  }
+  const k=e.key.toLowerCase();
+  if(e.key===' '){e.preventDefault();gather();refresh();return}
+  if(k==='b'){const o=[1,10,100,'max'];S.buyAmt=o[(o.indexOf(S.buyAmt)+1)%o.length];refresh()}
+  if(k==='e'){S.exploring=!S.exploring;if(!S.exploring)S.prog=0;refresh()}
+  if(k==='s'){save()}
+});
+$('fileIn').addEventListener('change',ev=>{
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>importSave(String(r.result));
+  r.readAsText(f); ev.target.value='';
+});
+
+/* ══════════════ 시작 ══════════════ */
+$('verTag').textContent='v'+VERSION;
+$('brandIco').src=spriteURL('tower');
+recalc(); buildRes();
+const had=load();
+recalc();
+if(had) offlineCatchUp();
+else{
+  log(`${icHTML('tower')}심연 위에 마탑을 세운다. 견습 마법사부터 불러들이자.`,true);
+  modal(`${icHTML('tower',24)} 마탑: 심연의 왕국`,`
+    <b>견습 마법사</b>가 마나를 뽑아내고, 그 위 시설들이 아래 시설을 스스로 지어 올립니다.<br><br>
+    처음에는 <b class="gold">직접</b> 해야 합니다 — 마나를 채집하고, 시설을 올리고, 연구를 사고, 던전에 출격하고.<br>
+    진행할수록 <b>자동화</b>가 하나씩 열립니다. 무엇이 언제 열리는지는 자동화 탭에서 볼 수 있습니다.<br><br>
+    마나가 쌓이면 연구가 열리고, 던전 깊이가 곧 배율이 됩니다.
+    한계에 닿으면 <b class="soul">환생</b>, 그 위에 <b class="relic">승천</b>, 다시 그 위에 <b>시련</b>이 기다립니다.
+  `);
+}
+render();
+</script>
+</body>
+</html>
