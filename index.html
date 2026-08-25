@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>마탑: 심연의 왕국</title>
 <meta name="description" content="심연의 마탑을 세우고, 환생과 승천을 거듭하는 방치형 판타지 게임">
+<meta name="theme-color" content="#0b0b0d">
+<meta property="og:title" content="마탑: 심연의 왕국">
+<meta property="og:description" content="단일 HTML 판타지 방치형 게임 — 도트 42종 직접 제작">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:,">
 <style>
 /* ═══════════════════════════════════════════════
    마탑: 심연의 왕국 — 판타지 UI
@@ -1781,6 +1786,11 @@ $('fileIn').addEventListener('change',ev=>{
 /* ══════════════ 시작 ══════════════ */
 $('verTag').textContent='v'+VERSION;
 $('brandIco').src=spriteURL('tower');
+{ // 파비콘도 직접 찍은 도트로
+  const fav=document.querySelector('link[rel="icon"]')||document.createElement('link');
+  fav.rel='icon'; fav.type='image/png'; fav.href=spriteURL('tower');
+  document.head.appendChild(fav);
+}
 recalc(); buildRes();
 const had=load();
 recalc();
