@@ -52,7 +52,7 @@ img{display:block}
   box-shadow:0 10px 26px rgba(0,0,0,.6), 0 1px 0 rgba(212,169,74,.16);
   backdrop-filter:blur(10px);
 }
-#brand{display:flex;align-items:center;gap:10px;padding:9px 16px 4px;max-width:1180px;margin:0 auto}
+#brand{display:flex;align-items:center;gap:10px;padding:9px 16px 4px;max-width:1320px;margin:0 auto}
 #brand h1{font-size:19px;letter-spacing:.06em;
   background:linear-gradient(180deg,var(--gold2),var(--gold) 55%,#a9822f);
   -webkit-background-clip:text;background-clip:text;color:transparent;
@@ -60,7 +60,7 @@ img{display:block}
 #brand .sub{font-size:11px;color:var(--faint);font-family:var(--serif);letter-spacing:.14em}
 #brand .ver{margin-left:auto;font-size:10.5px;color:var(--faint)}
 
-#res{display:flex;gap:8px;padding:4px 16px 10px;max-width:1180px;margin:0 auto;
+#res{display:flex;gap:8px;padding:4px 16px 10px;max-width:1320px;margin:0 auto;
   overflow-x:auto;scrollbar-width:none}
 #res::-webkit-scrollbar{display:none}
 .res{
@@ -84,13 +84,28 @@ img{display:block}
 .res.floor .val{color:var(--gold)}
 
 /* ── 탭 ─────────────────────────── */
-#tabs{display:flex;gap:3px;padding:0 12px;max-width:1180px;margin:0 auto;overflow-x:auto;scrollbar-width:none}
-#tabs::-webkit-scrollbar{display:none}
+#shell{
+  max-width:1320px;margin:0 auto;padding:14px 16px 60px;
+  display:grid;grid-template-columns:214px minmax(0,1fr);gap:14px;align-items:start;
+}
+#side{position:sticky;top:calc(var(--topH,118px) + 12px)}
+#tabs{display:flex;flex-direction:column;gap:3px}
+#sidestat{
+  margin-top:10px;padding:11px 12px;border-radius:4px;font-size:11.5px;line-height:1.85;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 45%),linear-gradient(180deg,var(--stone2),var(--stone));
+  border:1px solid var(--edge);color:var(--dim);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 4px 14px rgba(0,0,0,.45);
+}
+#sidestat .k{color:var(--faint);font-size:10.5px;letter-spacing:.05em}
+#sidestat .v{color:var(--txt);font-variant-numeric:tabular-nums}
+#sidestat .mini{height:6px;border-radius:2px;background:#0c0c0e;border:1px solid var(--edge);overflow:hidden;margin:3px 0 7px}
+#sidestat .mini>i{display:block;height:100%;background:linear-gradient(90deg,#7a2a20,#cf7a63)}
+#sidestat hr{border:0;border-top:1px solid var(--edge);margin:8px 0}
 .tab{
   position:relative;background:linear-gradient(180deg,var(--stone),rgba(12,9,22,.5));
-  border:1px solid transparent;border-bottom:none;border-radius:4px 4px 0 0;
-  padding:7px 13px 8px;color:var(--dim);white-space:nowrap;cursor:pointer;
-  display:flex;align-items:center;gap:6px;font-family:var(--serif);font-size:13.5px;letter-spacing:.03em;
+  border:1px solid transparent;border-radius:3px;
+  padding:8px 11px;color:var(--dim);white-space:nowrap;cursor:pointer;width:100%;
+  display:flex;align-items:center;gap:8px;font-size:13.5px;letter-spacing:.02em;
   user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:color .12s,background .12s;
 }
 .tab:hover{color:var(--txt);background:linear-gradient(180deg,var(--stone2),rgba(12,9,22,.5))}
@@ -99,15 +114,15 @@ img{display:block}
   background:linear-gradient(180deg,var(--stone3),var(--stone));
   box-shadow:inset 0 1px 0 rgba(212,169,74,.25);
 }
-.tab.on::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;
-  background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.tab.on::after{content:'';position:absolute;left:-1px;top:-1px;bottom:-1px;width:2px;
+  background:linear-gradient(180deg,transparent,var(--gold),transparent)}
 .tab.locked{opacity:.32;pointer-events:none;filter:grayscale(.7)}
-.tab .n{font-size:9.5px;color:var(--faint);font-family:var(--sans)}
+.tab .n{font-size:9.5px;color:var(--faint);margin-left:auto}
 .tab .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 7px var(--gold);display:none}
 .tab.alert .dot{display:block}
 
 /* ── 본문 ─────────────────────────── */
-main{max-width:1180px;margin:0 auto;padding:14px 16px 60px}
+main{min-width:0}
 .panel{display:none} .panel.on{display:block}
 
 .card{
@@ -285,8 +300,16 @@ main{max-width:1180px;margin:0 auto;padding:14px 16px 60px}
 .log::-webkit-scrollbar{width:9px}
 ::selection{background:rgba(212,169,74,.28);color:#fff}
 
+@media(max-width:900px){
+  #shell{grid-template-columns:1fr;gap:10px;padding:10px}
+  #side{position:static}
+  #tabs{flex-direction:row;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  #tabs::-webkit-scrollbar{display:none}
+  .tab{width:auto}
+  .tab .n{display:none}
+  #sidestat{display:none}
+}
 @media(max-width:640px){
-  main{padding:10px}
   .res{flex:1 1 128px;min-width:118px}
   .unit{grid-template-columns:auto 1fr;row-gap:8px}
   .unit .buy{grid-column:1/-1;width:100%}
@@ -304,9 +327,14 @@ main{max-width:1180px;margin:0 auto;padding:14px 16px 60px}
     <span class="ver" id="verTag"></span>
   </div>
   <div id="res"></div>
-  <div id="tabs"></div>
 </div>
-<main id="main"></main>
+<div id="shell">
+  <nav id="side">
+    <div id="tabs"></div>
+    <div id="sidestat"></div>
+  </nav>
+  <main id="main"></main>
+</div>
 <div id="modalWrap"><div id="modal">
   <h3 id="modalTitle"></h3>
   <div class="body" id="modalBody"></div>
@@ -633,9 +661,128 @@ skull:[
 '....0z0z0z0z0660',
 '.....0000000000',
 ],
+slime:[
+'........0000',
+'......00tsss00',
+'.....0tsssssss0',
+'....0tssssssss0',
+'...0tsssssssss0',
+'...0sssssssssss0',
+'..0ssss000ss000s0',
+'..0sss0z0ss0z0ss0',
+'..0ssss000ss000s0',
+'..0sssssssssssss0',
+'..0ssssssssssssss0',
+'..0rssssssssssssr0',
+'.0rrsssssssssssrr0',
+'.0rrrssssssssrrrr0',
+'0qqrrrrrrrrrrrrqq0',
+'0qqqqqqqqqqqqqqqq0',
+'.000000000000000'],
+bat:[
+'.0000..........0000',
+'0uuuu00......00uuuu0',
+'0uuuuuu0....0uuuuuu0',
+'0uuuuuuu0..0uuuuuuu0',
+'.0uuuuuu0vv0uuuuuu0',
+'..0uuuuu0vwv0uuuuu0',
+'...0uuu0vwnwv0uuu0',
+'....000vwnnwv000',
+'.......0vwwwv0',
+'........0vwv0',
+'.........0v0',
+'..........0'],
+wraith:[
+'......00000',
+'....00uuuuu00',
+'...0uuuuuuuuu0',
+'..0uuvvvvvvvuu0',
+'..0uvv00v00vvu0',
+'..0uvv0n0n0vvu0',
+'..0uvv00v00vvu0',
+'..0uvvvvvvvvvu0',
+'..0uvvvvvvvvvu0',
+'..0uuvvvvvvvuu0',
+'...0uvvvvvvvu0',
+'...0u0vvvvv0u0',
+'....0.0vvv0.0',
+'......0v0v0',
+'.......0.0'],
+golem:[
+'...0000000000',
+'..077777777770',
+'..0755555555570',
+'..075n555555n570',
+'..0755555555570',
+'..07555nnn555570',
+'..077777777770',
+'.0777777777770',
+'.05555555555550',
+'0555555555555550',
+'0555000000055550',
+'0555.......05550',
+'0555.......05550',
+'0555.......05550',
+'0000.......0000'],
+serpent:[
+'......000000',
+'....00hhhhhh00',
+'...0hhhhhhhhhh0',
+'...0hhgn00ngh0',
+'...0hhhh00hhhh0',
+'...0hhhhhhhhhh0',
+'....0hhhhhhhh0',
+'.....00hhhh00',
+'......0hhhh0',
+'.....0hhhh0',
+'....0hhhh0',
+'...0hhhh0',
+'..0hhhh0',
+'..0hhh0',
+'...000'],
+demon:[
+'.00..........00',
+'0nn0........0nn0',
+'0nnn0......0nnn0',
+'0nnn00000000nnn0',
+'.0nnnnnnnnnnnn0',
+'..0nnnnnnnnnn0',
+'..0nn00nn00nn0',
+'..0n0ff0f0ff0n0',
+'..0nn00nn00nn0',
+'..0nnnnnnnnnn0',
+'..0nnn000000nn0',
+'..0nn0z0z0znn0',
+'...0nnnnnnnn0',
+'....0nnnnnn0',
+'.....000000'],
 };
 
-const SPR16={
+const SPR16={incense:['....0..0','...0f0f0','....0f0','.....0','.00000000','0dddddddd0','0cbbbbbbc0','.0dddddd0','..0cccc0','.0aaaaaa0','.00000000'],
+loupe:['..00000','.07ttt70','07tsssst0','0tssssss0','0tssssss0','0tssssss0','.0tssss0','..07tt700','.....0660','......0660','.......0660','........00'],
+runebook:['000000000000','0dccccccccd0','0dz111111zd0','0dz1sss11zd0','0dz11s111zd0','0dz1sss11zd0','0dz111111zd0','0dccccccccd0','0aaaaaaaaaa0','000000000000'],
+bone:['.00....00','0zz0..0zz0','0zzz00zzz0','.0zzzzzz0','..0zzzz0','...0zz0','...0zz0','..0zzzz0','.0zzzzzz0','0zzz00zzz0','0zz0..0zz0','.00....00'],
+coinpurse:['...00..00','..0dd00dd0','.000000000','0cbbbbbbbc0','0cdddddddc0','0cdd000ddc0','0cdd0d0ddc0','0cdd000ddc0','0cdddddddc0','.0caaaaac0','..0000000'],
+gauntlet:['.000.000','0660.0660','06660666 0','066666660','066666660','0666666660','.055555550','.055555550','..0555550','...000000'],
+runering:['...000','..0ddd0','.0dfsfd0','0dd000dd0','0d0...0d0','0d0...0d0','0dd0.0dd0','.0dd0dd0','..0ddd0','...000'],
+chisel:['.......00','......0770','.....07770','....07770','...07770','..07770','.077700','0555500','0555000','.00000'],
+chalice:['0dddddddd0','0dffffffd0','0dffffffd0','.0dffffd0','..0dffd0','...0dd0','...0dd0','..0dddd0','.0dddddd0','0cbbbbbbc0','.00000000'],
+idol:['..0000000','.077777770','07555555570','075n555n570','07555555570','0755nnn5570','.077777770','.05555555 0','07777777770','05555555550','0000000000'],
+clock:['..000000','.07ddddd70','0dd11111dd0','0d1111z11d0','0d111zz111d0','0d1111z1111d0','0dd11z111dd0','.0dd11111dd0','..07ddddd70','...000000'],
+crown16:['.0...0...0','0d0.0d0.0d0','0d0d0d0d0d0','0ddddddddd0','0dddnddddd0','0ccccccccc0','0baaaaaaab0','.000000000'],
+banner:['.000000000','.0nnnnnnn0','.0nndddnn0','.0nnnnnnn0','.0nnnnnn0','.0nnnnn0','.0nnnn0','.0bb0','.0bb0','.0bb0','.0bb0','.000'],
+engrave:['.....000000','....07777770','....07555570','....07777770','......0bb0','.0f0..0bb0','f..f..0bb0','.0f0..0bb0','......0bb0','.....0bbb0','......000'],
+treasure:['..00000000','.0dcccccd0','0dcbbbbbcd0','0dc00000cd0','000000000000','0dddddddddd0','0dd00dd00dd0','0dd0dd0d0dd0','0dddddddddd0','0cbbbbbbbbc0','.0000000000'],
+seed:['.....0','...0jk0','..0jjk0.0','.0jjjk0j0','..0jj0jj0','...0jjj0','....0j0','....0j0','..0000000','.0hhhhhhh0','.0hgggggh0','..0000000'],
+sealedbook:['000000000000','0mnnnnnnnnm0','0mn111111nm0','0mn1dddd1nm0','0mn1d00d1nm0','0mn1dddd1nm0','0mn111111nm0','0mnnnnnnnnm0','0llllllllll0','000000000000'],
+emptypouch:['..00..00','.05500550','000000000','05555555 0','05500000550','0550...0550','.055...550','..0555550','...00000'],
+brokencog:['..00..00','.05500550','000000000000','05555555555 0','0555000555 50','0550...0555 0','0550...0.0','055500055 50','05555555 550','000000000000'],
+darkeye:['...000000','.001111110 0','01uuuuuuuu10','1uuuvvvuuuu1','1uuv000vuuu1','1uuv0n0vuuu1','1uuuvvvuuuu1','01uuuuuuuu10','.0011111100','...000000'],
+crackedvial:['..0000','..0jj0','..0hj0','.00hj00','0jjhjjj0','0jj0hjjj0','0jjj0jjj0','0jjjj0jj0','0hjjjj0h0','.0hhhhhh0','..000000'],
+abysseye:['....000','..0011100','.01uuuuu10','01uvvvvvu10','1uv00000vu1','1uv0n0n0vu1','1uv00000vu1','01uvvvvvu10','.01uuuuu10','..0011100','....000'],
+medal_s:['.0s0...0s0','.0s0...0s0','..0s000s0','..0000000','.0666666 0','0657775 60','0657z75 60','0657775 60','.06666660','..0000000'],
+medal_b:['.0s0...0s0','.0s0...0s0','..0s000s0','..0000000','.0bbbbbb0','0bcdddcb0','0bcdedcb0','0bcdddcb0','.0bbbbbb0','..0000000'],
+
 flask:['.....000','.....0s0','.....0s0','....00s00','....0ssss0','...0stssss0','..0sttsssss0','..0ssssssrq0','..0qssssssq0','..0qrsssssq0','...0qrrrrq0','....000000'],
 feather:['..........00','.........0z70','........0zz70','.......0zzz70','......0zzz760','.....0zzz7660','....0zzz76600','...0zzz766000','..0zz7660','.0z7660','0b660','0ab0','000'],
 book:['0000000000000','0dccccccccccd0','0dz11111111zd0','0dzzzzzzzzzzd0','0dz11111111zd0','0dzzzzzzzzzzd0','0dz11111111zd0','0dzzzzzzzzzzd0','0dcccccccccccd0','0aaaaaaaaaaaa0','000000000000'],
@@ -725,19 +872,19 @@ const RESEARCH=[
  {id:'q4', sp:'cog',      nm:'공방 확장',   cost:8e5,  d:'상위 시설 효율 ×2.5', req:'q2', apply:m=>m.tUp*=2.5},
  {id:'q5', sp:'spiral',   nm:'자동 소환진', cost:1e7,  d:'자동 구매가 한 번에 최대 수량 구매', apply:m=>m.autoMax=true},
  {id:'q6', sp:'lantern',  nm:'심연의 등불', cost:1e8,  d:'던전 공격력 ×3',      apply:m=>m.dungeon*=3},
- {id:'q7', sp:'offering', nm:'봉헌의 예법', cost:6e8,  d:'오퍼링 획득 ×2',      apply:m=>m.offer*=2},
+ {id:'q7', sp:'incense', nm:'봉헌의 예법', cost:6e8,  d:'오퍼링 획득 ×2',      apply:m=>m.offer*=2},
  {id:'q8', sp:'bolt',     nm:'마나 폭풍',   cost:2e9,  d:'마나 생산 ×4',   req:'q4', apply:m=>m.prod*=4},
  {id:'q9', sp:'hourglass',nm:'시간 왜곡',   cost:5e10, d:'게임 속도 ×1.25',     apply:m=>m.speed*=1.25},
- {id:'q10',sp:'crystal',  nm:'결정 감정법', cost:2e11, d:'결정 획득 ×2',        apply:m=>m.crystal*=2},
+ {id:'q10',sp:'loupe',  nm:'결정 감정법', cost:2e11, d:'결정 획득 ×2',        apply:m=>m.crystal*=2},
  {id:'q11',sp:'vial',     nm:'영혼 추출기', cost:1e12, d:'영혼석 획득 ×1.5',    apply:m=>m.soul*=1.5},
  {id:'q12',sp:'swordup',  nm:'심연 검술',   cost:5e12, d:'던전 공격력 ×5', req:'q6', apply:m=>m.dungeon*=5},
  {id:'q13',sp:'star',     nm:'대마법 이론', cost:2e13, d:'마나 생산 ×8',   req:'q8', apply:m=>m.prod*=8},
- {id:'q14',sp:'rune_wisdom',nm:'룬 해독학', cost:1e14, d:'룬 최대 레벨 +10',    apply:m=>m.runeCap+=10},
+ {id:'q14',sp:'runebook',nm:'룬 해독학', cost:1e14, d:'룬 최대 레벨 +10',    apply:m=>m.runeCap+=10},
  {id:'q15',sp:'map',      nm:'무한 회랑',   cost:5e14, d:'층당 배율 2% → 5%',   apply:m=>m.floorPct=Math.max(m.floorPct,0.05)},
  {id:'q16',sp:'scroll',   nm:'봉헌 의식',   cost:2e15, d:'오퍼링 획득 ×3', req:'q7', apply:m=>m.offer*=3},
- {id:'q17',sp:'grimoire', nm:'장비 연성',   cost:1e16, d:'장비 효과 지수 ×1.5', apply:m=>m.gearPow*=1.5},
+ {id:'q17',sp:'anvil', nm:'장비 연성',   cost:1e16, d:'장비 효과 지수 ×1.5', apply:m=>m.gearPow*=1.5},
  {id:'q18',sp:'portal',   nm:'차원 균열',   cost:5e16, d:'마나 생산 ×15', req:'q13',apply:m=>m.prod*=15},
- {id:'q19',sp:'skull',    nm:'보스 해부학', cost:5e17, d:'보스 보상 ×5',        apply:m=>m.boss*=5},
+ {id:'q19',sp:'bone',    nm:'보스 해부학', cost:5e17, d:'보스 보상 ×5',        apply:m=>m.boss*=5},
  {id:'q20',sp:'infinity', nm:'무한의 계시', cost:1e19, d:'마나 생산 ×50', req:'q18',apply:m=>m.prod*=50},
 ];
 
@@ -762,44 +909,44 @@ const gearCost=l=>8*Math.pow(1.6,l);
 /* 영혼 강화 · 환생 통화, 승천 시 초기화 */
 const SOUL_UPS=[
  {id:'s1', sp:'gem',      nm:'영혼 각인',  max:Infinity,c:l=>2*Math.pow(1.7,l),  d:l=>`마나 생산 ×${fmt(Math.pow(1.15,l))} → ×${fmt(Math.pow(1.15,l+1))}`, apply:(m,l)=>m.prod*=Math.pow(1.15,l)},
- {id:'s2', sp:'scroll',   nm:'값싼 주문서',max:12,      c:l=>6*Math.pow(2.1,l),  d:l=>`시설 비용 증가율 -${(1.2*l).toFixed(1)}%p → -${(1.2*(l+1)).toFixed(1)}%p`, apply:(m,l)=>m.costGrow-=0.012*l},
+ {id:'s2', sp:'coinpurse',   nm:'값싼 주문서',max:12,      c:l=>6*Math.pow(2.1,l),  d:l=>`시설 비용 증가율 -${(1.2*l).toFixed(1)}%p → -${(1.2*(l+1)).toFixed(1)}%p`, apply:(m,l)=>m.costGrow-=0.012*l},
  {id:'s3', sp:'fastfwd',  nm:'신속한 손길',max:8,       c:l=>10*Math.pow(2,l),   d:l=>`자동화 주기 ${(1-0.1*l)*100|0}% → ${(1-0.1*(l+1))*100|0}%`, apply:(m,l)=>m.autoSpeed*=1-0.1*l},
  {id:'s4', sp:'sparkle',  nm:'영혼 공명',  max:Infinity,c:l=>14*Math.pow(2.2,l), d:l=>`영혼석 획득 ×${fmt(Math.pow(1.3,l))} → ×${fmt(Math.pow(1.3,l+1))}`, apply:(m,l)=>m.soul*=Math.pow(1.3,l)},
- {id:'s5', sp:'swordup',  nm:'던전 숙련',  max:Infinity,c:l=>9*Math.pow(1.95,l), d:l=>`던전 공격력 ×${fmt(Math.pow(1.35,l))} → ×${fmt(Math.pow(1.35,l+1))}`, apply:(m,l)=>m.dungeon*=Math.pow(1.35,l)},
+ {id:'s5', sp:'gauntlet',  nm:'던전 숙련',  max:Infinity,c:l=>9*Math.pow(1.95,l), d:l=>`던전 공격력 ×${fmt(Math.pow(1.35,l))} → ×${fmt(Math.pow(1.35,l+1))}`, apply:(m,l)=>m.dungeon*=Math.pow(1.35,l)},
  {id:'s6', sp:'moon',     nm:'오프라인 계약',max:10,    c:l=>18*Math.pow(1.8,l), d:l=>`오프라인 상한 ${4+2*l}시간 → ${6+2*l}시간`, apply:(m,l)=>m.offline=4+2*l},
  {id:'s7', sp:'gift',     nm:'시작 지원금',max:Infinity,c:l=>22*Math.pow(2.6,l), d:l=>`환생 직후 마나 ${fmt(startMana(l))} → ${fmt(startMana(l+1))}`, apply:()=>{}},
- {id:'s8', sp:'rune_wealth',nm:'룬 친화', max:10,       c:l=>25*Math.pow(2.4,l), d:l=>`룬 최대 레벨 +${5*l} → +${5*(l+1)}`, apply:(m,l)=>m.runeCap+=5*l},
- {id:'s9', sp:'crystal',  nm:'결정 세공',  max:Infinity,c:l=>16*Math.pow(2.3,l), d:l=>`결정 획득 ×${fmt(Math.pow(1.5,l))} → ×${fmt(Math.pow(1.5,l+1))}`, apply:(m,l)=>m.crystal*=Math.pow(1.5,l)},
- {id:'s10',sp:'offering', nm:'봉헌의 축복',max:Infinity,c:l=>20*Math.pow(2.35,l),d:l=>`오퍼링 획득 ×${fmt(Math.pow(1.4,l))} → ×${fmt(Math.pow(1.4,l+1))}`, apply:(m,l)=>m.offer*=Math.pow(1.4,l)},
+ {id:'s8', sp:'runering',nm:'룬 친화', max:10,       c:l=>25*Math.pow(2.4,l), d:l=>`룬 최대 레벨 +${5*l} → +${5*(l+1)}`, apply:(m,l)=>m.runeCap+=5*l},
+ {id:'s9', sp:'chisel',  nm:'결정 세공',  max:Infinity,c:l=>16*Math.pow(2.3,l), d:l=>`결정 획득 ×${fmt(Math.pow(1.5,l))} → ×${fmt(Math.pow(1.5,l+1))}`, apply:(m,l)=>m.crystal*=Math.pow(1.5,l)},
+ {id:'s10',sp:'chalice', nm:'봉헌의 축복',max:Infinity,c:l=>20*Math.pow(2.35,l),d:l=>`오퍼링 획득 ×${fmt(Math.pow(1.4,l))} → ×${fmt(Math.pow(1.4,l+1))}`, apply:(m,l)=>m.offer*=Math.pow(1.4,l)},
 ];
 
 /* 유물 강화 · 승천 통화, 영구 */
 const RELIC_UPS=[
- {id:'a1', sp:'relic',    nm:'고대 유물',  max:Infinity,c:l=>1*Math.pow(3,l),    d:l=>`마나 생산 ×${fmt(Math.pow(2,l))} → ×${fmt(Math.pow(2,l+1))}`, apply:(m,l)=>m.prod*=Math.pow(2,l)},
+ {id:'a1', sp:'idol',    nm:'고대 유물',  max:Infinity,c:l=>1*Math.pow(3,l),    d:l=>`마나 생산 ×${fmt(Math.pow(2,l))} → ×${fmt(Math.pow(2,l+1))}`, apply:(m,l)=>m.prod*=Math.pow(2,l)},
  {id:'a2', sp:'pickaxe',  nm:'영혼 광맥',  max:Infinity,c:l=>2*Math.pow(3.2,l),  d:l=>`영혼석 획득 ×${fmt(Math.pow(2.5,l))} → ×${fmt(Math.pow(2.5,l+1))}`, apply:(m,l)=>m.soul*=Math.pow(2.5,l)},
- {id:'a3', sp:'hourglass',nm:'시간 가속',  max:10,      c:l=>3*Math.pow(4,l),    d:l=>`게임 속도 +${12*l}% → +${12*(l+1)}%`, apply:(m,l)=>m.speed*=1+0.12*l},
+ {id:'a3', sp:'clock',nm:'시간 가속',  max:10,      c:l=>3*Math.pow(4,l),    d:l=>`게임 속도 +${12*l}% → +${12*(l+1)}%`, apply:(m,l)=>m.speed*=1+0.12*l},
  {id:'a4', sp:'compass',  nm:'심연 항해',  max:Infinity,c:l=>4*Math.pow(3.4,l),  d:l=>`던전 보상 ×${fmt(Math.pow(3,l))} → ×${fmt(Math.pow(3,l+1))}`, apply:(m,l)=>m.floorLoot*=Math.pow(3,l)},
- {id:'a5', sp:'council',  nm:'왕국의 축복',max:Infinity,c:l=>5*Math.pow(3.5,l),  d:l=>`환생 후 각 시설 ${8*l}개 → ${8*(l+1)}개 무료`, apply:()=>{}},
- {id:'a6', sp:'map',      nm:'심연의 지도',max:Infinity,c:l=>6*Math.pow(3.8,l),  d:l=>`층당 배율 +${2*l}%p → +${2*(l+1)}%p`, apply:(m,l)=>m.floorPct+=0.02*l},
- {id:'a7', sp:'rune_abyss',nm:'룬 각인술', max:5,       c:l=>10*Math.pow(4.5,l), d:l=>`룬 최대 레벨 +${10*l} → +${10*(l+1)}`, apply:(m,l)=>m.runeCap+=10*l},
- {id:'a8', sp:'gem',      nm:'보물 감식',  max:Infinity,c:l=>8*Math.pow(3.6,l),  d:l=>`결정 획득 ×${fmt(Math.pow(2,l))} → ×${fmt(Math.pow(2,l+1))}`, apply:(m,l)=>m.crystal*=Math.pow(2,l)},
+ {id:'a5', sp:'crown16',  nm:'왕국의 축복',max:Infinity,c:l=>5*Math.pow(3.5,l),  d:l=>`환생 후 각 시설 ${8*l}개 → ${8*(l+1)}개 무료`, apply:()=>{}},
+ {id:'a6', sp:'banner',      nm:'심연의 지도',max:Infinity,c:l=>6*Math.pow(3.8,l),  d:l=>`층당 배율 +${2*l}%p → +${2*(l+1)}%p`, apply:(m,l)=>m.floorPct+=0.02*l},
+ {id:'a7', sp:'engrave',nm:'룬 각인술', max:5,       c:l=>10*Math.pow(4.5,l), d:l=>`룬 최대 레벨 +${10*l} → +${10*(l+1)}`, apply:(m,l)=>m.runeCap+=10*l},
+ {id:'a8', sp:'treasure',      nm:'보물 감식',  max:Infinity,c:l=>8*Math.pow(3.6,l),  d:l=>`결정 획득 ×${fmt(Math.pow(2,l))} → ×${fmt(Math.pow(2,l+1))}`, apply:(m,l)=>m.crystal*=Math.pow(2,l)},
  {id:'a9', sp:'chain',    nm:'시련의 인장',max:Infinity,c:l=>12*Math.pow(4,l),   d:l=>`도전 보상 ×${fmt(Math.pow(1.5,l))} → ×${fmt(Math.pow(1.5,l+1))}`, apply:(m,l)=>m.chalPow*=Math.pow(1.5,l)},
- {id:'a10',sp:'star',     nm:'초월의 씨앗',max:Infinity,c:l=>20*Math.pow(5,l),   d:l=>`모든 생산·획득 ×${fmt(Math.pow(1.35,l))} → ×${fmt(Math.pow(1.35,l+1))}`, apply:(m,l)=>{const v=Math.pow(1.35,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+ {id:'a10',sp:'seed',     nm:'초월의 씨앗',max:Infinity,c:l=>20*Math.pow(5,l),   d:l=>`모든 생산·획득 ×${fmt(Math.pow(1.35,l))} → ×${fmt(Math.pow(1.35,l+1))}`, apply:(m,l)=>{const v=Math.pow(1.35,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
 ];
 
 /* 도전 · 승천 1회 후 해금. 제약을 걸고 목표 마나 달성 시 영구 보상 */
 const CHALLENGES=[
- {id:'c1',sp:'book',   nm:'침묵의 시련', rule:{noResearch:1}, base:1e9,  max:5,
+ {id:'c1',sp:'sealedbook',   nm:'침묵의 시련', rule:{noResearch:1}, base:1e9,  max:5,
   desc:'연구를 사용할 수 없다',            rw:c=>`마나 생산 ×${fmt(Math.pow(1.8,c))}`, apply:(m,c)=>m.prod*=Math.pow(1.8,c)},
- {id:'c2',sp:'gift',   nm:'빈곤의 시련', rule:{maxTier:2},    base:1e8,  max:5,
+ {id:'c2',sp:'emptypouch',   nm:'빈곤의 시련', rule:{maxTier:2},    base:1e8,  max:5,
   desc:'마탑 이상 시설을 지을 수 없다',    rw:c=>`시설 비용 증가율 -${(1.5*c).toFixed(1)}%p`, apply:(m,c)=>m.costGrow-=0.015*c},
- {id:'c3',sp:'cog',    nm:'고독의 시련', rule:{noAuto:1},     base:1e10, max:5,
+ {id:'c3',sp:'brokencog',    nm:'고독의 시련', rule:{noAuto:1},     base:1e10, max:5,
   desc:'모든 자동화가 멈춘다',             rw:c=>`자동화 주기 -${(10*c)}%`, apply:(m,c)=>m.autoSpeed*=Math.pow(0.9,c)},
- {id:'c4',sp:'sword',  nm:'어둠의 시련', rule:{noDungeon:1},  base:1e12, max:5,
+ {id:'c4',sp:'darkeye',  nm:'어둠의 시련', rule:{noDungeon:1},  base:1e12, max:5,
   desc:'던전에 들어갈 수 없다',            rw:c=>`던전 공격력 ×${fmt(Math.pow(2.2,c))}`, apply:(m,c)=>m.dungeon*=Math.pow(2.2,c)},
- {id:'c5',sp:'vial',   nm:'고갈의 시련', rule:{drain:1e3},    base:1e7,  max:5,
+ {id:'c5',sp:'crackedvial',   nm:'고갈의 시련', rule:{drain:1e3},    base:1e7,  max:5,
   desc:'마나 생산이 1000분의 1로 줄어든다',rw:c=>`오퍼링 획득 ×${fmt(Math.pow(2,c))}`, apply:(m,c)=>m.offer*=Math.pow(2,c)},
- {id:'c6',sp:'skull',  nm:'심연의 시련', rule:{noResearch:1,noAuto:1,noDungeon:1,drain:10}, base:1e13, max:5,
+ {id:'c6',sp:'abysseye',  nm:'심연의 시련', rule:{noResearch:1,noAuto:1,noDungeon:1,drain:10}, base:1e13, max:5,
   desc:'위의 시련이 한꺼번에 몰아친다',    rw:c=>`모든 생산·획득 ×${fmt(Math.pow(2,c))}`, apply:(m,c)=>{const v=Math.pow(2,c);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
 ];
 const chalGoal=(ch,c)=>ch.base*Math.pow(120,c);
@@ -937,6 +1084,19 @@ function addMana(v){S.mana+=v;S.manaRun+=v;S.manaEver+=v}
 
 /* ══════════════ 던전 ══════════════ */
 const isBoss=f=>f%10===0;
+/* 층마다 다른 적이 나온다 */
+const FOES=[
+ {sp:'slime',  nm:'점액 덩어리'},
+ {sp:'bat',    nm:'심연 박쥐'},
+ {sp:'beast',  nm:'그림자 마수'},
+ {sp:'wraith', nm:'망령'},
+ {sp:'serpent',nm:'독니 뱀'},
+ {sp:'golem',  nm:'석상 골렘'},
+];
+const BOSSES=[{sp:'skull',nm:'해골 군주'},{sp:'demon',nm:'심연의 마왕'}];
+function foeOf(f){
+  return isBoss(f) ? BOSSES[(Math.floor(f/10)-1)%BOSSES.length] : FOES[(f-1)%FOES.length];
+}
 function dungeonPower(){
   let u=0;for(let i=0;i<5;i++)u+=cnt(i);
   return (1+Math.pow(u,0.45))*M().dungeon;
@@ -957,7 +1117,8 @@ function clearFloor(){
   if(l.offering){S.offering+=l.offering;S.offerEver+=l.offering}
   const nw=f>S.deepest;
   if(nw) S.deepest=f;
-  log(`${icHTML('sword')}${isBoss(f)?'<b class="bad">보스</b> ':''}<b>${f}층</b> 격파 · ${icHTML('mana')}${fmt(l.mana)} ${icHTML('crystal')}${fmt(l.crystal)}${l.offering?' '+icHTML('offering')+fmt(l.offering):''}`, isBoss(f));
+  const foe=foeOf(f);
+  log(`${icHTML(foe.sp)}${isBoss(f)?'<b class="bad">보스</b> ':''}<b>${foe.nm}</b> 격파 <span class="dim">${f}층</span> · ${icHTML('mana')}${fmt(l.mana)} ${icHTML('crystal')}${fmt(l.crystal)}${l.offering?' '+icHTML('offering')+fmt(l.offering):''}`, isBoss(f));
   S.floor=f+1; recalc();
 }
 
@@ -1167,7 +1328,8 @@ function tick(dt){
 function checkAchs(){
   for(const a of ACHS) if(!S.achs[a.id]&&a.f()){
     S.achs[a.id]=1;
-    achToast(a.nm,a.d+' · 마나 생산 +2%','medal');
+    const tier=ACHS.indexOf(a);
+    achToast(a.nm,a.d+' · 마나 생산 +2%',tier<10?'medal_b':tier<20?'medal_s':'medal');
     log(`${icHTML('medal')}업적 <b class="gold">${a.nm}</b> 달성 · 마나 생산 +2%`,true);
     flagTab('ach');
   }
@@ -1393,7 +1555,7 @@ function buildResearch(p){
 function buildDungeon(p){
   const c=card(['심연의 던전','sword'],'원정대의 공격력은 보유한 시설 총합에서 나온다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다.');
   const ar=el('div','arena');
-  const foe=el('div','foe'); const foeIco=ic('beast',72); foe.appendChild(foeIco);
+  const foe=el('div','foe'); const foeIco=ic('slime',72); foe.appendChild(foeIco);
   const right=el('div');
   const ftitle=el('div'); ftitle.style.cssText='font-family:var(--serif);font-size:16px;margin-bottom:5px';
   const hp=el('div','hpbar','<i></i><span></span>');
@@ -1417,9 +1579,9 @@ function buildDungeon(p){
   updaters.push(()=>{
     const f=S.floor,h=floorHP(f),pw=dungeonPower(),l=floorLoot(f),boss=isBoss(f);
     foe.classList.toggle('boss',boss);
-    const want=spriteURL(boss?'skull':'beast');
+    const fo=foeOf(f), want=spriteURL(fo.sp);
     if(foeIco.src!==want) foeIco.src=want;
-    ftitle.innerHTML=`${boss?'<b class="bad">보스 층</b> · ':''}<b class="gold">${f}층</b> <span class="dim" style="font-size:12px">최심층 ${S.deepest}층</span>`;
+    ftitle.innerHTML=`<b class="gold">${fo.nm}</b> ${boss?'<span class="tag bad" style="vertical-align:2px">보스</span> ':''}<span class="dim" style="font-size:12.5px">${f}층 · 최심층 ${S.deepest}층</span>`;
     const r=Math.max(0,Math.min(1,S.prog/h));
     hp.querySelector('i').style.width=(r*100).toFixed(1)+'%';
     hp.querySelector('span').textContent=`${fmt(S.prog)} / ${fmt(h)} (${(r*100).toFixed(1)}%)`;
@@ -1577,9 +1739,9 @@ function buildAch(p){
   const c=card(['업적','medal']);
   const sub=el('div','hint'); c.appendChild(sub);
   const g=el('div','grid');
-  ACHS.forEach(a=>{
+  ACHS.forEach((a,i)=>{
     const d=el('div','ach');
-    d.appendChild(ic('medal',32));
+    d.appendChild(ic(i<10?'medal_b':i<20?'medal_s':'medal',32));
     const t=el('div'); t.innerHTML=`<div class="t">${a.nm}</div><div class="d">${a.d}</div>`;
     d.appendChild(t); g.appendChild(d);
     updaters.push(()=>d.classList.toggle('got',!!S.achs[a.id]));
@@ -1661,6 +1823,24 @@ function buildRes(){
     resNodes[r.id]={box:d,val:t.querySelector('.val'),sub:t.querySelector('.sub')};
   });
 }
+function updateSide(){
+  const box=$('sidestat'); if(!box) return;
+  const m=M(), f=S.floor, hp=floorHP(f), fo=foeOf(f);
+  const pr=Math.max(0,Math.min(1,S.prog/hp));
+  const nextAuto=AUTO_DEFS.find(d=>!d.unlock());
+  const ch=curChal();
+  box.innerHTML=`
+    <div class="k">마나 생산</div><div class="v">${fmt(manaRate())} /초</div>
+    <hr>
+    <div class="k">${S.exploring?'교전 중':'대기 중'} · ${f}층</div>
+    <div class="v" style="display:flex;align-items:center;gap:5px">${icHTML(fo.sp)}${fo.nm}</div>
+    <div class="mini"><i style="width:${(pr*100).toFixed(1)}%"></i></div>
+    <div class="k">전체 배율</div><div class="v">×${fmt(m.prod)}</div>
+    <hr>
+    ${ch?`<div class="k">진행 중인 시련</div><div class="v bad">${ch.nm}</div>`
+        :`<div class="k">다음 해금</div><div class="v">${nextAuto?nextAuto.nm:'전부 해금'}</div>
+          <div class="k">${nextAuto?nextAuto.req:''}</div>`}`;
+}
 function updateRes(){
   RES.forEach(r=>{
     const n=resNodes[r.id]; if(!n) return;
@@ -1682,7 +1862,7 @@ function render(){
   refresh();
 }
 function refresh(){
-  recalc(); updateRes();
+  recalc(); updateRes(); updateSide();
   for(const u of updaters){try{u()}catch(e){console.error(e)}}
   const sig=TABS.map(t=>t.open()?1:0).join('');
   if(sig!==tabSig){tabSig=sig;buildTabs()}
@@ -1792,6 +1972,11 @@ $('brandIco').src=spriteURL('tower');
   document.head.appendChild(fav);
 }
 recalc(); buildRes();
+function syncTopH(){
+  document.documentElement.style.setProperty('--topH', $('top').offsetHeight+'px');
+}
+window.addEventListener('resize',syncTopH);
+setTimeout(syncTopH,0); setInterval(syncTopH,2000);
 const had=load();
 recalc();
 if(had) offlineCatchUp();
