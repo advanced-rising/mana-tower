@@ -3034,7 +3034,18 @@ let lastFrame=Date.now();
 setInterval(()=>{
   const now=Date.now();
   let dt=(now-lastFrame)/1000; lastFrame=now;
-  if(dt<0) dt=0; if(dt>2) dt=2;
+  if(dt<0) dt=0;
+  /* 탭이 묻히거나 기기가 잠들면 타이머가 아예 멈춘다. 깨어났을 때 그 간격을
+     2 초로 잘라 버리면 그동안의 진행이 통째로 사라진다 — 자리를 비운 것으로
+     치고 오프라인과 같은 상한 안에서 나눠 따라잡는다. */
+  if(dt>10){
+    const left=Math.min(dt, M().offline*3600);
+    const steps=Math.min(140,Math.max(2,Math.ceil(left/60)));
+    for(let i=0;i<steps;i++) tick(left/steps);
+    S.lastTick=now;
+    return;
+  }
+  if(dt>2) dt=2;
   tick(dt);
 },50);
 setInterval(refresh,100);
