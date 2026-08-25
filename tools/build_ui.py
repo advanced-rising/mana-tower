@@ -22,6 +22,7 @@ def frame(name,n,slice_,ink=INK,hi='#6e6858',lo='#17171c',body='#2a2a33',
           line=None,corner=None,pad=1):
     """n×n, 바깥 slice_ px 만 칠한다. d=가장자리까지 거리."""
     im=Image.new('RGBA',(n,n),T); px=im.load()
+    if isinstance(ink,str): ink=rgb(ink)
     hi,lo,body=rgb(hi),rgb(lo),rgb(body)
     line=rgb(line) if line else None
     corner=rgb(corner) if corner else None
@@ -67,6 +68,122 @@ frame('unit',18,6,      hi='#4a4740', lo='#131317', body='#22222a', line='#302d2
 frame('up',18,6,        hi='#4a4740', lo='#131317', body='#22222a', line='#302d26')
 frame('up_afford',18,6, hi='#8a7a52', lo='#1c1c22', body='#2e2a1e', line='#d4a94a', corner='#ecd08a')
 frame('up_done',18,6,   hi='#6f8a66', lo='#141a12', body='#1f2a1c', line='#4e6b46', corner='#8fae86')
+
+
+# ══ 레이아웃 UI ═════════════════════════════════
+def tile(name,w,h,fn):
+    im=Image.new('RGBA',(w,h),T); px=im.load()
+    for y in range(h):
+        for x in range(w):
+            c=fn(x,y)
+            if c: px[x,y]=rgb(c) if isinstance(c,str) else c
+    im.save(os.path.join(OUT,name+'.png')); return im
+
+# 진행바 — 테두리(9-slice) + 안쪽을 가로로 반복하는 채움 타일
+frame('bar',12,4,      hi='#16161b', lo='#4a4740', body='#0c0c0e')
+frame('bar_sm',8,2,    hi='#16161b', lo='#3d3a33', body='#0c0c0e')
+
+def fillbar(name,ramp,h):
+    def f(x,y):
+        t=y/max(1,h-1)
+        i=min(len(ramp)-1,int(t*len(ramp)))
+        c=ramp[i]
+        if y==0: c=ramp[-1]
+        if x%8==0 and y>0: c=ramp[max(0,i-1)]   # 세로 눈금
+        return c
+    tile(name,8,h,f)
+fillbar('fill_hp',   ['#e0917a','#cf7a63','#a54a36','#7a2a20'],12)
+fillbar('fill_hp_sm',['#e0917a','#cf7a63','#a54a36','#7a2a20'],6)
+fillbar('fill_gold', ['#fbeec2','#ecd08a','#d4a94a','#7a5f28'],12)
+
+# 아이콘 우물 — 안쪽으로 파인 액자
+frame('well',16,5, ink='#0b0b0d', hi='#16161b', lo='#5c5748', body='#141419', line='#2a2a33')
+# 로그 · 입력칸 — 깊게 파인 판
+frame('inset',16,5, ink='#0b0b0d', hi='#141419', lo='#4a4740', body='#0c0c0e', line='#1a1a20')
+# 태그 칩
+frame('tag',10,3, hi='#4a4740', lo='#16161b', body='#1c1c22')
+
+# 구분선 : 가로 반복 + 가운데 장식
+tile('rule',8,5,lambda x,y:('#7a5f28' if y==2 else ('#3d3a33' if y==1 or y==3 else None)))
+def diamond(x,y):
+    d=abs(x-5)+abs(y-4)
+    if d==0: return '#fbeec2'
+    if d<=1: return '#ecd08a'
+    if d<=2: return '#d4a94a'
+    if d<=3: return '#7a5f28'
+    if d<=4: return '#08080a'
+    return None
+tile('rule_mid',11,9,diamond)
+
+# 상단 바 아래 테두리
+def topedge(x,y):
+    return ['#3d3a33','#7a5f28','#1a1a20','#0e0e11'][y] if y<4 else None
+tile('topedge',8,4,topedge)
+
+# 배경 타일 — 어두운 돌결. 32칸에서 이어 붙는다.
+def bg(x,y):
+    v=(x*7+y*13)%23
+    if (x-y)%8==0: return '#131318'
+    if (x+y)%16==0: return '#121216'
+    if v==0: return '#141419'
+    if v==11: return '#0d0d10'
+    return '#0f0f13'
+tile('bg',32,32,bg)
+
+# 모달 뒷막 — 체크무늬 디더
+tile('dither',4,4,lambda x,y:(8,5,14,232) if (x+y)%2==0 else (0,0,0,0))
+
+# 탭 알림 점
+def dot(x,y):
+    d=(x-3)**2+(y-3)**2
+    if d<=1: return '#fbeec2'
+    if d<=4: return '#ecd08a'
+    if d<=8: return '#d4a94a'
+    if d<=12: return '#7a5f28'
+    return None
+tile('dot',7,7,dot)
+
+# 스크롤바
+tile('scroll_track',12,8,lambda x,y:'#0c0c0e' if x else '#1c1a16')
+def sthumb(x,y):
+    if x in (0,11): return '#0c0c0e'
+    if x==1: return '#6e6858'
+    if x==10: return '#26241f'
+    if y%8==2: return '#5c5748'
+    return '#403d34'
+tile('scroll_thumb',12,8,sthumb)
+
+# 상단 광채 — 4x4 순서 디더. 부드러운 그라디언트 대신 도트로 계조를 낸다.
+BAYER=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]]
+def glow_px(x,y):
+    t=max(0.0,1.0-y/190.0)**2.2
+    if BAYER[y%4][x%4]/16.0 < t*0.85:
+        return (212,169,74, int(40+70*t))
+    return None
+tile('bg_glow',32,190,glow_px)
+
+# 자동화 스위치
+def switch(on):
+    W,H=22,12
+    im=Image.new('RGBA',(W,H),T); px=im.load()
+    body = '#3a2d14' if on else '#17171c'
+    edge_= '#d4a94a' if on else '#4a4740'
+    for y in range(H):
+        for x in range(W):
+            d=min(x,y,W-1-x,H-1-y)
+            if d==0: px[x,y]=rgb('#08080a')
+            elif d==1: px[x,y]=rgb(edge_)
+            else: px[x,y]=rgb(body)
+    kx = W-9 if on else 2
+    for y in range(2,H-2):
+        for x in range(kx,kx+7):
+            t=(y-2)/(H-5)
+            ramp=['#fbeec2','#ecd08a','#d4a94a','#7a5f28'] if on else ['#b6b6c2','#8a8a9a','#66667a','#35353f']
+            px[x,y]=rgb(ramp[min(len(ramp)-1,int(t*len(ramp)))])
+    for x in range(kx,kx+7):
+        px[x,1]=rgb('#08080a'); px[x,H-2]=rgb('#08080a')
+    im.save(os.path.join(OUT,('sw_on' if on else 'sw_off')+'.png'))
+switch(True); switch(False)
 
 # ── 로고 ────────────────────────────────────
 FONT='/System/Library/Fonts/AppleSDGothicNeo.ttc'

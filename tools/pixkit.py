@@ -18,10 +18,23 @@ tools/sprites.json 의 문자 격자를 손으로 찍는 대신, 마스크(타�
   glow       중심이 가장 밝은 방사 그라디언트
   outline    바깥 한 겹을 색조별 어두운 색으로
 """
-import math, json
+import math, json, os
 
-DATA='/Users/risingcore/mana-tower/tools/sprites.json'
+# 격자를 기록할 파일. 프로젝트마다 다르므로 환경변수나 set_data() 로 바꾼다.
+DATA = os.environ.get('PIXKIT_DATA') or os.path.join(os.getcwd(), 'tools', 'sprites.json')
+def set_data(path):
+    global DATA
+    DATA = path
 LX,LY=-0.55,-0.72          # 광원: 왼쪽 위
+
+# 도안은 24칸(또는 32칸) 기준으로 짜 두고, 배율만 바꿔 다른 크기로 다시 찍는다.
+# set_scale(16/24) 하면 같은 코드가 16칸 도트로 나온다.
+SCALE = 1.0
+def set_scale(k):
+    global SCALE
+    SCALE = k
+def _s(v):
+    return v*SCALE
 
 # 색 ramp (어두움 -> 밝음)
 RAMP={
@@ -43,7 +56,8 @@ OUT={'gold':'A','stone':'M','steel':'0','blue':'D','green':'B','red':'C',
 class C:
     def __init__(s,n):
         s.n=n; s.g=[['.']*n for _ in range(n)]
-    def px(s,x,y,c):
+    def px(s,x,y,c,raw=False):
+        if not raw: x,y=round(_s(x)),round(_s(y))
         if 0<=x<s.n and 0<=y<s.n and c: s.g[y][x]=c
     def get(s,x,y):
         return s.g[y][x] if 0<=x<s.n and 0<=y<s.n else '.'
@@ -60,7 +74,7 @@ class C:
                 l=nx*LX+ny*LY+nz*.78
                 t=(l+.55)/1.45
                 t=lo+(hi-lo)*max(0.,min(1.,t))
-                s.px(x,y,R[max(0,min(len(R)-1,int(t*len(R))))])
+                s.px(x,y,R[max(0,min(len(R)-1,int(t*len(R))))],raw=True)
         if rim: s.rimlight(rim)
 
     # ── 방향 그라디언트 면 ───────────────────
@@ -73,26 +87,29 @@ class C:
                 if not inpoly(x+.5,y+.5,pts): continue
                 t=(y-min(ys))/max(1,(max(ys)-min(ys))) if axis=='y' else (x-min(xs))/max(1,(max(xs)-min(xs)))
                 t=b+(a-b)*t
-                s.px(x,y,R[max(0,min(len(R)-1,int(t*len(R))))])
+                s.px(x,y,R[max(0,min(len(R)-1,int(t*len(R))))],raw=True)
 
     def rect(s,x0,y0,x1,y1,c):
-        for y in range(y0,y1+1):
-            for x in range(x0,x1+1): s.px(x,y,c)
+        x0,y0,x1,y1=round(_s(x0)),round(_s(y0)),round(_s(x1)),round(_s(y1))
+        for y in range(y0,max(y0,y1)+1):
+            for x in range(x0,max(x0,x1)+1): s.px(x,y,c,raw=True)
 
     def line(s,x0,y0,x1,y1,c):
+        x0,y0,x1,y1=round(_s(x0)),round(_s(y0)),round(_s(x1)),round(_s(y1))
         dx,dy=abs(x1-x0),abs(y1-y0); sx=1 if x0<x1 else -1; sy=1 if y0<y1 else -1
         err=dx-dy
         while True:
-            s.px(x0,y0,c)
+            s.px(x0,y0,c,raw=True)
             if x0==x1 and y0==y1: break
             e2=2*err
             if e2>-dy: err-=dy; x0+=sx
             if e2<dx:  err+=dx; y0+=sy
 
     def disc(s,cx,cy,r,c):
+        cx,cy,r=_s(cx),_s(cy),max(.5,_s(r))
         for y in range(s.n):
             for x in range(s.n):
-                if (x+.5-cx)**2+(y+.5-cy)**2<=r*r: s.px(x,y,c)
+                if (x+.5-cx)**2+(y+.5-cy)**2<=r*r: s.px(x,y,c,raw=True)
 
     # ── 외곽선 ──────────────────────────────
     def outline(s,c,only=None):
@@ -103,7 +120,7 @@ class C:
                 for dx,dy in ((1,0),(-1,0),(0,1),(0,-1)):
                     v=s.get(x+dx,y+dy)
                     if v!='.' and (only is None or v in only): o.append((x,y)); break
-        for x,y in o: s.px(x,y,c)
+        for x,y in o: s.px(x,y,c,raw=True)
 
     # ── 림라이트: 그림자 쪽 가장자리를 한 톤 밝게 ─
     def rimlight(s,ramp):
@@ -116,7 +133,7 @@ class C:
                 if c not in idx or idx[c]>1: continue
                 if s.get(x+1,y)=='.' or s.get(x,y+1)=='.':
                     hits.append((x,y,R[min(len(R)-1,idx[c]+2)]))
-        for x,y,c in hits: s.px(x,y,c)
+        for x,y,c in hits: s.px(x,y,c,raw=True)
 
     def rows(s):
         return [''.join(r).rstrip('.') for r in s.g]
@@ -150,13 +167,18 @@ def save(new, sizes=None):
 
 # ══ 마스크 기반 조형 ══════════════════════════════
 def m_ellipse(cx,cy,rx,ry,n=64):
+    cx,cy,rx,ry=_s(cx),_s(cy),max(.5,_s(rx)),max(.5,_s(ry))
     return {(x,y) for y in range(n) for x in range(n)
             if ((x+.5-cx)/rx)**2+((y+.5-cy)/ry)**2<=1}
 def m_rect(x0,y0,x1,y1):
-    return {(x,y) for y in range(int(y0),int(y1)+1) for x in range(int(x0),int(x1)+1)}
+    x0,y0,x1,y1=round(_s(x0)),round(_s(y0)),round(_s(x1)),round(_s(y1))
+    return {(x,y) for y in range(y0,max(y0,y1)+1) for x in range(x0,max(x0,x1)+1)}
 def m_poly(pts,n=64):
+    pts=[(_s(a),_s(b)) for a,b in pts]
     return {(x,y) for y in range(n) for x in range(n) if inpoly(x+.5,y+.5,pts)}
 def m_line(x0,y0,x1,y1,w=1):
+    x0,y0,x1,y1=round(_s(x0)),round(_s(y0)),round(_s(x1)),round(_s(y1))
+    w=max(1,round(w*SCALE)) if SCALE<1 else w
     out=set(); dx,dy=abs(x1-x0),abs(y1-y0); sx=1 if x0<x1 else -1; sy=1 if y0<y1 else -1
     err=dx-dy
     while True:
@@ -185,7 +207,7 @@ def paint(c,mask,ramp,lo=0.0,hi=1.0,gamma=1.0):
         t=ds/(ds+dl)
         t=t**gamma
         t=lo+(hi-lo)*t
-        c.px(x,y,R[max(0,min(len(R)-1,int(t*len(R))))])
+        c.px(x,y,R[max(0,min(len(R)-1,int(t*len(R))))],raw=True)
 
 def paint_cyl(c,mask,ramp,lo=0.0,hi=1.0,peak=.32,axis='x'):
     """원기둥/벽면: 한 축 위치만으로 명암을 준다"""
@@ -201,7 +223,7 @@ def paint_cyl(c,mask,ramp,lo=0.0,hi=1.0,peak=.32,axis='x'):
             t=1-abs(u-peak)/max(peak,1-peak)
             t=lo+(hi-lo)*max(0.,min(1.,t))
             x,y=(v,k) if axis=='x' else (k,v)
-            c.px(x,y,R[max(0,min(len(R)-1,int(t*len(R))))])
+            c.px(x,y,R[max(0,min(len(R)-1,int(t*len(R))))],raw=True)
 
 def glow(c,mask,ramp,cx,cy,r,lo=0.0,hi=1.0,gamma=1.0):
     """스스로 빛나는 것: 중심이 가장 밝다"""
@@ -210,7 +232,7 @@ def glow(c,mask,ramp,cx,cy,r,lo=0.0,hi=1.0,gamma=1.0):
         d=math.hypot(x+.5-cx,y+.5-cy)/r
         t=max(0.,min(1.,1-d))**gamma
         t=lo+(hi-lo)*t
-        c.px(x,y,R[max(0,min(len(R)-1,int(t*len(R))))])
+        c.px(x,y,R[max(0,min(len(R)-1,int(t*len(R))))],raw=True)
 
 
 # ══ 도트 정리 ═══════════════════════════════════
@@ -244,13 +266,20 @@ def bands(c, mask, ramp, n=4, mode='form', cx=None, cy=None, r=None,
     R=RAMP[ramp] if isinstance(ramp,str) else ramp
     step=max(1,(len(R)-1)//max(1,n-1))
     pick=[R[min(len(R)-1,i*step)] for i in range(n)]
+    rowx=None
+    if mode=='axis':
+        rowx={}
+        for (a,b) in mask: rowx.setdefault(b,[]).append(a)
+        rowx={b:(min(v),max(v)) for b,v in rowx.items()}
     val={}
     for (x,y) in mask:
         if mode=='glow':
             d=math.hypot(x+.5-cx,y+.5-cy)/r
             t=max(0.,min(1.,1-d))**gamma
         elif mode=='axis':
-            t=_axis_t(mask,x,y)
+            x0,x1=rowx[y]
+            u=(x-x0)/max(1,(x1-x0))
+            t=1-abs(u-.32)/.68
         else:
             dl=_walk(mask,x,y,LX,LY); ds=_walk(mask,x,y,-LX,-LY)
             t=(ds/(ds+dl))**gamma
@@ -266,28 +295,17 @@ def bands(c, mask, ramp, n=4, mode='form', cx=None, cy=None, r=None,
             nv[(x,y)] = best[0] if best[1]>=5 else val[(x,y)]
         if nv==val: break
         val=nv
-    for (x,y),v in val.items(): c.px(x,y,pick[v])
+    for (x,y),v in val.items(): c.px(x,y,pick[v],raw=True)
     return val
-
-_AXIS={}
-def _axis_t(mask,x,y):
-    row=_AXIS.get(id(mask))
-    if row is None:
-        row={}
-        for (a,b) in mask: row.setdefault(b,[]).append(a)
-        _AXIS.clear(); _AXIS[id(mask)]=row
-    xs=row[y]; x0,x1=min(xs),max(xs)
-    u=(x-x0)/max(1,(x1-x0))
-    return 1-abs(u-.32)/.68
 
 def edge(c, mask, col, hi=None):
     """읽히는 외곽선 한 겹. hi 를 주면 좌상단 가장자리를 밝게 남긴다."""
     ring={p for (x,y) in mask for p in _n4(x,y) if p not in mask}
-    for (x,y) in ring: c.px(x,y,col)
+    for (x,y) in ring: c.px(x,y,col,raw=True)
     if hi:
         for (x,y) in mask:
             if (x-1,y) not in mask or (x,y-1) not in mask:
-                if (x+1,y) in mask and (x,y+1) in mask: c.px(x,y,hi)
+                if (x+1,y) in mask and (x,y+1) in mask: c.px(x,y,hi,raw=True)
 
 
 # ══ 재질 ════════════════════════════════════════
