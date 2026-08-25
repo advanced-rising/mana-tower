@@ -1,9 +1,9 @@
 import { recalc } from './multipliers'
-import { numLog } from './dungeon'
+
 import { NM, X, icHTML } from './core'
 import { CHALLENGES, chalGoal } from './content'
 import { S } from './state'
-import { chalTotal, curChal, fmt } from './num'
+import { chalTotal, curChal, fmt, numLog } from './num'
 import { softReset } from './prestige'
 import { autoOK } from './automation'
 import { log } from './tick'

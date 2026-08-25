@@ -2,7 +2,7 @@ import { INF_LAYERS } from './prestige'
 import { COSMOS, chapterOf } from './dungeon'
 import { X } from './core'
 import { S } from './state'
-import { chalTotal, cnt, cutTxt, fmt, fmtLog, gearTotal, pctTxt, powTxt, runeTotal, startManaLog } from './num'
+import { chalTotal, cnt, cutTxt, cutTxtL, fmt, fmtLog, gearTotal, mulTxtL, pctTxt, powTxt, powTxtL, runeTotal, smallMul, startManaLog } from './num'
 import { M } from './multipliers'
 
 /* ══════════════ 콘텐츠 정의 ══════════════
@@ -46,7 +46,7 @@ RUNES.push(
  {id:'mind',  sp:'rune_mind',  nm:{ko:'사색의 룬',en:"Rune of Contemplation"},
   d:l=>`${X('아래 두 단계 효율',"Bottom two tiers")} ×${powTxt(1.09,l)} → ×${powTxt(1.09,l+1)}`, apply:(m,l)=>m.t0*=Math.pow(1.09,l)},
  {id:'flow',  sp:'rune_flow',  nm:{ko:'물결의 룬',en:"Rune of Currents"},
-  d:l=>`${X('자동화 주기',"Automation interval")} ×${Math.pow(0.985,l).toFixed(3)} → ×${Math.pow(0.985,l+1).toFixed(3)}`, apply:(m,l)=>m.autoSpeed*=Math.pow(0.985,l)},
+  d:l=>`${X('자동화 주기',"Automation interval")} ×${smallMul(Math.pow(0.985,l))} → ×${smallMul(Math.pow(0.985,l+1))}`, apply:(m,l)=>m.autoSpeed*=Math.pow(0.985,l)},
  {id:'hollow',sp:'rune_void',  nm:{ko:'공동의 룬',en:"Rune of the Hollow"},
   d:l=>`${X('보스 보상',"Boss rewards")} ×${powTxt(1.11,l)} → ×${powTxt(1.11,l+1)}`, apply:(m,l)=>m.boss*=Math.pow(1.11,l)},
  {id:'gate',  sp:'rune_gate',  nm:{ko:'관문의 룬',en:"Rune of Gates"},
@@ -60,45 +60,45 @@ export const runeCost=l=>12*Math.pow(1.30,l);
 
 /* 장비 · 결정으로 강화, 영구 유지 */
 export const GEAR=[
- {id:'grimoire',sp:'grimoire',nm:{ko:'마도서',en:"Grimoire"}, d:(l,p)=>`${X('마나 생산',"Mana output")} ×${powTxt(1.15,l*p)} → ×${powTxt(1.15,(l+1)*p)}`,    apply:(m,l)=>m.prod*=Math.pow(1.15,l*m.gearPow)},
- {id:'staff',   sp:'staff',   nm:{ko:'지팡이',en:"Staff"}, d:(l,p)=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(1.25,l*p)} → ×${powTxt(1.25,(l+1)*p)}`,  apply:(m,l)=>m.dungeon*=Math.pow(1.25,l*m.gearPow)},
- {id:'amulet',  sp:'amulet',  nm:{ko:'부적',en:"Amulet"},   d:(l,p)=>`${X('결정·오퍼링',"Crystals & Offerings")} ×${powTxt(1.12,l*p)} → ×${powTxt(1.12,(l+1)*p)}`,  apply:(m,l)=>{const v=Math.pow(1.12,l*m.gearPow);m.crystal*=v;m.offer*=v;}},
+ {id:'grimoire',sp:'grimoire',nm:{ko:'마도서',en:"Grimoire"}, d:(l,p)=>`${X('마나 생산',"Mana output")} ×${powTxtL(1.15,l,p)} → ×${powTxtL(1.15,l+1,p)}`,    apply:(m,l)=>m.prod*=Math.pow(1.15,l*m.gearPow)},
+ {id:'staff',   sp:'staff',   nm:{ko:'지팡이',en:"Staff"}, d:(l,p)=>`${X('던전 공격력',"Dungeon power")} ×${powTxtL(1.25,l,p)} → ×${powTxtL(1.25,l+1,p)}`,  apply:(m,l)=>m.dungeon*=Math.pow(1.25,l*m.gearPow)},
+ {id:'amulet',  sp:'amulet',  nm:{ko:'부적',en:"Amulet"},   d:(l,p)=>`${X('결정·오퍼링',"Crystals & Offerings")} ×${powTxtL(1.12,l,p)} → ×${powTxtL(1.12,l+1,p)}`,  apply:(m,l)=>{const v=Math.pow(1.12,l*m.gearPow);m.crystal*=v;m.offer*=v;}},
 ];
 GEAR.push(
  {id:'shield', sp:'shield',  nm:{ko:'수호 방패',en:"Aegis"},
-  d:(l,p)=>`${X('던전 보상',"Dungeon rewards")} ×${powTxt(1.18,l*p)} → ×${powTxt(1.18,(l+1)*p)}`, apply:(m,l)=>m.floorLoot*=Math.pow(1.18,l*m.gearPow)},
+  d:(l,p)=>`${X('던전 보상',"Dungeon rewards")} ×${powTxtL(1.18,l,p)} → ×${powTxtL(1.18,l+1,p)}`, apply:(m,l)=>m.floorLoot*=Math.pow(1.18,l*m.gearPow)},
  {id:'gauntlet',sp:'gauntlet',nm:{ko:'강철 건틀릿',en:"Steel Gauntlet"},
-  d:(l,p)=>`${X('보스 보상',"Boss rewards")} ×${powTxt(1.22,l*p)} → ×${powTxt(1.22,(l+1)*p)}`, apply:(m,l)=>m.boss*=Math.pow(1.22,l*m.gearPow)},
+  d:(l,p)=>`${X('보스 보상',"Boss rewards")} ×${powTxtL(1.22,l,p)} → ×${powTxtL(1.22,l+1,p)}`, apply:(m,l)=>m.boss*=Math.pow(1.22,l*m.gearPow)},
  {id:'ring',   sp:'ring',    nm:{ko:'현자의 반지',en:"Sage Ring"},
   /* 상한을 장비 지수에 비례시키면 고리가 돈다 — 상한이 오르면 담금질 룬을 더 올릴 수 있고,
      그 룬이 다시 지수를 올린다. 지수가 1e70 까지 뛴 것이 이 고리 때문이었다. 끊는다. */
   d:(l,p)=>`${X('룬 최대 레벨',"Rune level cap")} +${2*l} → +${2*(l+1)}`, apply:(m,l)=>m.runeCap+=2*l},
  {id:'robe',   sp:'robe',    nm:{ko:'별빛 로브',en:"Starlit Robe"},
-  d:(l,p)=>`${X('영혼석 획득',"Soul Shards")} ×${powTxt(1.16,l*p)} → ×${powTxt(1.16,(l+1)*p)}`, apply:(m,l)=>m.soul*=Math.pow(1.16,l*m.gearPow)},
+  d:(l,p)=>`${X('영혼석 획득',"Soul Shards")} ×${powTxtL(1.16,l,p)} → ×${powTxtL(1.16,l+1,p)}`, apply:(m,l)=>m.soul*=Math.pow(1.16,l*m.gearPow)},
  {id:'crown',  sp:'crown16', nm:{ko:'왕관',en:"Crown"},
-  d:(l,p)=>`${X('오퍼링 획득',"Offerings")} ×${powTxt(1.16,l*p)} → ×${powTxt(1.16,(l+1)*p)}`, apply:(m,l)=>m.offer*=Math.pow(1.16,l*m.gearPow)},
+  d:(l,p)=>`${X('오퍼링 획득',"Offerings")} ×${powTxtL(1.16,l,p)} → ×${powTxtL(1.16,l+1,p)}`, apply:(m,l)=>m.offer*=Math.pow(1.16,l*m.gearPow)},
  {id:'lantern2',sp:'voyager',nm:{ko:'항해 등불',en:"Voyager Lantern"},
-  d:(l,p)=>`${X('게임 속도',"Game speed")} +${pctTxt(2*l*p)}% → +${pctTxt(2*(l+1)*p)}%`, apply:(m,l)=>m.speed*=1+0.02*l*m.gearPow},
+  d:(l,p)=>`${X('게임 속도',"Game speed")} +${mulTxtL(2*l,p)}% → +${mulTxtL(2*(l+1),p)}%`, apply:(m,l)=>m.speed*=1+0.02*l*m.gearPow},
  {id:'compass2',sp:'compass',nm:{ko:'항성 나침반',en:"Stellar Compass"},
-  d:(l,p)=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${powTxt(1.12,l*p)} → ×${powTxt(1.12,(l+1)*p)}`, apply:(m,l)=>m.floorPct*=Math.pow(1.12,l*m.gearPow)},
+  d:(l,p)=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${powTxtL(1.12,l,p)} → ×${powTxtL(1.12,l+1,p)}`, apply:(m,l)=>m.floorPct*=Math.pow(1.12,l*m.gearPow)},
 );
 GEAR.push(
  {id:'helm',  sp:'helm',  nm:{ko:'파쇄 투구',en:"Breaker Helm"},
-  d:(l,p)=>`${X('보스 보상',"Boss rewards")} ×${powTxt(1.20,l*p)} → ×${powTxt(1.20,(l+1)*p)}`, apply:(m,l)=>m.boss*=Math.pow(1.20,l*m.gearPow)},
+  d:(l,p)=>`${X('보스 보상',"Boss rewards")} ×${powTxtL(1.20,l,p)} → ×${powTxtL(1.20,l+1,p)}`, apply:(m,l)=>m.boss*=Math.pow(1.20,l*m.gearPow)},
  {id:'boots', sp:'boots', nm:{ko:'질주의 장화',en:"Striding Boots"},
-  d:(l,p)=>`${X('게임 속도',"Game speed")} +${pctTxt(1.8*l*p)}% → +${pctTxt(1.8*(l+1)*p)}%`, apply:(m,l)=>m.speed*=1+0.018*l*m.gearPow},
+  d:(l,p)=>`${X('게임 속도',"Game speed")} +${mulTxtL(1.8*l,p)}% → +${mulTxtL(1.8*(l+1),p)}%`, apply:(m,l)=>m.speed*=1+0.018*l*m.gearPow},
  {id:'cloak', sp:'cloak', nm:{ko:'그림자 망토',en:"Shadow Cloak"},
-  d:(l,p)=>`${X('던전 보상',"Dungeon rewards")} ×${powTxt(1.17,l*p)} → ×${powTxt(1.17,(l+1)*p)}`, apply:(m,l)=>m.floorLoot*=Math.pow(1.17,l*m.gearPow)},
+  d:(l,p)=>`${X('던전 보상',"Dungeon rewards")} ×${powTxtL(1.17,l,p)} → ×${powTxtL(1.17,l+1,p)}`, apply:(m,l)=>m.floorLoot*=Math.pow(1.17,l*m.gearPow)},
  {id:'belt',  sp:'belt',  nm:{ko:'절약의 허리띠',en:"Thrift Belt"},
-  d:(l,p)=>`${X('남는 시설 비용',"Building cost left")} ${cutTxt(0.985,l*p)} → ${cutTxt(0.985,(l+1)*p)}`, apply:(m,l)=>m.costMul*=Math.pow(0.985,l*m.gearPow)},
+  d:(l,p)=>`${X('남는 시설 비용',"Building cost left")} ${cutTxtL(0.985,l,p)} → ${cutTxtL(0.985,l+1,p)}`, apply:(m,l)=>m.costMul*=Math.pow(0.985,l*m.gearPow)},
  {id:'tome',  sp:'tome',  nm:{ko:'대현자의 비망록',en:"Archsage Codex"},
-  d:(l,p)=>`${X('상위 시설 효율',"Higher tiers")} ×${powTxt(1.14,l*p)} → ×${powTxt(1.14,(l+1)*p)}`, apply:(m,l)=>m.tUp*=Math.pow(1.14,l*m.gearPow)},
+  d:(l,p)=>`${X('상위 시설 효율',"Higher tiers")} ×${powTxtL(1.14,l,p)} → ×${powTxtL(1.14,l+1,p)}`, apply:(m,l)=>m.tUp*=Math.pow(1.14,l*m.gearPow)},
  {id:'horn',  sp:'horn',  nm:{ko:'시련의 뿔피리',en:"Trialhorn"},
-  d:(l,p)=>`${X('도전 보상',"Trial rewards")} ×${powTxt(1.13,l*p)} → ×${powTxt(1.13,(l+1)*p)}`, apply:(m,l)=>m.chalPow*=Math.pow(1.13,l*m.gearPow)},
+  d:(l,p)=>`${X('도전 보상',"Trial rewards")} ×${powTxtL(1.13,l,p)} → ×${powTxtL(1.13,l+1,p)}`, apply:(m,l)=>m.chalPow*=Math.pow(1.13,l*m.gearPow)},
  {id:'mirror',sp:'mirror',nm:{ko:'결정 거울',en:"Crystal Mirror"},
-  d:(l,p)=>`${X('결정 획득',"Crystals")} ×${powTxt(1.19,l*p)} → ×${powTxt(1.19,(l+1)*p)}`, apply:(m,l)=>m.crystal*=Math.pow(1.19,l*m.gearPow)},
+  d:(l,p)=>`${X('결정 획득',"Crystals")} ×${powTxtL(1.19,l,p)} → ×${powTxtL(1.19,l+1,p)}`, apply:(m,l)=>m.crystal*=Math.pow(1.19,l*m.gearPow)},
  {id:'sigil', sp:'sigil', nm:{ko:'만상의 인장',en:"Sigil of All Things"},
-  d:(l,p)=>`${X('모든 생산·획득',"All output")} ×${powTxt(1.09,l*p)} → ×${powTxt(1.09,(l+1)*p)}`,
+  d:(l,p)=>`${X('모든 생산·획득',"All output")} ×${powTxtL(1.09,l,p)} → ×${powTxtL(1.09,l+1,p)}`,
   apply:(m,l)=>{const v=Math.pow(1.09,l*m.gearPow);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
 );
 export const gearCost=l=>8*Math.pow(1.6,l);
@@ -171,7 +171,7 @@ RELIC_UPS.push(
   d:l=>`${X('장비 효과 지수',"Gear exponent")} ×${powTxt(1.35,l)} → ×${powTxt(1.35,l+1)}`,
   apply:(m,l)=>m.gearPow*=Math.pow(1.35,l)},
  {id:'a13',sp:'eternalhand', nm:{ko:'영원한 손길',en:"Eternal Hands"}, max:Infinity,c:l=>11*Math.pow(3.9,l),
-  d:l=>`${X('자동화 주기',"Automation interval")} ×${(Math.pow(0.85,l)).toFixed(3)} → ×${(Math.pow(0.85,l+1)).toFixed(3)}`,
+  d:l=>`${X('자동화 주기',"Automation interval")} ×${smallMul(Math.pow(0.85,l))} → ×${smallMul(Math.pow(0.85,l+1))}`,
   apply:(m,l)=>m.autoSpeed*=Math.pow(0.85,l)},
  {id:'a14',sp:'giantbone',    nm:{ko:'거인의 유해',en:"Bones of Giants"}, max:Infinity,c:l=>13*Math.pow(4.1,l),
   d:l=>`${X('보스 보상',"Boss rewards")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`,
@@ -290,7 +290,7 @@ ETER_UPS.push(
   d:l=>`${X('모든 생산·획득',"All output")} ×${powTxt(6,l)} → ×${powTxt(6,l+1)}`,
   apply:(m,l)=>{const v=Math.pow(6,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
  {id:'e10',sp:'timeaxis',  nm:{ko:'시간의 축',en:"Axis of Time"}, max:Infinity,c:l=>5*Math.pow(3.2,l),
-  d:l=>`${X('자동화 주기',"Automation interval")} ×${Math.pow(0.6,l).toFixed(3)} → ×${Math.pow(0.6,l+1).toFixed(3)}`,
+  d:l=>`${X('자동화 주기',"Automation interval")} ×${smallMul(Math.pow(0.6,l))} → ×${smallMul(Math.pow(0.6,l+1))}`,
   apply:(m,l)=>m.autoSpeed*=Math.pow(0.6,l)},
  {id:'e11',sp:'genesis',   nm:{ko:'창세의 불',en:"Fire of Genesis"}, max:Infinity,c:l=>6*Math.pow(3.4,l),
   d:l=>`${X('마나 생산',"Mana output")} ×${powTxt(25,l)} → ×${powTxt(25,l+1)}`,
@@ -353,7 +353,7 @@ export const REAL_UPS=[
  {id:'r5', sp:'real_pillar',nm:{ko:'세계의 기둥',en:"World Pillar"}, max:Infinity,c:l=>3*Math.pow(2.9,l),
   d:l=>`${X('상위 시설 효율',"Higher tiers")} ×${powTxt(10,l)} → ×${powTxt(10,l+1)}`, apply:(m,l)=>m.tUp*=Math.pow(10,l)},
  {id:'r6', sp:'real_spiral',nm:{ko:'회귀의 나선',en:"Spiral of Return"}, max:Infinity,c:l=>4*Math.pow(3.2,l),
-  d:l=>`${X('자동화 주기',"Automation interval")} ×${Math.pow(0.5,l).toFixed(3)} → ×${Math.pow(0.5,l+1).toFixed(3)}`,
+  d:l=>`${X('자동화 주기',"Automation interval")} ×${smallMul(Math.pow(0.5,l))} → ×${smallMul(Math.pow(0.5,l+1))}`,
   apply:(m,l)=>m.autoSpeed*=Math.pow(0.5,l)},
  {id:'r7', sp:'real_shard', nm:{ko:'현실 파편',en:"Reality Shard"}, max:Infinity,c:l=>4*Math.pow(3,l),
   d:l=>`${X('결정 획득',"Crystals")} ×${powTxt(30,l)} → ×${powTxt(30,l+1)}`, apply:(m,l)=>m.crystal*=Math.pow(30,l)},
@@ -407,7 +407,7 @@ export const CHALLENGES=[
  {id:'c2',sp:'emptypouch',   nm:{ko:'빈곤의 시련',en:"Trial of Poverty"}, rule:{maxTier:2},    base:1e8,  max:100,
   desc:()=>X('마탑 이상 시설을 지을 수 없다',"Towers and above cannot be built"),    rw:c=>`${X('시설 비용 증가율',"Cost growth")} ×${cutTxt(0.92,c)}`, apply:(m,c)=>m.costMul*=Math.pow(0.92,c)},
  {id:'c3',sp:'brokencog',    nm:{ko:'고독의 시련',en:"Trial of Solitude"}, rule:{noAuto:1},     base:1e10, max:100,
-  desc:()=>X('모든 자동화가 멈춘다',"All automation halts"),             rw:c=>`${X('자동화 주기',"Automation interval")} -${(10*c)}%`, apply:(m,c)=>m.autoSpeed*=Math.pow(0.9,c)},
+  desc:()=>X('모든 자동화가 멈춘다',"All automation halts"),             rw:c=>`${X('자동화 주기',"Automation interval")} ×${smallMul(Math.pow(0.9,c))}`, apply:(m,c)=>m.autoSpeed*=Math.pow(0.9,c)},
  {id:'c4',sp:'darkeye',  nm:{ko:'어둠의 시련',en:"Trial of Darkness"}, rule:{noDungeon:1},  base:1e12, max:100,
   desc:()=>X('던전에 들어갈 수 없다',"The dungeon is sealed"),            rw:c=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(2.2,c)}`, apply:(m,c)=>m.dungeon*=Math.pow(2.2,c)},
  {id:'c5',sp:'crackedvial',   nm:{ko:'고갈의 시련',en:"Trial of Drought"}, rule:{drain:1e3},    base:1e7,  max:100,
@@ -448,7 +448,7 @@ CHALLENGES.push(
   rw:c=>`${X('견습 마법사 효율',"Apprentice output")} ×${powTxt(2.6,c)}`, apply:(m,c)=>m.t0*=Math.pow(2.6,c)},
  {id:'c15',sp:'cogstop',nm:{ko:'멈춘 톱니',en:"Seized Gears"}, rule:{noAuto:1,noResearch:1}, base:1e11, max:100,
   desc:()=>X('자동화도 연구도 없다',"No automation, no research"),
-  rw:c=>`${X('자동화 주기',"Automation interval")} ×${(Math.pow(0.88,c)).toFixed(3)}`, apply:(m,c)=>m.autoSpeed*=Math.pow(0.88,c)},
+  rw:c=>`${X('자동화 주기',"Automation interval")} ×${smallMul(Math.pow(0.88,c))}`, apply:(m,c)=>m.autoSpeed*=Math.pow(0.88,c)},
  {id:'c16',sp:'sealedvein',nm:{ko:'닫힌 광맥',en:"The Sealed Vein"}, rule:{noDungeon:1,drain:1e3}, base:1e9, max:100,
   desc:()=>X('던전이 막히고 생산이 천분의 일이 된다',"The dungeon is sealed and output cut to 1/1000"),
   rw:c=>`${X('결정 획득',"Crystals")} ×${powTxt(2.8,c)}`, apply:(m,c)=>m.crystal*=Math.pow(2.8,c)},

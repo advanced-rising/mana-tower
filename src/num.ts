@@ -1,4 +1,4 @@
-import { LANG } from './core'
+import { LANG, X } from './core'
 import { CHALLENGES, GEAR, RUNES } from './content'
 import { S } from './state'
 import { L10, logAdd, numLog } from './dungeon'
@@ -61,14 +61,23 @@ export function fmt(n){
   return fmtLog(Math.log10(n));                 // 백만 위로는 같은 사다리를 탄다
 }
 
+/* 일(日) 위로 단위가 없어서, 층을 못 깨는 상황의 소요 시간이
+   "2.3996858804125987e+37일 2시간" 처럼 날 지수 그대로 새어 나왔다.
+   년까지 올리고, 그 위로는 숫자를 읽는 의미가 없으니 말로 적는다. */
 export function fmtTime(s){
+  if(typeof s!=='number'||isNaN(s)) return '—';
+  if(s<0) return '—';
+  if(!isFinite(s)) return X('닿지 않는다','out of reach');
   s=Math.floor(s);
-  const U=LANG==='en'?['s','m','h','d']:['초','분','시간','일'];
-  const j=(a,b)=>LANG==='en'?a+' '+b:a+' '+b;
+  const U=LANG==='en'?['s','m','h','d','y']:['초','분','시간','일','년'];
   if(s<60) return s+U[0];
-  if(s<3600) return j(Math.floor(s/60)+U[1], (s%60)+U[0]);
-  if(s<86400) return j(Math.floor(s/3600)+U[2], Math.floor(s%3600/60)+U[1]);
-  return j(Math.floor(s/86400)+U[3], Math.floor(s%86400/3600)+U[2]);
+  if(s<3600) return Math.floor(s/60)+U[1]+' '+(s%60)+U[0];
+  if(s<86400) return Math.floor(s/3600)+U[2]+' '+Math.floor(s%3600/60)+U[1];
+  const YEAR=86400*365;
+  if(s<YEAR) return Math.floor(s/86400)+U[3]+' '+Math.floor(s%86400/3600)+U[2];
+  const y=s/YEAR;
+  if(y>1.38e10) return X('닿지 않는다','out of reach');   // 우주 나이를 넘으면 그냥 못 깬다
+  return fmt(y)+U[4];
 }
 /* 시설 수도 자릿수가 진실이다. 산 것(bought)은 정수라 그대로 두고,
    윗 단계가 만들어 낸 것(genL)만 로그로 센다 — 이쪽이 1e308 을 넘어간다.
@@ -84,3 +93,71 @@ export const chalTotal=()=>CHALLENGES.reduce((a,c)=>a+(S.chalDone[c.id]||0),0);
 export const curChal=()=>S.chal?CHALLENGES.find(c=>c.id===S.chal):null;
 export function startManaLog(l){return l<=0?-Infinity:2*l}
 export function startMana(l){const x=startManaLog(l);return x<300?Math.pow(10,x):Infinity}
+
+/* 체력과 공격력을 그대로 곱하면 1e308 에서 ∞ 가 되고 ∞/∞ 가 NaN 이 된다.
+   둘 다 '자릿수'(밑 10 로그)로 다룬다. 로그는 층수에 비례해 선형이라 넘치지 않는다. */
+export const L10=Math.log10;
+export function safeLog(v){ return (typeof v==='number'&&v>0&&isFinite(v))?L10(v):(v>0?308:0); }
+/* 마나 계열은 0 이 진짜 0 이어야 한다 — safeLog 는 0 을 0(=10^0) 으로 돌려주므로 따로 쓴다. */
+export function numLog(v){ return (typeof v==='number'&&v>0)?(isFinite(v)?L10(v):308):-Infinity; }
+/* 로그 공간 덧셈·뺄셈. a,b 는 각각 log10 값이다. */
+export function logAdd(a,b){            // log10(10^a + 10^b)
+  if(isNaN(a)) return b; if(isNaN(b)) return a;
+  if(a===-Infinity) return b;
+  if(b===-Infinity) return a;
+  const hi=Math.max(a,b), lo=Math.min(a,b);
+  if(hi-lo>17) return hi;        // 차이가 크면 작은 쪽은 묻힌다
+  return hi+L10(1+Math.pow(10,lo-hi));
+}
+export function logSub(a,b){            // log10(10^a - 10^b), a>=b
+  if(isNaN(a)||isNaN(b)) return isNaN(a)?-Infinity:a;
+  if(b===-Infinity) return a;
+  if(a<=b) return -Infinity;
+  if(a-b>17) return a;
+  return a+L10(1-Math.pow(10,b-a));
+}
+/* 등비합 log10((g^n-1)/(g-1)) — g^n 이 넘쳐도 자릿수는 멀쩡하다 */
+export function geoSumLog(g,n){
+  if(!(n>0)) return -Infinity;
+  const lg=L10(g);
+  if(n*lg>15) return n*lg-L10(g-1);
+  return numLog((Math.pow(g,n)-1)/(g-1));
+}
+
+/* ── 지수가 double 을 넘을 때의 표기 ────────────────
+   장비 효과 지수(gearPow)는 강화 다섯 갈래가 곱으로 쌓여 금세 1e308 을 넘는다.
+   그러면 평범한 수로는 ∞ 가 되어 화면이 "×∞ → ×∞" 로만 남는다.
+   지수를 그대로 받지 않고 지수의 자릿수를 받아, 필요하면 층을 더 쌓아 적는다. */
+export function layerTxt(LL){          // 값의 자릿수가 10^LL 일 때 그 값을 적는다
+  if(!isFinite(LL)) return LL>0?'∞':'1';
+  if(LL<300) return fmtLog(Math.pow(10,LL));
+  let layer=2, v=LL;
+  while(v>=1e6&&layer<1e9){ v=L10(v); layer++; }
+  const h=v>=1000?Math.round(v).toLocaleString():v>=100?v.toFixed(1):v.toFixed(2);
+  return layer<=4?'e'.repeat(layer)+h:'(e^'+layer+')'+h;
+}
+/* b^(l·p) · p 는 10^pLog */
+export function powTxtL(b,l,pLog){
+  if(!(l>0)) return '1';
+  return layerTxt(numLog(l)+pLog+numLog(L10(b)));
+}
+/* l·p 그 자체 (백분율 따위) */
+export function mulTxtL(l,pLog){
+  if(!(l>0)) return '0';
+  return fmtLog(numLog(l)+pLog);
+}
+/* b^(l·p) 가 1 보다 작을 때 — 남는 몫을 "1/..." 로 적는다 */
+export function cutTxtL(b,l,pLog){
+  if(!(l>0)) return '100.0%';
+  const LL=numLog(l)+pLog+numLog(-L10(b));    // log10( 남는 몫의 자릿수 )
+  if(LL<0.5){ const d=Math.pow(10,LL); return (Math.pow(10,-d)*100).toFixed(1)+'%' }
+  return '1/'+layerTxt(LL);
+}
+
+/* 1 보다 작아지는 배수 — 0.88^100 은 2e-6 이라 toFixed(3) 로는 "×0.000" 이 된다.
+   작아지면 "1/..." 로 뒤집어 적는다. */
+export function smallMul(v){
+  if(!(v>0)) return '0';
+  if(v>=0.001) return v.toFixed(3);
+  return '1/'+fmt(1/v);
+}

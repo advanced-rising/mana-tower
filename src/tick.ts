@@ -5,9 +5,9 @@ import { achToast } from './ui/dom'
 import { DS, NM, X, icHTML } from './core'
 import { ACHS } from './content'
 import { LOG, S } from './state'
-import { cntLog, curChal, syncGen } from './num'
+import { cntLog, curChal, logAdd, numLog, syncGen } from './num'
 import { M, addManaLog, manaRateLog, recalc } from './multipliers'
-import { FLOOR_MAX_STEPS, FLOOR_MIN_TIME, clearFloor, dungeonPowerLog, floorHPLog, logAdd, numLog, sweepCount } from './dungeon'
+import { FLOOR_MAX_STEPS, FLOOR_MIN_TIME, clearFloor, dungeonPowerLog, floorHPLog, sweepCount, sweepFloors } from './dungeon'
 import { autoOK, runAutomation } from './automation'
 
 /* ══════════════ 진행 ══════════════ */
@@ -32,8 +32,7 @@ export function tick(dt){
       const t=need<=0?0:(per>0?need/per:Infinity);
       if(!(t<=rem)){ S.prog=Math.min(1,S.prog+per*rem); rem=0; break; }
       rem-=t; S.prog=0; S.floorCd=FLOOR_MIN_TIME; steps++;
-      const n=sweepCount();
-      for(let k=0;k<n;k++) clearFloor(k===n-1?n:0);   // 기록에는 마지막 한 줄만
+      sweepFloors(sweepCount());
       if(!autoOK('dungeon')){ S.exploring=false; break; }
     }
     S.prog=Math.max(0,Math.min(1,S.prog||0));
@@ -54,6 +53,12 @@ export function tick(dt){
   checkChallenge();
   S.chalCd=Math.max(0,(S.chalCd||0)-dt);
   S.playtime+=dt; S.sinceRebirth+=dt; S.sinceAscend+=dt; S.sinceTrans+=dt; S.sinceInf+=dt;
+  /* 업적은 되돌아가는 것이 아니다 — 회차 값이 초기화돼도 기록은 그대로 둔다 */
+  if(S.rebirths>(S.rebirthEver||0)) S.rebirthEver=S.rebirths;
+  if(S.ascensions>(S.ascendEver||0)) S.ascendEver=S.ascensions;
+  if(S.transcends>(S.transEver||0)) S.transEver=S.transcends;
+  if(S.deepest>(S.deepestEver||0)) S.deepestEver=S.deepest;
+  if(!(S.manaPeakL>=S.manaEverL)) S.manaPeakL=S.manaEverL;
   checkAchs();
   recalc();
 }

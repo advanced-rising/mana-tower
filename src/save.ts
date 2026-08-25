@@ -2,9 +2,9 @@ import { PRODUCERS } from './producers'
 import { SAVE_KEY, X, icHTML } from './core'
 
 import { S, newState, setLOG, setS } from './state'
-import { fmt, fmtLog, fmtTime, genNum } from './num'
+import { fmt, fmtLog, fmtTime, genNum, logSub, numLog } from './num'
 import { M, gather, recalc } from './multipliers'
-import { logSub, numLog } from './dungeon'
+
 import { tick } from './tick'
 import { modal, toast } from './ui/dom'
 import { render } from './ui/render'
@@ -43,10 +43,40 @@ export function mergeState(o){
   s.ascendEver =Math.max(s.ascendEver ||0, s.ascensions||0);
   s.transEver  =Math.max(s.transEver  ||0, s.transcends||0);
   s.deepestEver=Math.max(s.deepestEver||0, s.deepest||0);
+  /* 누적 기록은 나중에 들어온 필드다. 옛 세이브는 그것이 없어서 불러올 때
+     그 시점의 회차 값에서 다시 시작했고, "환생 100회" 같은 업적이 이미
+     달성돼 있는데도 조건이 다시 거짓이 되었다. 업적은 되돌아가지 않는 것이므로
+     이미 딴 업적이 보증하는 만큼을 거꾸로 채워 넣는다. */
+  const got=s.achs||{};
+  const atLeast=(pre,cur)=>{
+    let best=0;
+    for(const k in got){ if(!got[k]||!k.startsWith(pre)) continue;
+      const n=parseFloat(k.slice(pre.length)); if(isFinite(n)&&n>best) best=n; }
+    return Math.max(cur||0,best);
+  };
+  s.rebirthEver=atLeast('rx',s.rebirthEver);
+  s.ascendEver =atLeast('ax',s.ascendEver);
+  s.transEver  =atLeast('tx',s.transEver);
+  s.deepestEver=atLeast('dx',s.deepestEver);
+  if(got.h11) s.rebirthEver=Math.max(s.rebirthEver,1);
+  if(got.h12) s.rebirthEver=Math.max(s.rebirthEver,25);
+  if(got.h13) s.rebirthEver=Math.max(s.rebirthEver,100);
+  if(got.h14) s.ascendEver =Math.max(s.ascendEver,1);
+  if(got.h15) s.ascendEver =Math.max(s.ascendEver,10);
+  if(got.h16) s.deepestEver=Math.max(s.deepestEver,10);
+  if(got.h17) s.deepestEver=Math.max(s.deepestEver,30);
+  if(got.h18) s.deepestEver=Math.max(s.deepestEver,75);
   /* manaPeakL 은 -Infinity 가 기본값인데 JSON 은 그것을 null 로 적는다 */
   const pk=(typeof s.manaPeakL==='number'&&!isNaN(s.manaPeakL))?s.manaPeakL:-Infinity;
   const ev=(typeof s.manaEverL==='number'&&!isNaN(s.manaEverL))?s.manaEverL:-Infinity;
   s.manaPeakL=Math.max(pk,ev);
+  for(const k in got){ if(!got[k]||!k.startsWith('mx')) continue;
+    const e=parseFloat(k.slice(2)); if(isFinite(e)&&e>s.manaPeakL) s.manaPeakL=e; }
+  if(got.h2) s.manaPeakL=Math.max(s.manaPeakL,3);
+  if(got.h3) s.manaPeakL=Math.max(s.manaPeakL,6);
+  if(got.h4) s.manaPeakL=Math.max(s.manaPeakL,12);
+  if(got.h5) s.manaPeakL=Math.max(s.manaPeakL,20);
+  if(got.h6) s.manaPeakL=Math.max(s.manaPeakL,40);
   for(const k of ['research','runes','gear','soulUps','relicUps','starUps','infUps','eterUps','realUps','voidUps','originUps','achs','chalDone','autoUnlocked'])
     if(!s[k]||typeof s[k]!=='object') s[k]={};
   for(const k of ['mana','manaRun','manaEver','offering','offerEver','crystal','crystalEver',

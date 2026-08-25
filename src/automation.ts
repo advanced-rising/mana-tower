@@ -1,10 +1,10 @@
 import { PRODUCERS } from './producers'
 import { X } from './core'
-import { GEAR, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, gearCost, runeCost } from './content'
+import { GEAR, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, bulkCost, bulkMax, gearCost, runeCost } from './content'
 import { S } from './state'
-import { chalTotal, curChal } from './num'
+import { L10, chalTotal, curChal, logSub, numLog } from './num'
 import { M, costLogOf, gather, maxAfford, recalc, tierLocked } from './multipliers'
-import { L10, logSub, numLog } from './dungeon'
+
 import { INF_AUTO_CD, INF_LAYERS, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, relicGain, soulGain, starGain } from './prestige'
 import { autoEnterChallenge } from './trials'
 
@@ -54,19 +54,37 @@ export const allAuto=()=>AUTO_DEFS.every(d=>autoUnlocked(d.k));
 export const autoOK=k=>autoUnlocked(k)&&!!S.auto[k];
 /* 강화 나무는 여덟인데 자동 구매는 영혼·유물 둘뿐이었다.
    나머지도 같은 규칙으로 — 가장 싼 것부터, 살 수 있는 만큼. */
+/* 한 번에 여덟 단계씩만 사고 있었다. 자원이 남아돌아도 강화가 기어가서
+   결국 손으로 눌러야 했다. 이제는 예산이 닿는 만큼 한 번에 산다 —
+   비용이 등비수열이라 몇 단계를 살 수 있는지는 닫힌 식으로 바로 나온다.
+   한 항목이 예산을 독차지하지 않도록 회차마다 남은 항목 수로 나눠 쓴다. */
+export function buyBulk(costFn,l,budget,cap){
+  const c0=costFn(l);
+  if(!isFinite(c0)||c0>budget) return {n:0,cost:0};
+  const g=costFn(l+1)/c0;
+  let n=(isFinite(g)&&g>1)?bulkMax(costFn,l,budget,g):1;
+  n=Math.max(1,Math.min(n,cap));
+  let cost=(isFinite(g)&&g>1)?bulkCost(costFn,l,n,g):c0*n;
+  while(n>1&&(!isFinite(cost)||cost>budget)){ n=Math.floor(n/2); cost=bulkCost(costFn,l,n,g); }
+  if(!isFinite(cost)||cost>budget) return {n:0,cost:0};
+  return {n,cost};
+}
 export function autoBuyTree(defs,store,curKey){
   let bought=0;
-  for(let round=0;round<8;round++){
-    let best=null,bc=Infinity;
-    const st=S[store]||{};
-    for(const u of defs){
-      const l=st[u.id]||0; if(l>=u.max) continue;
-      const c=u.c(l); if(isFinite(c)&&c<bc){ bc=c; best=u; }
+  for(let round=0;round<6;round++){
+    const st=S[store]=S[store]||{};
+    const open=defs.filter(u=>(st[u.id]||0)<u.max&&isFinite(u.c(st[u.id]||0)));
+    if(!open.length) break;
+    open.sort((a,b)=>a.c(st[a.id]||0)-b.c(st[b.id]||0));
+    let did=0;
+    for(const u of open){
+      const l=st[u.id]||0;
+      const share=(S[curKey]||0)/open.length;
+      const {n,cost}=buyBulk(u.c,l,share,u.max-l);
+      if(!(n>0)) continue;
+      S[curKey]-=cost; st[u.id]=l+n; bought+=n; did+=n;
     }
-    if(!best||(S[curKey]||0)<bc) break;
-    S[curKey]-=bc;
-    (S[store]=S[store]||{})[best.id]=((S[store]||{})[best.id]||0)+1;
-    bought++;
+    if(!did) break;
   }
   if(bought) recalc();
   return bought;
@@ -97,36 +115,43 @@ export function runAutomation(dt){
   if(autoOK('research')&&t.research>=iv('research')){
     t.research=0;
     if(!(ch&&ch.rule.noResearch))
-      for(const r of RESEARCH){
-        if(S.research[r.id]||(r.req&&!S.research[r.req])) continue;
-        const rl=numLog(r.cost);
-        if(S.manaL>=rl){S.manaL=logSub(S.manaL,rl);S.research[r.id]=1;recalc();break}
+      /* 하나 사고 멈추면 마나가 넘쳐도 연구가 0.8 초에 하나씩 기어간다.
+         선행이 풀리는 것까지 이어 사도록 살 수 있는 만큼 훑는다. */
+      for(let pass=0;pass<8;pass++){
+        let did=0;
+        for(const r of RESEARCH){
+          if(S.research[r.id]||(r.req&&!S.research[r.req])) continue;
+          const rl=numLog(r.cost);
+          if(S.manaL>=rl){ S.manaL=logSub(S.manaL,rl); S.research[r.id]=1; did++ }
+        }
+        if(!did) break;
+        recalc();
       }
   }
   if(autoOK('rune')&&t.rune>=iv('rune')){
     t.rune=0;
     const cap=Math.floor(m.runeCap);
-    let best=null,bc=Infinity;
-    for(const r of RUNES){const l=S.runes[r.id]||0;if(l>=cap)continue;const c=runeCost(l);if(c<bc){bc=c;best=r}}
-    if(best&&S.offering>=bc){S.offering-=bc;S.runes[best.id]=(S.runes[best.id]||0)+1;recalc()}
+    let did=0;
+    for(const r of [...RUNES].sort((a,b)=>runeCost(S.runes[a.id]||0)-runeCost(S.runes[b.id]||0))){
+      const l=S.runes[r.id]||0; if(l>=cap) continue;
+      const {n,cost}=buyBulk(runeCost,l,S.offering/RUNES.length,cap-l);
+      if(n>0){ S.offering-=cost; S.runes[r.id]=l+n; did+=n }
+    }
+    if(did) recalc()
   }
   if(autoOK('gear')&&t.gear>=iv('gear')){
     t.gear=0;
-    let best=null,bc=Infinity;
-    for(const g of GEAR){const l=S.gear[g.id]||0;const c=gearCost(l);if(c<bc){bc=c;best=g}}
-    if(best&&S.crystal>=bc){S.crystal-=bc;S.gear[best.id]=(S.gear[best.id]||0)+1;recalc()}
+    let did=0;
+    for(const g of [...GEAR].sort((a,b)=>gearCost(S.gear[a.id]||0)-gearCost(S.gear[b.id]||0))){
+      const l=S.gear[g.id]||0;
+      const {n,cost}=buyBulk(gearCost,l,S.crystal/GEAR.length,1e9);
+      if(n>0){ S.crystal-=cost; S.gear[g.id]=l+n; did+=n }
+    }
+    if(did) recalc()
   }
   // 영혼 / 유물 강화 자동 (가장 싼 것부터)
-  if(autoOK('soulup')){
-    let best=null,bc=Infinity;
-    for(const u of SOUL_UPS){const l=S.soulUps[u.id]||0;if(l>=u.max)continue;const c=u.c(l);if(c<bc){bc=c;best=u}}
-    if(best&&S.soul>=bc){S.soul-=bc;S.soulUps[best.id]=(S.soulUps[best.id]||0)+1;recalc()}
-  }
-  if(autoOK('relicup')){
-    let best=null,bc=Infinity;
-    for(const u of RELIC_UPS){const l=S.relicUps[u.id]||0;if(l>=u.max)continue;const c=u.c(l);if(c<bc){bc=c;best=u}}
-    if(best&&S.relic>=bc){S.relic-=bc;S.relicUps[best.id]=(S.relicUps[best.id]||0)+1;recalc()}
-  }
+  if(autoOK('soulup'))  autoBuyTree(SOUL_UPS,'soulUps','soul');
+  if(autoOK('relicup')) autoBuyTree(RELIC_UPS,'relicUps','relic');
   // 환생 / 승천 · 직전 회차보다 확실히 나아졌을 때만
   if(autoOK('rebirth')&&S.sinceRebirth>90){   // 회차가 너무 짧으면 연구·룬이 쌓일 틈이 없다
     const g=soulGain();

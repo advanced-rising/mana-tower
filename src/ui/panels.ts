@@ -5,9 +5,9 @@ import { enterChallenge, exitChallenge } from '../trials'
 import { DS, DSF, NM, VERSION, X, ic, icHTML, spriteURL } from '../core'
 import { ACHS, CHALLENGES, GEAR, MILESTONES, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, bulkCost, buyAmtFor, chalGoal, gearCost, runeCost } from '../content'
 import { LOG, S } from '../state'
-import { achCount, chalTotal, cntLog, curChal, fmt, fmtLog, fmtTime, gearTotal, pctTxt, powTxt, runeTotal } from '../num'
+import { achCount, chalTotal, cntLog, curChal, fmt, fmtLog, fmtTime, gearTotal, logSub, numLog, pctTxt, powTxt, runeTotal } from '../num'
 import { M, buyProducer, costLogOf, gather, gatherAmountLog, manaRateLog, maxAfford, recalc, tierLocked } from '../multipliers'
-import { COSMOS, COSMOS_MUL, COSMOS_SP, FOES, chapterSeen, cosmos, dungeonPowerLog, floorHPLog, floorLoot, foeOf, isBoss, logSub, numLog } from '../dungeon'
+import { COSMOS, COSMOS_MUL, COSMOS_SP, FOES, chapterSeen, cosmos, dungeonPowerLog, floorHPLog, floorLoot, foeOf, isBoss } from '../dungeon'
 import { ASCEND_REQ, INF_LAYERS, REBIRTH_REQ, TRANS_REQ, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, offerGain, relicGain, reqTxt, soulGain, starGain } from '../prestige'
 import { AUTO_DEF, AUTO_DEFS, allAuto, autoUnlocked } from '../automation'
 import { $, btn, el, modal, toast } from './dom'
@@ -196,7 +196,7 @@ export function buildGear(p){
     });
     g2.appendChild(b);
     updaters.push(()=>{
-      const l=S.gear[gr.id]||0, pw=M().gearPow;
+      const l=S.gear[gr.id]||0, pw=M().gearPowLog;   // 지수는 자릿수로 넘긴다
       const n=Math.max(1,buyAmtFor(gearCost,l,S.crystal,1.6));
       const cost=bulkCost(gearCost,l,n,1.6);
       _t.html=`${NM(gr.nm)} <span class="lv">Lv.${fmt(l)}</span>`;
@@ -208,7 +208,7 @@ export function buildGear(p){
   c2.appendChild(g2); p.appendChild(c2);
   updaters.push(()=>{info2.innerHTML=`<span class="tag">${icHTML('crystal')} ${X('보유','Held')} <b>${fmt(S.crystal)}</b></span>
     <span class="tag">${X('합계 레벨',"Total level")} <b>${gearTotal()}</b></span>
-    <span class="tag">${X('효과 지수',"Effect exponent")} <b>×${fmt(M().gearPow)}</b></span>`});
+    <span class="tag">${X('효과 지수',"Effect exponent")} <b>×${fmtLog(M().gearPowLog)}</b></span>`});
 
 }
 

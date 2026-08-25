@@ -4,7 +4,7 @@ import { log } from './tick'
 
 import { NM, X, icHTML } from './core'
 import { S } from './state'
-import { cntLog, fmtLog } from './num'
+import { L10, cntLog, fmt, fmtLog, geoSumLog, logAdd, numLog, safeLog } from './num'
 import { M, addManaLog, manaRateLog, recalc, safeAdd } from './multipliers'
 
 /* ══════════════ 던전 ══════════════ */
@@ -200,35 +200,6 @@ export function dungeonPowerLog(){
   return logAdd(0,0.45*ul)+M().dungeonLog+0.75*Math.max(0,manaRateLog());   // log10(1+u^0.45)
 }
 export function dungeonPower(){ const l=dungeonPowerLog(); return l<300?Math.pow(10,l):Infinity; }
-/* 체력과 공격력을 그대로 곱하면 1e308 에서 ∞ 가 되고 ∞/∞ 가 NaN 이 된다.
-   둘 다 '자릿수'(밑 10 로그)로 다룬다. 로그는 층수에 비례해 선형이라 넘치지 않는다. */
-export const L10=Math.log10;
-export function safeLog(v){ return (typeof v==='number'&&v>0&&isFinite(v))?L10(v):(v>0?308:0); }
-/* 마나 계열은 0 이 진짜 0 이어야 한다 — safeLog 는 0 을 0(=10^0) 으로 돌려주므로 따로 쓴다. */
-export function numLog(v){ return (typeof v==='number'&&v>0)?(isFinite(v)?L10(v):308):-Infinity; }
-/* 로그 공간 덧셈·뺄셈. a,b 는 각각 log10 값이다. */
-export function logAdd(a,b){            // log10(10^a + 10^b)
-  if(isNaN(a)) return b; if(isNaN(b)) return a;
-  if(a===-Infinity) return b;
-  if(b===-Infinity) return a;
-  const hi=Math.max(a,b), lo=Math.min(a,b);
-  if(hi-lo>17) return hi;        // 차이가 크면 작은 쪽은 묻힌다
-  return hi+L10(1+Math.pow(10,lo-hi));
-}
-export function logSub(a,b){            // log10(10^a - 10^b), a>=b
-  if(isNaN(a)||isNaN(b)) return isNaN(a)?-Infinity:a;
-  if(b===-Infinity) return a;
-  if(a<=b) return -Infinity;
-  if(a-b>17) return a;
-  return a+L10(1-Math.pow(10,b-a));
-}
-/* 등비합 log10((g^n-1)/(g-1)) — g^n 이 넘쳐도 자릿수는 멀쩡하다 */
-export function geoSumLog(g,n){
-  if(!(n>0)) return -Infinity;
-  const lg=L10(g);
-  if(n*lg>15) return n*lg-L10(g-1);
-  return numLog((Math.pow(g,n)-1)/(g-1));
-}
 export function floorHPLog(f){
   const a=Math.min(f-1,200), b=Math.max(0,f-1-200);
   return L10(40)+a*L10(1.35)+b*L10(1.09)+(isBoss(f)?L10(8):0)+safeLog(elemOf(f).hp);
@@ -270,10 +241,40 @@ export function syncChapter(force){
 
 /* 압도적으로 셀 때는 한 걸음에 여러 층을 쓸어 담는다 — 보이는 속도는 그대로 두고
    깊이만 빨리 나간다. 자릿수 차이가 클수록 한 번에 더 많이 쓸어 담는다. */
+/* 힘이 층을 압도할 때 한 걸음에 256 층으로 묶어 두었더니, 아무리 강해져도
+   깊이가 힘이 아니라 시간에 묶였다. 무한 돌파가 회차를 밀어 버리기 전에 갈 수
+   있는 거리가 정해져 버려서 우주 계층 열둘 중 다섯째에서 더 나아가지 못했다.
+   이제는 힘이 닿는 층까지 한 번에 내려간다 — 200 층 위로는 체력이 한 층당
+   1.09 배씩 오르므로, 자릿수 차이를 그 기울기로 나누면 닿는 거리가 나온다. */
+export const SWEEP_MAX=1e9;
 export function sweepCount(){
-  const gap=dungeonPowerLog()-floorHPLog(S.floor);
-  if(!(gap>1)) return 1;
-  return Math.max(1,Math.min(256,Math.round(Math.pow(gap,1.6))));
+  const p=dungeonPowerLog(), h=floorHPLog(S.floor);
+  if(!(p>h)) return 1;
+  return Math.max(1, Math.min(SWEEP_MAX, Math.floor((p-h)/L10(1.09))));
+}
+/* 층을 하나씩 세면서 보상을 더하면 백만 층에서 브라우저가 멈춘다.
+   층마다 1.40 배씩 오르는 마나는 등비합으로, 층에 비례하는 결정과
+   열 층마다 나오는 오퍼링은 닫힌 식으로 한 번에 준다.
+   원소 배수만 진입 층의 것으로 잡는다 — 한 걸음 안에서는 거의 같은 무리다. */
+export function sweepFloors(n){
+  if(n<=1){ clearFloor(1); return }
+  const f=S.floor, m=M(), e=elemOf(f);
+  addManaLog(floorLootManaLog(f)+geoSumLog(1.40,n));
+  const csum=n+0.5*(n*f+n*(n-1)/2);                       // Σ(1+0.5·층)
+  const cl=numLog(csum)+m.crystalLog+m.floorLootLog+numLog(e.crystal)-L10(8);
+  const cAdd=cl<300?Math.pow(10,cl):Infinity;
+  S.crystal=safeAdd(S.crystal,cAdd); S.crystalEver=safeAdd(S.crystalEver,cAdd);
+  const bn=Math.floor((f+n-1)/10)-Math.floor((f-1)/10);   // 이 구간의 보스 수
+  if(bn>0){
+    const ol=numLog(0.8*bn*(f+n/2))+m.offerLog+L10(10)+m.bossLog+numLog(e.offer)-L10(6);
+    const oAdd=ol<300?Math.pow(10,ol):Infinity;
+    S.offering=safeAdd(S.offering,oAdd); S.offerEver=safeAdd(S.offerEver,oAdd);
+  }
+  const last=f+n-1;
+  if(last>S.deepest){ S.deepest=last; if(last>(S.deepestEver||0)) S.deepestEver=last; syncChapter(); }
+  const foe=foeOf(f);
+  log(`${icHTML(foe.sp)}<b>${NM(foe.nm)}</b> ${X('격파','defeated')} <span class="dim">${X(`외 ${fmt(n-1)}층`,`and ${fmt(n-1)} more`)}</span> <span class="dim">${cosmosLabel(last)}</span> · ${icHTML('mana')}${fmtLog(floorLootManaLog(f)+geoSumLog(1.40,n))} ${icHTML('crystal')}${fmtLog(cl)}`, false);
+  S.floor=f+n; recalc();
 }
 export function clearFloor(show){
   const f=S.floor,l=floorLoot(f);

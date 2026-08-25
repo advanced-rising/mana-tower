@@ -1,9 +1,9 @@
 import { $, el } from './dom'
-import { cosmosLabel, floorHP, foeOf, numLog } from '../dungeon'
+import { cosmosLabel, floorHP, foeOf } from '../dungeon'
 import { AUTO_DEFS } from '../automation'
 import { DSF, NM, X, ic, icHTML } from '../core'
 import { S } from '../state'
-import { curChal, fmt, fmtLog, gearTotal, pctTxt, runeTotal } from '../num'
+import { curChal, fmt, fmtLog, gearTotal, numLog, pctTxt, runeTotal } from '../num'
 import { M, manaRateLog } from '../multipliers'
 import { INF_LAYERS, infUnlocked, transUnlocked } from '../prestige'
 

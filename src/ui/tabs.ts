@@ -1,6 +1,7 @@
+import { numLog } from '../num'
 import { NM, ic } from '../core'
 import { S } from '../state'
-import { numLog } from '../dungeon'
+
 import { ASCEND_REQ, REBIRTH_REQ, infUnlocked, transUnlocked } from '../prestige'
 import { chalUnlocked } from '../trials'
 import { $, el } from './dom'
