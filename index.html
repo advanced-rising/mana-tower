@@ -561,7 +561,7 @@ function setLang(l){
    그림은 art/sprites/*.png 파일이다. tools/sprites.json 의 문자 격자를
    tools/build_sprites.py 가 바운딩 박스 기준으로 정중앙에 배치해 구워 낸다.
    여기에는 파일 이름과 원본 크기만 둔다. */
-const SPR={"abysseye":16,"abysseye2":16,"academy":16,"amulet":16,"anvil":16,"apprentice":16,"banner":16,"barehand":16,"bat":16,"beacon":16,"beast":16,"blessing":16,"blind":16,"bolt":16,"bone":16,"book":16,"boss_archlich_arcane":16,"boss_archlich_blood":16,"boss_archlich_fire":16,"boss_archlich_frost":16,"boss_archlich_shadow":16,"boss_archlich_stone":16,"boss_archlich_thunder":16,"boss_archlich_venom":16,"boss_behemoth_arcane":16,"boss_behemoth_blood":16,"boss_behemoth_fire":16,"boss_behemoth_frost":16,"boss_behemoth_shadow":16,"boss_behemoth_stone":16,"boss_behemoth_thunder":16,"boss_behemoth_venom":16,"boss_demon_arcane":16,"boss_demon_blood":16,"boss_demon_fire":16,"boss_demon_frost":16,"boss_demon_shadow":16,"boss_demon_stone":16,"boss_demon_thunder":16,"boss_demon_venom":16,"boss_dragon_arcane":16,"boss_dragon_blood":16,"boss_dragon_fire":16,"boss_dragon_frost":16,"boss_dragon_shadow":16,"boss_dragon_stone":16,"boss_dragon_thunder":16,"boss_dragon_venom":16,"boss_hydra_arcane":16,"boss_hydra_blood":16,"boss_hydra_fire":16,"boss_hydra_frost":16,"boss_hydra_shadow":16,"boss_hydra_stone":16,"boss_hydra_thunder":16,"boss_hydra_venom":16,"boss_skull_arcane":16,"boss_skull_blood":16,"boss_skull_fire":16,"boss_skull_frost":16,"boss_skull_shadow":16,"boss_skull_stone":16,"boss_skull_thunder":16,"boss_skull_venom":16,"boss_titan_arcane":16,"boss_titan_blood":16,"boss_titan_fire":16,"boss_titan_frost":16,"boss_titan_shadow":16,"boss_titan_stone":16,"boss_titan_thunder":16,"boss_titan_venom":16,"boss_wyrm_arcane":16,"boss_wyrm_blood":16,"boss_wyrm_fire":16,"boss_wyrm_frost":16,"boss_wyrm_shadow":16,"boss_wyrm_stone":16,"boss_wyrm_thunder":16,"boss_wyrm_venom":16,"brokencog":16,"bulwark":16,"cboss_gcore_arcane":16,"cboss_gcore_blood":16,"cboss_gcore_fire":16,"cboss_gcore_frost":16,"cboss_gcore_shadow":16,"cboss_gcore_stone":16,"cboss_gcore_thunder":16,"cboss_gcore_venom":16,"cboss_quasar_arcane":16,"cboss_quasar_blood":16,"cboss_quasar_fire":16,"cboss_quasar_frost":16,"cboss_quasar_shadow":16,"cboss_quasar_stone":16,"cboss_quasar_thunder":16,"cboss_quasar_venom":16,"cboss_supernova_arcane":16,"cboss_supernova_blood":16,"cboss_supernova_fire":16,"cboss_supernova_frost":16,"cboss_supernova_shadow":16,"cboss_supernova_stone":16,"cboss_supernova_thunder":16,"cboss_supernova_venom":16,"cboss_watcher_arcane":16,"cboss_watcher_blood":16,"cboss_watcher_fire":16,"cboss_watcher_frost":16,"cboss_watcher_shadow":16,"cboss_watcher_stone":16,"cboss_watcher_thunder":16,"cboss_watcher_venom":16,"chain":16,"chalice":16,"chisel":16,"clock":16,"cog":16,"cogstop":16,"coinpurse":16,"compass":16,"constellation":16,"cos_asteroid_arcane":16,"cos_asteroid_blood":16,"cos_asteroid_fire":16,"cos_asteroid_frost":16,"cos_asteroid_shadow":16,"cos_asteroid_stone":16,"cos_asteroid_thunder":16,"cos_asteroid_venom":16,"cos_blackhole_arcane":16,"cos_blackhole_blood":16,"cos_blackhole_fire":16,"cos_blackhole_frost":16,"cos_blackhole_shadow":16,"cos_blackhole_stone":16,"cos_blackhole_thunder":16,"cos_blackhole_venom":16,"cos_dyson_arcane":16,"cos_dyson_blood":16,"cos_dyson_fire":16,"cos_dyson_frost":16,"cos_dyson_shadow":16,"cos_dyson_stone":16,"cos_dyson_thunder":16,"cos_dyson_venom":16,"cos_gravity_arcane":16,"cos_gravity_blood":16,"cos_gravity_fire":16,"cos_gravity_frost":16,"cos_gravity_shadow":16,"cos_gravity_stone":16,"cos_gravity_thunder":16,"cos_gravity_venom":16,"cos_guardian_arcane":16,"cos_guardian_blood":16,"cos_guardian_fire":16,"cos_guardian_frost":16,"cos_guardian_shadow":16,"cos_guardian_stone":16,"cos_guardian_thunder":16,"cos_guardian_venom":16,"cos_nebula_arcane":16,"cos_nebula_blood":16,"cos_nebula_fire":16,"cos_nebula_frost":16,"cos_nebula_shadow":16,"cos_nebula_stone":16,"cos_nebula_thunder":16,"cos_nebula_venom":16,"cos_probe_arcane":16,"cos_probe_blood":16,"cos_probe_fire":16,"cos_probe_frost":16,"cos_probe_shadow":16,"cos_probe_stone":16,"cos_probe_thunder":16,"cos_probe_venom":16,"cos_rift_arcane":16,"cos_rift_blood":16,"cos_rift_fire":16,"cos_rift_frost":16,"cos_rift_shadow":16,"cos_rift_stone":16,"cos_rift_thunder":16,"cos_rift_venom":16,"cos_satellite_arcane":16,"cos_satellite_blood":16,"cos_satellite_fire":16,"cos_satellite_frost":16,"cos_satellite_shadow":16,"cos_satellite_stone":16,"cos_satellite_thunder":16,"cos_satellite_venom":16,"cos_sentinel_arcane":16,"cos_sentinel_blood":16,"cos_sentinel_fire":16,"cos_sentinel_frost":16,"cos_sentinel_shadow":16,"cos_sentinel_stone":16,"cos_sentinel_thunder":16,"cos_sentinel_venom":16,"cos_spore_arcane":16,"cos_spore_blood":16,"cos_spore_fire":16,"cos_spore_frost":16,"cos_spore_shadow":16,"cos_spore_stone":16,"cos_spore_thunder":16,"cos_spore_venom":16,"cos_stareater_arcane":16,"cos_stareater_blood":16,"cos_stareater_fire":16,"cos_stareater_frost":16,"cos_stareater_shadow":16,"cos_stareater_stone":16,"cos_stareater_thunder":16,"cos_stareater_venom":16,"council":16,"crackedvial":16,"crown16":16,"crystal":16,"darkeye":16,"dboss_origin_arcane":16,"dboss_origin_blood":16,"dboss_origin_fire":16,"dboss_origin_frost":16,"dboss_origin_shadow":16,"dboss_origin_stone":16,"dboss_origin_thunder":16,"dboss_origin_venom":16,"dboss_worldeater_arcane":16,"dboss_worldeater_blood":16,"dboss_worldeater_fire":16,"dboss_worldeater_frost":16,"dboss_worldeater_shadow":16,"dboss_worldeater_stone":16,"dboss_worldeater_thunder":16,"dboss_worldeater_venom":16,"deep_ascendant_arcane":16,"deep_ascendant_blood":16,"deep_ascendant_fire":16,"deep_ascendant_frost":16,"deep_ascendant_shadow":16,"deep_ascendant_stone":16,"deep_ascendant_thunder":16,"deep_ascendant_venom":16,"deep_breaker_arcane":16,"deep_breaker_blood":16,"deep_breaker_fire":16,"deep_breaker_frost":16,"deep_breaker_shadow":16,"deep_breaker_stone":16,"deep_breaker_thunder":16,"deep_breaker_venom":16,"deep_circuit_arcane":16,"deep_circuit_blood":16,"deep_circuit_fire":16,"deep_circuit_frost":16,"deep_circuit_shadow":16,"deep_circuit_stone":16,"deep_circuit_thunder":16,"deep_circuit_venom":16,"deep_darkmatter_arcane":16,"deep_darkmatter_blood":16,"deep_darkmatter_fire":16,"deep_darkmatter_frost":16,"deep_darkmatter_shadow":16,"deep_darkmatter_stone":16,"deep_darkmatter_thunder":16,"deep_darkmatter_venom":16,"deep_devourer_arcane":16,"deep_devourer_blood":16,"deep_devourer_fire":16,"deep_devourer_frost":16,"deep_devourer_shadow":16,"deep_devourer_stone":16,"deep_devourer_thunder":16,"deep_devourer_venom":16,"deep_fracture_arcane":16,"deep_fracture_blood":16,"deep_fracture_fire":16,"deep_fracture_frost":16,"deep_fracture_shadow":16,"deep_fracture_stone":16,"deep_fracture_thunder":16,"deep_fracture_venom":16,"deep_legion_arcane":16,"deep_legion_blood":16,"deep_legion_fire":16,"deep_legion_frost":16,"deep_legion_shadow":16,"deep_legion_stone":16,"deep_legion_thunder":16,"deep_legion_venom":16,"deep_lens_arcane":16,"deep_lens_blood":16,"deep_lens_fire":16,"deep_lens_frost":16,"deep_lens_shadow":16,"deep_lens_stone":16,"deep_lens_thunder":16,"deep_lens_venom":16,"deep_primeval_arcane":16,"deep_primeval_blood":16,"deep_primeval_fire":16,"deep_primeval_frost":16,"deep_primeval_shadow":16,"deep_primeval_stone":16,"deep_primeval_thunder":16,"deep_primeval_venom":16,"deep_swarm_arcane":16,"deep_swarm_blood":16,"deep_swarm_fire":16,"deep_swarm_frost":16,"deep_swarm_shadow":16,"deep_swarm_stone":16,"deep_swarm_thunder":16,"deep_swarm_venom":16,"deep_tendril_arcane":16,"deep_tendril_blood":16,"deep_tendril_fire":16,"deep_tendril_frost":16,"deep_tendril_shadow":16,"deep_tendril_stone":16,"deep_tendril_thunder":16,"deep_tendril_venom":16,"deep_wall_arcane":16,"deep_wall_blood":16,"deep_wall_fire":16,"deep_wall_frost":16,"deep_wall_shadow":16,"deep_wall_stone":16,"deep_wall_thunder":16,"deep_wall_venom":16,"demon":16,"doom":16,"dryaltar":16,"dryspring":16,"emptypouch":16,"engrave":16,"eternalhand":16,"fastfwd":16,"feather":16,"flask":16,"foe_bat_arcane":16,"foe_bat_blood":16,"foe_bat_fire":16,"foe_bat_frost":16,"foe_bat_shadow":16,"foe_bat_stone":16,"foe_bat_thunder":16,"foe_bat_venom":16,"foe_beast_arcane":16,"foe_beast_blood":16,"foe_beast_fire":16,"foe_beast_frost":16,"foe_beast_shadow":16,"foe_beast_stone":16,"foe_beast_thunder":16,"foe_beast_venom":16,"foe_crab_arcane":16,"foe_crab_blood":16,"foe_crab_fire":16,"foe_crab_frost":16,"foe_crab_shadow":16,"foe_crab_stone":16,"foe_crab_thunder":16,"foe_crab_venom":16,"foe_eyeball_arcane":16,"foe_eyeball_blood":16,"foe_eyeball_fire":16,"foe_eyeball_frost":16,"foe_eyeball_shadow":16,"foe_eyeball_stone":16,"foe_eyeball_thunder":16,"foe_eyeball_venom":16,"foe_gargoyle_arcane":16,"foe_gargoyle_blood":16,"foe_gargoyle_fire":16,"foe_gargoyle_frost":16,"foe_gargoyle_shadow":16,"foe_gargoyle_stone":16,"foe_gargoyle_thunder":16,"foe_gargoyle_venom":16,"foe_goblin_arcane":16,"foe_goblin_blood":16,"foe_goblin_fire":16,"foe_goblin_frost":16,"foe_goblin_shadow":16,"foe_goblin_stone":16,"foe_goblin_thunder":16,"foe_goblin_venom":16,"foe_golem_arcane":16,"foe_golem_blood":16,"foe_golem_fire":16,"foe_golem_frost":16,"foe_golem_shadow":16,"foe_golem_stone":16,"foe_golem_thunder":16,"foe_golem_venom":16,"foe_harpy_arcane":16,"foe_harpy_blood":16,"foe_harpy_fire":16,"foe_harpy_frost":16,"foe_harpy_shadow":16,"foe_harpy_stone":16,"foe_harpy_thunder":16,"foe_harpy_venom":16,"foe_hound_arcane":16,"foe_hound_blood":16,"foe_hound_fire":16,"foe_hound_frost":16,"foe_hound_shadow":16,"foe_hound_stone":16,"foe_hound_thunder":16,"foe_hound_venom":16,"foe_imp_arcane":16,"foe_imp_blood":16,"foe_imp_fire":16,"foe_imp_frost":16,"foe_imp_shadow":16,"foe_imp_stone":16,"foe_imp_thunder":16,"foe_imp_venom":16,"foe_knight_arcane":16,"foe_knight_blood":16,"foe_knight_fire":16,"foe_knight_frost":16,"foe_knight_shadow":16,"foe_knight_stone":16,"foe_knight_thunder":16,"foe_knight_venom":16,"foe_lich_arcane":16,"foe_lich_blood":16,"foe_lich_fire":16,"foe_lich_frost":16,"foe_lich_shadow":16,"foe_lich_stone":16,"foe_lich_thunder":16,"foe_lich_venom":16,"foe_mushroom_arcane":16,"foe_mushroom_blood":16,"foe_mushroom_fire":16,"foe_mushroom_frost":16,"foe_mushroom_shadow":16,"foe_mushroom_stone":16,"foe_mushroom_thunder":16,"foe_mushroom_venom":16,"foe_ooze_arcane":16,"foe_ooze_blood":16,"foe_ooze_fire":16,"foe_ooze_frost":16,"foe_ooze_shadow":16,"foe_ooze_stone":16,"foe_ooze_thunder":16,"foe_ooze_venom":16,"foe_rat_arcane":16,"foe_rat_blood":16,"foe_rat_fire":16,"foe_rat_frost":16,"foe_rat_shadow":16,"foe_rat_stone":16,"foe_rat_thunder":16,"foe_rat_venom":16,"foe_scorpion_arcane":16,"foe_scorpion_blood":16,"foe_scorpion_fire":16,"foe_scorpion_frost":16,"foe_scorpion_shadow":16,"foe_scorpion_stone":16,"foe_scorpion_thunder":16,"foe_scorpion_venom":16,"foe_serpent_arcane":16,"foe_serpent_blood":16,"foe_serpent_fire":16,"foe_serpent_frost":16,"foe_serpent_shadow":16,"foe_serpent_stone":16,"foe_serpent_thunder":16,"foe_serpent_venom":16,"foe_skeleton_arcane":16,"foe_skeleton_blood":16,"foe_skeleton_fire":16,"foe_skeleton_frost":16,"foe_skeleton_shadow":16,"foe_skeleton_stone":16,"foe_skeleton_thunder":16,"foe_skeleton_venom":16,"foe_spider_arcane":16,"foe_spider_blood":16,"foe_spider_fire":16,"foe_spider_frost":16,"foe_spider_shadow":16,"foe_spider_stone":16,"foe_spider_thunder":16,"foe_spider_venom":16,"foe_treant_arcane":16,"foe_treant_blood":16,"foe_treant_fire":16,"foe_treant_frost":16,"foe_treant_shadow":16,"foe_treant_stone":16,"foe_treant_thunder":16,"foe_treant_venom":16,"foe_wisp_arcane":16,"foe_wisp_blood":16,"foe_wisp_fire":16,"foe_wisp_frost":16,"foe_wisp_shadow":16,"foe_wisp_stone":16,"foe_wisp_thunder":16,"foe_wisp_venom":16,"foe_worm_arcane":16,"foe_worm_blood":16,"foe_worm_fire":16,"foe_worm_frost":16,"foe_worm_shadow":16,"foe_worm_stone":16,"foe_worm_thunder":16,"foe_worm_venom":16,"foe_wraith_arcane":16,"foe_wraith_blood":16,"foe_wraith_fire":16,"foe_wraith_frost":16,"foe_wraith_shadow":16,"foe_wraith_stone":16,"foe_wraith_thunder":16,"foe_wraith_venom":16,"foe_zombie_arcane":16,"foe_zombie_blood":16,"foe_zombie_fire":16,"foe_zombie_frost":16,"foe_zombie_shadow":16,"foe_zombie_stone":16,"foe_zombie_thunder":16,"foe_zombie_venom":16,"fold":16,"forge":16,"gauntlet":16,"gem":16,"giantbone":16,"gift":16,"golem":16,"grimoire":16,"hourglass":16,"idol":16,"incense":16,"infinity":16,"lantern":16,"ledger":16,"library":16,"lone":16,"loupe":16,"mana":16,"map":16,"mastery":16,"medal":16,"medal_b":16,"medal_s":16,"milestone":16,"moon":16,"narrow":16,"night":16,"nosleep":16,"nothing":16,"offering":16,"onlyone":16,"origintrial":16,"pickaxe":16,"portal":16,"relic":16,"relicheart":16,"ring":16,"riverclock":16,"robe":16,"route":16,"rune_abyss":16,"rune_guard":16,"rune_speed":16,"rune_star":16,"rune_time":16,"rune_wealth":16,"rune_wisdom":16,"runebook":16,"runering":16,"scroll":16,"sealedbook":16,"sealedvein":16,"sealrune":16,"seed":16,"serpent":16,"shield":16,"silentstar":16,"skull":16,"slime":16,"soul":16,"soulforge":16,"sparkle":16,"spiral":16,"spire":16,"spoils":16,"staff":16,"star":16,"starcrown":16,"starshard":16,"starsigil":16,"storm":16,"sword":16,"swordup":16,"torpor":16,"touch":16,"tower":16,"treasure":16,"trialcrown":16,"unknown":16,"unsealed":16,"vault":16,"vial":16,"voyage":16,"voyager":16,"weight":16,"withersoul":16,"workshop":16,"wraith":16};
+const SPR={"abysscrown":16,"abysseye":16,"abysseye2":16,"academy":16,"agespoils":16,"amulet":16,"anvil":16,"apprentice":16,"banner":16,"barehand":16,"bat":16,"beacon":16,"beast":16,"belt":16,"blessing":16,"blind":16,"bolt":16,"bone":16,"book":16,"boots":16,"boss_archlich_arcane":16,"boss_archlich_blood":16,"boss_archlich_fire":16,"boss_archlich_frost":16,"boss_archlich_shadow":16,"boss_archlich_stone":16,"boss_archlich_thunder":16,"boss_archlich_venom":16,"boss_behemoth_arcane":16,"boss_behemoth_blood":16,"boss_behemoth_fire":16,"boss_behemoth_frost":16,"boss_behemoth_shadow":16,"boss_behemoth_stone":16,"boss_behemoth_thunder":16,"boss_behemoth_venom":16,"boss_demon_arcane":16,"boss_demon_blood":16,"boss_demon_fire":16,"boss_demon_frost":16,"boss_demon_shadow":16,"boss_demon_stone":16,"boss_demon_thunder":16,"boss_demon_venom":16,"boss_dragon_arcane":16,"boss_dragon_blood":16,"boss_dragon_fire":16,"boss_dragon_frost":16,"boss_dragon_shadow":16,"boss_dragon_stone":16,"boss_dragon_thunder":16,"boss_dragon_venom":16,"boss_hydra_arcane":16,"boss_hydra_blood":16,"boss_hydra_fire":16,"boss_hydra_frost":16,"boss_hydra_shadow":16,"boss_hydra_stone":16,"boss_hydra_thunder":16,"boss_hydra_venom":16,"boss_skull_arcane":16,"boss_skull_blood":16,"boss_skull_fire":16,"boss_skull_frost":16,"boss_skull_shadow":16,"boss_skull_stone":16,"boss_skull_thunder":16,"boss_skull_venom":16,"boss_titan_arcane":16,"boss_titan_blood":16,"boss_titan_fire":16,"boss_titan_frost":16,"boss_titan_shadow":16,"boss_titan_stone":16,"boss_titan_thunder":16,"boss_titan_venom":16,"boss_wyrm_arcane":16,"boss_wyrm_blood":16,"boss_wyrm_fire":16,"boss_wyrm_frost":16,"boss_wyrm_shadow":16,"boss_wyrm_stone":16,"boss_wyrm_thunder":16,"boss_wyrm_venom":16,"brokencog":16,"bulwark":16,"cboss_gcore_arcane":16,"cboss_gcore_blood":16,"cboss_gcore_fire":16,"cboss_gcore_frost":16,"cboss_gcore_shadow":16,"cboss_gcore_stone":16,"cboss_gcore_thunder":16,"cboss_gcore_venom":16,"cboss_quasar_arcane":16,"cboss_quasar_blood":16,"cboss_quasar_fire":16,"cboss_quasar_frost":16,"cboss_quasar_shadow":16,"cboss_quasar_stone":16,"cboss_quasar_thunder":16,"cboss_quasar_venom":16,"cboss_supernova_arcane":16,"cboss_supernova_blood":16,"cboss_supernova_fire":16,"cboss_supernova_frost":16,"cboss_supernova_shadow":16,"cboss_supernova_stone":16,"cboss_supernova_thunder":16,"cboss_supernova_venom":16,"cboss_watcher_arcane":16,"cboss_watcher_blood":16,"cboss_watcher_fire":16,"cboss_watcher_frost":16,"cboss_watcher_shadow":16,"cboss_watcher_stone":16,"cboss_watcher_thunder":16,"cboss_watcher_venom":16,"chain":16,"chalice":16,"chisel":16,"cloak":16,"clock":16,"cog":16,"cogstop":16,"coinpurse":16,"compass":16,"constellation":16,"cos_asteroid_arcane":16,"cos_asteroid_blood":16,"cos_asteroid_fire":16,"cos_asteroid_frost":16,"cos_asteroid_shadow":16,"cos_asteroid_stone":16,"cos_asteroid_thunder":16,"cos_asteroid_venom":16,"cos_blackhole_arcane":16,"cos_blackhole_blood":16,"cos_blackhole_fire":16,"cos_blackhole_frost":16,"cos_blackhole_shadow":16,"cos_blackhole_stone":16,"cos_blackhole_thunder":16,"cos_blackhole_venom":16,"cos_dyson_arcane":16,"cos_dyson_blood":16,"cos_dyson_fire":16,"cos_dyson_frost":16,"cos_dyson_shadow":16,"cos_dyson_stone":16,"cos_dyson_thunder":16,"cos_dyson_venom":16,"cos_gravity_arcane":16,"cos_gravity_blood":16,"cos_gravity_fire":16,"cos_gravity_frost":16,"cos_gravity_shadow":16,"cos_gravity_stone":16,"cos_gravity_thunder":16,"cos_gravity_venom":16,"cos_guardian_arcane":16,"cos_guardian_blood":16,"cos_guardian_fire":16,"cos_guardian_frost":16,"cos_guardian_shadow":16,"cos_guardian_stone":16,"cos_guardian_thunder":16,"cos_guardian_venom":16,"cos_nebula_arcane":16,"cos_nebula_blood":16,"cos_nebula_fire":16,"cos_nebula_frost":16,"cos_nebula_shadow":16,"cos_nebula_stone":16,"cos_nebula_thunder":16,"cos_nebula_venom":16,"cos_probe_arcane":16,"cos_probe_blood":16,"cos_probe_fire":16,"cos_probe_frost":16,"cos_probe_shadow":16,"cos_probe_stone":16,"cos_probe_thunder":16,"cos_probe_venom":16,"cos_rift_arcane":16,"cos_rift_blood":16,"cos_rift_fire":16,"cos_rift_frost":16,"cos_rift_shadow":16,"cos_rift_stone":16,"cos_rift_thunder":16,"cos_rift_venom":16,"cos_satellite_arcane":16,"cos_satellite_blood":16,"cos_satellite_fire":16,"cos_satellite_frost":16,"cos_satellite_shadow":16,"cos_satellite_stone":16,"cos_satellite_thunder":16,"cos_satellite_venom":16,"cos_sentinel_arcane":16,"cos_sentinel_blood":16,"cos_sentinel_fire":16,"cos_sentinel_frost":16,"cos_sentinel_shadow":16,"cos_sentinel_stone":16,"cos_sentinel_thunder":16,"cos_sentinel_venom":16,"cos_spore_arcane":16,"cos_spore_blood":16,"cos_spore_fire":16,"cos_spore_frost":16,"cos_spore_shadow":16,"cos_spore_stone":16,"cos_spore_thunder":16,"cos_spore_venom":16,"cos_stareater_arcane":16,"cos_stareater_blood":16,"cos_stareater_fire":16,"cos_stareater_frost":16,"cos_stareater_shadow":16,"cos_stareater_stone":16,"cos_stareater_thunder":16,"cos_stareater_venom":16,"council":16,"crackedvial":16,"crown16":16,"crystal":16,"darkeye":16,"dboss_origin_arcane":16,"dboss_origin_blood":16,"dboss_origin_fire":16,"dboss_origin_frost":16,"dboss_origin_shadow":16,"dboss_origin_stone":16,"dboss_origin_thunder":16,"dboss_origin_venom":16,"dboss_worldeater_arcane":16,"dboss_worldeater_blood":16,"dboss_worldeater_fire":16,"dboss_worldeater_frost":16,"dboss_worldeater_shadow":16,"dboss_worldeater_stone":16,"dboss_worldeater_thunder":16,"dboss_worldeater_venom":16,"deep_ascendant_arcane":16,"deep_ascendant_blood":16,"deep_ascendant_fire":16,"deep_ascendant_frost":16,"deep_ascendant_shadow":16,"deep_ascendant_stone":16,"deep_ascendant_thunder":16,"deep_ascendant_venom":16,"deep_breaker_arcane":16,"deep_breaker_blood":16,"deep_breaker_fire":16,"deep_breaker_frost":16,"deep_breaker_shadow":16,"deep_breaker_stone":16,"deep_breaker_thunder":16,"deep_breaker_venom":16,"deep_circuit_arcane":16,"deep_circuit_blood":16,"deep_circuit_fire":16,"deep_circuit_frost":16,"deep_circuit_shadow":16,"deep_circuit_stone":16,"deep_circuit_thunder":16,"deep_circuit_venom":16,"deep_darkmatter_arcane":16,"deep_darkmatter_blood":16,"deep_darkmatter_fire":16,"deep_darkmatter_frost":16,"deep_darkmatter_shadow":16,"deep_darkmatter_stone":16,"deep_darkmatter_thunder":16,"deep_darkmatter_venom":16,"deep_devourer_arcane":16,"deep_devourer_blood":16,"deep_devourer_fire":16,"deep_devourer_frost":16,"deep_devourer_shadow":16,"deep_devourer_stone":16,"deep_devourer_thunder":16,"deep_devourer_venom":16,"deep_fracture_arcane":16,"deep_fracture_blood":16,"deep_fracture_fire":16,"deep_fracture_frost":16,"deep_fracture_shadow":16,"deep_fracture_stone":16,"deep_fracture_thunder":16,"deep_fracture_venom":16,"deep_legion_arcane":16,"deep_legion_blood":16,"deep_legion_fire":16,"deep_legion_frost":16,"deep_legion_shadow":16,"deep_legion_stone":16,"deep_legion_thunder":16,"deep_legion_venom":16,"deep_lens_arcane":16,"deep_lens_blood":16,"deep_lens_fire":16,"deep_lens_frost":16,"deep_lens_shadow":16,"deep_lens_stone":16,"deep_lens_thunder":16,"deep_lens_venom":16,"deep_primeval_arcane":16,"deep_primeval_blood":16,"deep_primeval_fire":16,"deep_primeval_frost":16,"deep_primeval_shadow":16,"deep_primeval_stone":16,"deep_primeval_thunder":16,"deep_primeval_venom":16,"deep_swarm_arcane":16,"deep_swarm_blood":16,"deep_swarm_fire":16,"deep_swarm_frost":16,"deep_swarm_shadow":16,"deep_swarm_stone":16,"deep_swarm_thunder":16,"deep_swarm_venom":16,"deep_tendril_arcane":16,"deep_tendril_blood":16,"deep_tendril_fire":16,"deep_tendril_frost":16,"deep_tendril_shadow":16,"deep_tendril_stone":16,"deep_tendril_thunder":16,"deep_tendril_venom":16,"deep_wall_arcane":16,"deep_wall_blood":16,"deep_wall_fire":16,"deep_wall_frost":16,"deep_wall_shadow":16,"deep_wall_stone":16,"deep_wall_thunder":16,"deep_wall_venom":16,"demon":16,"doom":16,"dryaltar":16,"dryspring":16,"emptypouch":16,"engrave":16,"eonring":16,"eontear":16,"etercrown":16,"eternalhand":16,"eternight":16,"etersigil":16,"fastfwd":16,"feather":16,"firstseed":16,"flask":16,"foe_bat_arcane":16,"foe_bat_blood":16,"foe_bat_fire":16,"foe_bat_frost":16,"foe_bat_shadow":16,"foe_bat_stone":16,"foe_bat_thunder":16,"foe_bat_venom":16,"foe_beast_arcane":16,"foe_beast_blood":16,"foe_beast_fire":16,"foe_beast_frost":16,"foe_beast_shadow":16,"foe_beast_stone":16,"foe_beast_thunder":16,"foe_beast_venom":16,"foe_crab_arcane":16,"foe_crab_blood":16,"foe_crab_fire":16,"foe_crab_frost":16,"foe_crab_shadow":16,"foe_crab_stone":16,"foe_crab_thunder":16,"foe_crab_venom":16,"foe_eyeball_arcane":16,"foe_eyeball_blood":16,"foe_eyeball_fire":16,"foe_eyeball_frost":16,"foe_eyeball_shadow":16,"foe_eyeball_stone":16,"foe_eyeball_thunder":16,"foe_eyeball_venom":16,"foe_gargoyle_arcane":16,"foe_gargoyle_blood":16,"foe_gargoyle_fire":16,"foe_gargoyle_frost":16,"foe_gargoyle_shadow":16,"foe_gargoyle_stone":16,"foe_gargoyle_thunder":16,"foe_gargoyle_venom":16,"foe_goblin_arcane":16,"foe_goblin_blood":16,"foe_goblin_fire":16,"foe_goblin_frost":16,"foe_goblin_shadow":16,"foe_goblin_stone":16,"foe_goblin_thunder":16,"foe_goblin_venom":16,"foe_golem_arcane":16,"foe_golem_blood":16,"foe_golem_fire":16,"foe_golem_frost":16,"foe_golem_shadow":16,"foe_golem_stone":16,"foe_golem_thunder":16,"foe_golem_venom":16,"foe_harpy_arcane":16,"foe_harpy_blood":16,"foe_harpy_fire":16,"foe_harpy_frost":16,"foe_harpy_shadow":16,"foe_harpy_stone":16,"foe_harpy_thunder":16,"foe_harpy_venom":16,"foe_hound_arcane":16,"foe_hound_blood":16,"foe_hound_fire":16,"foe_hound_frost":16,"foe_hound_shadow":16,"foe_hound_stone":16,"foe_hound_thunder":16,"foe_hound_venom":16,"foe_imp_arcane":16,"foe_imp_blood":16,"foe_imp_fire":16,"foe_imp_frost":16,"foe_imp_shadow":16,"foe_imp_stone":16,"foe_imp_thunder":16,"foe_imp_venom":16,"foe_knight_arcane":16,"foe_knight_blood":16,"foe_knight_fire":16,"foe_knight_frost":16,"foe_knight_shadow":16,"foe_knight_stone":16,"foe_knight_thunder":16,"foe_knight_venom":16,"foe_lich_arcane":16,"foe_lich_blood":16,"foe_lich_fire":16,"foe_lich_frost":16,"foe_lich_shadow":16,"foe_lich_stone":16,"foe_lich_thunder":16,"foe_lich_venom":16,"foe_mushroom_arcane":16,"foe_mushroom_blood":16,"foe_mushroom_fire":16,"foe_mushroom_frost":16,"foe_mushroom_shadow":16,"foe_mushroom_stone":16,"foe_mushroom_thunder":16,"foe_mushroom_venom":16,"foe_ooze_arcane":16,"foe_ooze_blood":16,"foe_ooze_fire":16,"foe_ooze_frost":16,"foe_ooze_shadow":16,"foe_ooze_stone":16,"foe_ooze_thunder":16,"foe_ooze_venom":16,"foe_rat_arcane":16,"foe_rat_blood":16,"foe_rat_fire":16,"foe_rat_frost":16,"foe_rat_shadow":16,"foe_rat_stone":16,"foe_rat_thunder":16,"foe_rat_venom":16,"foe_scorpion_arcane":16,"foe_scorpion_blood":16,"foe_scorpion_fire":16,"foe_scorpion_frost":16,"foe_scorpion_shadow":16,"foe_scorpion_stone":16,"foe_scorpion_thunder":16,"foe_scorpion_venom":16,"foe_serpent_arcane":16,"foe_serpent_blood":16,"foe_serpent_fire":16,"foe_serpent_frost":16,"foe_serpent_shadow":16,"foe_serpent_stone":16,"foe_serpent_thunder":16,"foe_serpent_venom":16,"foe_skeleton_arcane":16,"foe_skeleton_blood":16,"foe_skeleton_fire":16,"foe_skeleton_frost":16,"foe_skeleton_shadow":16,"foe_skeleton_stone":16,"foe_skeleton_thunder":16,"foe_skeleton_venom":16,"foe_spider_arcane":16,"foe_spider_blood":16,"foe_spider_fire":16,"foe_spider_frost":16,"foe_spider_shadow":16,"foe_spider_stone":16,"foe_spider_thunder":16,"foe_spider_venom":16,"foe_treant_arcane":16,"foe_treant_blood":16,"foe_treant_fire":16,"foe_treant_frost":16,"foe_treant_shadow":16,"foe_treant_stone":16,"foe_treant_thunder":16,"foe_treant_venom":16,"foe_wisp_arcane":16,"foe_wisp_blood":16,"foe_wisp_fire":16,"foe_wisp_frost":16,"foe_wisp_shadow":16,"foe_wisp_stone":16,"foe_wisp_thunder":16,"foe_wisp_venom":16,"foe_worm_arcane":16,"foe_worm_blood":16,"foe_worm_fire":16,"foe_worm_frost":16,"foe_worm_shadow":16,"foe_worm_stone":16,"foe_worm_thunder":16,"foe_worm_venom":16,"foe_wraith_arcane":16,"foe_wraith_blood":16,"foe_wraith_fire":16,"foe_wraith_frost":16,"foe_wraith_shadow":16,"foe_wraith_stone":16,"foe_wraith_thunder":16,"foe_wraith_venom":16,"foe_zombie_arcane":16,"foe_zombie_blood":16,"foe_zombie_fire":16,"foe_zombie_frost":16,"foe_zombie_shadow":16,"foe_zombie_stone":16,"foe_zombie_thunder":16,"foe_zombie_venom":16,"fold":16,"forge":16,"formless":16,"gauntlet":16,"gem":16,"genesis":16,"giantbone":16,"gift":16,"glory":16,"golem":16,"grimoire":16,"helm":16,"horn":16,"hourglass":16,"idol":16,"incense":16,"infinity":16,"lantern":16,"ledger":16,"library":16,"lone":16,"loupe":16,"mana":16,"map":16,"mastery":16,"medal":16,"medal_b":16,"medal_s":16,"milestone":16,"mirror":16,"moon":16,"narrow":16,"night":16,"nosleep":16,"nothing":16,"nulleconomy":16,"offering":16,"oldseal":16,"omniforge":16,"onlyone":16,"origintrial":16,"pickaxe":16,"pillar":16,"portal":16,"relic":16,"relicheart":16,"reliquary":16,"ring":16,"riverclock":16,"robe":16,"route":16,"rune_abyss":16,"rune_echo":16,"rune_flow":16,"rune_forge":16,"rune_gate":16,"rune_guard":16,"rune_might":16,"rune_mind":16,"rune_speed":16,"rune_star":16,"rune_time":16,"rune_void":16,"rune_wealth":16,"rune_wisdom":16,"runebook":16,"runering":16,"scales":16,"scroll":16,"scythe":16,"sealedbook":16,"sealedvein":16,"sealrune":16,"seed":16,"serpent":16,"shield":16,"sigil":16,"silentstar":16,"skull":16,"slime":16,"soul":16,"soulforge":16,"sparkle":16,"spiral":16,"spire":16,"spoils":16,"staff":16,"star":16,"starcog":16,"starcompass":16,"starcrown":16,"starshard":16,"starsigil":16,"storm":16,"sword":16,"swordup":16,"throne":16,"timeaxis":16,"timecrown":16,"tome":16,"torpor":16,"touch":16,"tower":16,"treasure":16,"trialcrown":16,"unknown":16,"unsealed":16,"vault":16,"vial":16,"voidheart":16,"voyage":16,"voyager":16,"weight":16,"withersoul":16,"workshop":16,"wraith":16};
 const SPR_DIR='art/sprites/';
 const spriteURL = name => SPR_DIR + name + '.png';
 function ic(name,size){
@@ -619,6 +619,22 @@ const RUNES=[
  {id:'guard', sp:'rune_guard', nm:{ko:'수호의 룬',en:"Rune of Warding"}, d:l=>`${X('던전 공격력',"Dungeon power")} ×${fmt(Math.pow(1.12,l))} → ×${fmt(Math.pow(1.12,l+1))}`,    apply:(m,l)=>m.dungeon*=Math.pow(1.12,l)},
  {id:'abyss', sp:'rune_abyss', nm:{ko:'심연의 룬',en:"Rune of the Abyss"}, d:l=>`${X('영혼석 획득',"Soul Shards")} ×${fmt(Math.pow(1.08,l))} → ×${fmt(Math.pow(1.08,l+1))}`,    apply:(m,l)=>m.soul*=Math.pow(1.08,l)},
 ];
+RUNES.push(
+ {id:'might', sp:'rune_might', nm:{ko:'맹위의 룬',en:"Rune of Fury"},
+  d:l=>`${X('던전 보상',"Dungeon rewards")} ×${fmt(Math.pow(1.10,l))} → ×${fmt(Math.pow(1.10,l+1))}`, apply:(m,l)=>m.floorLoot*=Math.pow(1.10,l)},
+ {id:'mind',  sp:'rune_mind',  nm:{ko:'사색의 룬',en:"Rune of Contemplation"},
+  d:l=>`${X('아래 두 단계 효율',"Bottom two tiers")} ×${fmt(Math.pow(1.09,l))} → ×${fmt(Math.pow(1.09,l+1))}`, apply:(m,l)=>m.t0*=Math.pow(1.09,l)},
+ {id:'flow',  sp:'rune_flow',  nm:{ko:'물결의 룬',en:"Rune of Currents"},
+  d:l=>`${X('자동화 주기',"Automation interval")} ×${Math.pow(0.985,l).toFixed(3)} → ×${Math.pow(0.985,l+1).toFixed(3)}`, apply:(m,l)=>m.autoSpeed*=Math.pow(0.985,l)},
+ {id:'hollow',sp:'rune_void',  nm:{ko:'공동의 룬',en:"Rune of the Hollow"},
+  d:l=>`${X('보스 보상',"Boss rewards")} ×${fmt(Math.pow(1.11,l))} → ×${fmt(Math.pow(1.11,l+1))}`, apply:(m,l)=>m.boss*=Math.pow(1.11,l)},
+ {id:'gate',  sp:'rune_gate',  nm:{ko:'관문의 룬',en:"Rune of Gates"},
+  d:l=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${fmt(Math.pow(1.07,l))} → ×${fmt(Math.pow(1.07,l+1))}`, apply:(m,l)=>m.floorPct*=Math.pow(1.07,l)},
+ {id:'temper',sp:'rune_forge', nm:{ko:'담금질의 룬',en:"Rune of Tempering"},
+  d:l=>`${X('장비 효과 지수',"Gear exponent")} ×${fmt(Math.pow(1.05,l))} → ×${fmt(Math.pow(1.05,l+1))}`, apply:(m,l)=>m.gearPow*=Math.pow(1.05,l)},
+ {id:'echo',  sp:'rune_echo',  nm:{ko:'메아리의 룬',en:"Rune of Echoes"},
+  d:l=>`${X('도전 보상',"Trial rewards")} ×${fmt(Math.pow(1.08,l))} → ×${fmt(Math.pow(1.08,l+1))}`, apply:(m,l)=>m.chalPow*=Math.pow(1.08,l)},
+);
 const runeCost=l=>12*Math.pow(1.30,l);
 
 /* 장비 · 결정으로 강화, 영구 유지 */
@@ -642,6 +658,25 @@ GEAR.push(
   d:(l,p)=>`${X('게임 속도',"Game speed")} +${(2*l*p).toFixed(1)}% → +${(2*(l+1)*p).toFixed(1)}%`, apply:(m,l)=>m.speed*=1+0.02*l*m.gearPow},
  {id:'compass2',sp:'compass',nm:{ko:'항성 나침반',en:"Stellar Compass"},
   d:(l,p)=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${fmt(Math.pow(1.12,l*p))} → ×${fmt(Math.pow(1.12,(l+1)*p))}`, apply:(m,l)=>m.floorPct*=Math.pow(1.12,l*m.gearPow)},
+);
+GEAR.push(
+ {id:'helm',  sp:'helm',  nm:{ko:'파쇄 투구',en:"Breaker Helm"},
+  d:(l,p)=>`${X('보스 보상',"Boss rewards")} ×${fmt(Math.pow(1.20,l*p))} → ×${fmt(Math.pow(1.20,(l+1)*p))}`, apply:(m,l)=>m.boss*=Math.pow(1.20,l*m.gearPow)},
+ {id:'boots', sp:'boots', nm:{ko:'질주의 장화',en:"Striding Boots"},
+  d:(l,p)=>`${X('게임 속도',"Game speed")} +${(1.8*l*p).toFixed(1)}% → +${(1.8*(l+1)*p).toFixed(1)}%`, apply:(m,l)=>m.speed*=1+0.018*l*m.gearPow},
+ {id:'cloak', sp:'cloak', nm:{ko:'그림자 망토',en:"Shadow Cloak"},
+  d:(l,p)=>`${X('던전 보상',"Dungeon rewards")} ×${fmt(Math.pow(1.17,l*p))} → ×${fmt(Math.pow(1.17,(l+1)*p))}`, apply:(m,l)=>m.floorLoot*=Math.pow(1.17,l*m.gearPow)},
+ {id:'belt',  sp:'belt',  nm:{ko:'절약의 허리띠',en:"Thrift Belt"},
+  d:(l,p)=>`${X('시설 비용',"Building cost")} ${((1-Math.pow(0.985,l*p))*100).toFixed(1)}% → ${((1-Math.pow(0.985,(l+1)*p))*100).toFixed(1)}% ${X('절감','off')}`, apply:(m,l)=>m.costMul*=Math.pow(0.985,l*m.gearPow)},
+ {id:'tome',  sp:'tome',  nm:{ko:'대현자의 비망록',en:"Archsage Codex"},
+  d:(l,p)=>`${X('상위 시설 효율',"Higher tiers")} ×${fmt(Math.pow(1.14,l*p))} → ×${fmt(Math.pow(1.14,(l+1)*p))}`, apply:(m,l)=>m.tUp*=Math.pow(1.14,l*m.gearPow)},
+ {id:'horn',  sp:'horn',  nm:{ko:'시련의 뿔피리',en:"Trialhorn"},
+  d:(l,p)=>`${X('도전 보상',"Trial rewards")} ×${fmt(Math.pow(1.13,l*p))} → ×${fmt(Math.pow(1.13,(l+1)*p))}`, apply:(m,l)=>m.chalPow*=Math.pow(1.13,l*m.gearPow)},
+ {id:'mirror',sp:'mirror',nm:{ko:'결정 거울',en:"Crystal Mirror"},
+  d:(l,p)=>`${X('결정 획득',"Crystals")} ×${fmt(Math.pow(1.19,l*p))} → ×${fmt(Math.pow(1.19,(l+1)*p))}`, apply:(m,l)=>m.crystal*=Math.pow(1.19,l*m.gearPow)},
+ {id:'sigil', sp:'sigil', nm:{ko:'만상의 인장',en:"Sigil of All Things"},
+  d:(l,p)=>`${X('모든 생산·획득',"All output")} ×${fmt(Math.pow(1.09,l*p))} → ×${fmt(Math.pow(1.09,(l+1)*p))}`,
+  apply:(m,l)=>{const v=Math.pow(1.09,l*m.gearPow);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
 );
 const gearCost=l=>8*Math.pow(1.6,l);
 
@@ -710,6 +745,33 @@ RELIC_UPS.push(
   apply:(m,l)=>m.relic*=Math.pow(1.6,l)},
 );
 
+RELIC_UPS.push(
+ {id:'a17',sp:'oldseal',  nm:{ko:'고대의 인장',en:"Ancient Seal"}, max:Infinity,c:l=>15*Math.pow(4.2,l),
+  d:l=>`${X('모든 생산·획득',"All output")} ×${fmt(Math.pow(1.5,l))} → ×${fmt(Math.pow(1.5,l+1))}`,
+  apply:(m,l)=>{const v=Math.pow(1.5,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+ {id:'a18',sp:'throne',   nm:{ko:'부서진 왕좌',en:"Broken Throne"}, max:Infinity,c:l=>18*Math.pow(4.4,l),
+  d:l=>`${X('상위 시설 효율',"Higher tiers")} ×${fmt(Math.pow(2.2,l))} → ×${fmt(Math.pow(2.2,l+1))}`,
+  apply:(m,l)=>m.tUp*=Math.pow(2.2,l)},
+ {id:'a19',sp:'voidheart',nm:{ko:'심연의 심장',en:"Heart of the Abyss"}, max:Infinity,c:l=>20*Math.pow(4.6,l),
+  d:l=>`${X('던전 공격력',"Dungeon power")} ×${fmt(Math.pow(3,l))} → ×${fmt(Math.pow(3,l+1))}`,
+  apply:(m,l)=>m.dungeon*=Math.pow(3,l)},
+ {id:'a20',sp:'firstseed',nm:{ko:'시원의 씨앗',en:"Primordial Seed"}, max:Infinity,c:l=>22*Math.pow(4.8,l),
+  d:l=>`${X('아래 두 단계 효율',"Bottom two tiers")} ×${fmt(Math.pow(2.5,l))} → ×${fmt(Math.pow(2.5,l+1))}`,
+  apply:(m,l)=>m.t0*=Math.pow(2.5,l)},
+ {id:'a21',sp:'reliquary',nm:{ko:'유물함',en:"Reliquary"}, max:Infinity,c:l=>14*Math.pow(4,l),
+  d:l=>`${X('결정 획득',"Crystals")} ×${fmt(Math.pow(2.4,l))} → ×${fmt(Math.pow(2.4,l+1))}`,
+  apply:(m,l)=>m.crystal*=Math.pow(2.4,l)},
+ {id:'a22',sp:'pillar',   nm:{ko:'무너진 기둥',en:"Fallen Pillar"}, max:Infinity,c:l=>17*Math.pow(4.3,l),
+  d:l=>`${X('오퍼링 획득',"Offerings")} ×${fmt(Math.pow(2.4,l))} → ×${fmt(Math.pow(2.4,l+1))}`,
+  apply:(m,l)=>m.offer*=Math.pow(2.4,l)},
+ {id:'a23',sp:'starcompass',nm:{ko:'별의 나침반',en:"Star Compass"}, max:Infinity,c:l=>19*Math.pow(4.5,l),
+  d:l=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${fmt(Math.pow(2,l))} → ×${fmt(Math.pow(2,l+1))}`,
+  apply:(m,l)=>m.floorPct*=Math.pow(2,l)},
+ {id:'a24',sp:'glory',    nm:{ko:'영광의 깃발',en:"Banner of Glory"}, max:Infinity,c:l=>25*Math.pow(5,l),
+  d:l=>`${X('도전 보상',"Trial rewards")} ×${fmt(Math.pow(2,l))} → ×${fmt(Math.pow(2,l+1))}`,
+  apply:(m,l)=>m.chalPow*=Math.pow(2,l)},
+);
+
 /* 별 강화 · 초월 통화. 무엇을 해도 사라지지 않는다 */
 const STAR_UPS=[
  {id:'t1', sp:'starsigil',     nm:{ko:'별의 인장',en:"Star Sigil"},     max:Infinity,c:l=>1*Math.pow(3,l),
@@ -755,6 +817,60 @@ STAR_UPS.push(
   d:l=>`${X('아래 두 단계 효율',"Bottom two tiers")} ×${fmt(Math.pow(3,l))} → ×${fmt(Math.pow(3,l+1))}`, apply:(m,l)=>m.t0*=Math.pow(3,l)},
  {id:'t16',sp:'night',    nm:{ko:'영원한 밤',en:"Endless Night"}, max:Infinity,c:l=>14*Math.pow(4.0,l),
   d:l=>`${X('오프라인 상한',"Offline cap")} +${8*l}${X('시간','h')} → +${8*(l+1)}${X('시간','h')}`, apply:(m,l)=>m.offline+=8*l},
+);
+
+/* 영원 강화 · 영원으로만 산다. 계층을 통째로 갈아 넣고 얻는 것이라 효과가 크다.
+   영원 돌파에도 살아남지 않는다 — 그때는 정말 처음부터다. */
+const ETER_UPS=[
+ {id:'e1', sp:'etersigil', nm:{ko:'영원의 각인',en:"Eternal Sigil"}, max:Infinity,c:l=>1*Math.pow(2.5,l),
+  d:l=>`${X('모든 생산·획득',"All output")} ×${fmt(Math.pow(10,l))} → ×${fmt(Math.pow(10,l+1))}`,
+  apply:(m,l)=>{const v=Math.pow(10,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+ {id:'e2', sp:'timecrown',nm:{ko:'시간의 지배',en:"Mastery of Time"}, max:Infinity,c:l=>2*Math.pow(3,l),
+  d:l=>`${X('게임 속도',"Game speed")} ×${fmt(Math.pow(2,l))} → ×${fmt(Math.pow(2,l+1))}`,
+  apply:(m,l)=>m.speed*=Math.pow(2,l)},
+ {id:'e3', sp:'abysscrown', nm:{ko:'심연의 지배',en:"Dominion of the Abyss"}, max:Infinity,c:l=>2*Math.pow(2.8,l),
+  d:l=>`${X('던전 공격력',"Dungeon power")} ×${fmt(Math.pow(20,l))} → ×${fmt(Math.pow(20,l+1))}`,
+  apply:(m,l)=>m.dungeon*=Math.pow(20,l)},
+ {id:'e4', sp:'agespoils', nm:{ko:'영겁의 전리품',en:"Spoils of Ages"}, max:Infinity,c:l=>3*Math.pow(3,l),
+  d:l=>`${X('던전·보스 보상',"Dungeon & boss rewards")} ×${fmt(Math.pow(8,l))} → ×${fmt(Math.pow(8,l+1))}`,
+  apply:(m,l)=>{const v=Math.pow(8,l);m.floorLoot*=v;m.boss*=v;}},
+ {id:'e5', sp:'omniforge',    nm:{ko:'전지의 벼림',en:"Omniscient Forge"}, max:Infinity,c:l=>4*Math.pow(3.4,l),
+  d:l=>`${X('장비 효과 지수',"Gear exponent")} ×${fmt(Math.pow(2,l))} → ×${fmt(Math.pow(2,l+1))}`,
+  apply:(m,l)=>m.gearPow*=Math.pow(2,l)},
+ {id:'e6', sp:'etercrown',nm:{ko:'영원의 왕관',en:"Eternal Crown"}, max:Infinity,c:l=>4*Math.pow(3.2,l),
+  d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${200*l} → +${200*(l+1)}`, apply:(m,l)=>m.runeCap+=200*l},
+ {id:'e7', sp:'nulleconomy',   nm:{ko:'무의 경제',en:"Economy of Nothing"}, max:Infinity,c:l=>5*Math.pow(3.6,l),
+  d:l=>`${X('시설 비용',"Building cost")} ${((1-Math.pow(0.7,l))*100).toFixed(1)}% → ${((1-Math.pow(0.7,l+1))*100).toFixed(1)}% ${X('절감','off')}`,
+  apply:(m,l)=>m.costMul*=Math.pow(0.7,l)},
+ {id:'e8', sp:'eternight',    nm:{ko:'잠들지 않는 영원',en:"Sleepless Eternity"}, max:Infinity,c:l=>3*Math.pow(2.6,l),
+  d:l=>`${X('오프라인 상한',"Offline cap")} +${24*l}${X('시간','h')} → +${24*(l+1)}${X('시간','h')}`,
+  apply:(m,l)=>m.offline+=24*l},
+];
+ETER_UPS.push(
+ {id:'e9', sp:'eonring',   nm:{ko:'영겁의 고리',en:"Ring of Aeons"}, max:Infinity,c:l=>4*Math.pow(3,l),
+  d:l=>`${X('모든 생산·획득',"All output")} ×${fmt(Math.pow(6,l))} → ×${fmt(Math.pow(6,l+1))}`,
+  apply:(m,l)=>{const v=Math.pow(6,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+ {id:'e10',sp:'timeaxis',  nm:{ko:'시간의 축',en:"Axis of Time"}, max:Infinity,c:l=>5*Math.pow(3.2,l),
+  d:l=>`${X('자동화 주기',"Automation interval")} ×${Math.pow(0.6,l).toFixed(3)} → ×${Math.pow(0.6,l+1).toFixed(3)}`,
+  apply:(m,l)=>m.autoSpeed*=Math.pow(0.6,l)},
+ {id:'e11',sp:'genesis',   nm:{ko:'창세의 불',en:"Fire of Genesis"}, max:Infinity,c:l=>6*Math.pow(3.4,l),
+  d:l=>`${X('마나 생산',"Mana output")} ×${fmt(Math.pow(25,l))} → ×${fmt(Math.pow(25,l+1))}`,
+  apply:(m,l)=>m.prod*=Math.pow(25,l)},
+ {id:'e12',sp:'scales',    nm:{ko:'만상의 저울',en:"Scales of All"}, max:Infinity,c:l=>5*Math.pow(3.1,l),
+  d:l=>`${X('영혼석·오퍼링 획득',"Soul Shards & Offerings")} ×${fmt(Math.pow(12,l))} → ×${fmt(Math.pow(12,l+1))}`,
+  apply:(m,l)=>{const v=Math.pow(12,l);m.soul*=v;m.offer*=v;}},
+ {id:'e13',sp:'formless',  nm:{ko:'무형의 손',en:"Formless Hand"}, max:Infinity,c:l=>7*Math.pow(3.6,l),
+  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${500*l} → ${500*(l+1)}${X('개 무료',' free')}`,
+  apply:()=>{}},
+ {id:'e14',sp:'scythe',    nm:{ko:'종언의 낫',en:"Scythe of Ending"}, max:Infinity,c:l=>6*Math.pow(3.3,l),
+  d:l=>`${X('보스 보상',"Boss rewards")} ×${fmt(Math.pow(15,l))} → ×${fmt(Math.pow(15,l+1))}`,
+  apply:(m,l)=>m.boss*=Math.pow(15,l)},
+ {id:'e15',sp:'starcog',   nm:{ko:'별의 태엽',en:"Stellar Mainspring"}, max:Infinity,c:l=>8*Math.pow(3.8,l),
+  d:l=>`${X('승천 유물 획득',"Relics on ascension")} ×${fmt(Math.pow(5,l))} → ×${fmt(Math.pow(5,l+1))}`,
+  apply:(m,l)=>m.relic*=Math.pow(5,l)},
+ {id:'e16',sp:'eontear',   nm:{ko:'영원의 눈물',en:"Tear of Eternity"}, max:Infinity,c:l=>6*Math.pow(3.5,l),
+  d:l=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${fmt(Math.pow(8,l))} → ×${fmt(Math.pow(8,l+1))}`,
+  apply:(m,l)=>m.floorPct*=Math.pow(8,l)},
 );
 
 /* 도전 · 승천 1회 후 해금. 제약을 걸고 목표 마나 달성 시 영구 보상 */
@@ -912,10 +1028,11 @@ function newState(){return{
   soul:0, soulAsc:0, soulEver:0, soulUps:{},
   relic:0, relicEver:0, relicUps:{}, relicTrans:0,
   star:0, starEver:0, starUps:{},
-  inf:0, infEver:0, infCount:0, eter:0, eterEver:0, eterCount:0,
+  inf:0, infEver:0, infCount:0, eterUps:{}, eter:0, eterEver:0, eterCount:0,
   real:0, realEver:0, realCount:0, void:0, voidEver:0, voidCount:0,
   origin:0, originEver:0, originCount:0,
   rebirths:0, ascensions:0, transcends:0,
+  rebirthEver:0, ascendEver:0, transEver:0,   // 어떤 초기화에도 줄지 않는다
   lastSoulGain:0, lastRelicGain:0, lastStarGain:0,
   sinceRebirth:0, sinceAscend:0, sinceTrans:0, sinceInf:0,
   deepest:0, floor:1, prog:0, exploring:false,
@@ -929,6 +1046,17 @@ function newState(){return{
 let S=newState(), LOG=[], MC=null;
 
 /* ══════════════ 유틸 ══════════════ */
+/* 자릿수(밑 10 로그)를 글자로. e 는 마지막이 아니다 —
+   지수가 커지면 e538, 지수의 지수까지 커지면 ee9.3 처럼 층을 쌓아 적는다.
+   ee9.3 은 10^(10^9.3) 이다. */
+function fmtLog(l){
+  if(isNaN(l)) return '0';
+  if(l===Infinity) return '∞';
+  if(l<300) return fmt(Math.pow(10,l));          // 1.23e45 까지는 그대로
+  if(l<1e6)  return 'e'+Math.round(l).toLocaleString();          // e538
+  if(l<1e15) return 'e'+fmtLog(L10(l));                          // e1.2e9
+  return 'ee'+L10(l).toFixed(2);                                 // ee15.30
+}
 function fmt(n){
   if(n===Infinity) return '∞';
   if(n===-Infinity) return '-∞';
@@ -942,7 +1070,8 @@ function fmt(n){
   }
   if(n<1e6) return Math.floor(n).toLocaleString(LANG==='en'?'en-US':'ko-KR');
   const e=Math.floor(Math.log10(n));
-  return (n/Math.pow(10,e)).toFixed(2)+'e'+e;   // 이름 대신 지수로만
+  if(e>=1e6) return fmtLog(Math.log10(n));      // 지수 자체가 커지면 층을 쌓아 적는다
+  return (n/Math.pow(10,e)).toFixed(2)+'e'+e;
 }
 
 
@@ -977,6 +1106,7 @@ function computeM(){
   for(const u of SOUL_UPS){const l=S.soulUps[u.id]||0; if(l) u.apply(m,l);}
   for(const u of RELIC_UPS){const l=S.relicUps[u.id]||0; if(l) u.apply(m,l);}
   for(const u of STAR_UPS){const l=S.starUps[u.id]||0; if(l) u.apply(m,l);}
+  for(const u of ETER_UPS){const l=S.eterUps[u.id]||0; if(l) u.apply(m,l);}
   { const v=infBonus(); m.prod*=v; m.soul*=v; m.offer*=v; m.crystal*=v; m.dungeon*=v; m.relic*=v; }
   for(const c of CHALLENGES){const n=S.chalDone[c.id]||0; if(n) c.apply(m,n*m.chalPow);}
   for(const ms of MILESTONES) if(S.rebirths>=ms.n) ms.apply(m);
@@ -1018,7 +1148,13 @@ function buyProducer(i){
 function manaRate(){const m=M();return cnt(0)*PRODUCERS[0].rate*m.t0*m.prod}
 function gatherAmount(){return Math.max(1,manaRate()*0.5)}
 function gather(){const g=gatherAmount();addMana(g);S.clicks++}
-function addMana(v){S.mana+=v;S.manaRun+=v;S.manaEver+=v}
+const CAP=1e300;
+function safeAdd(cur,v){                       // ∞ 나 NaN 이 한 번 새면 그 뒤가 전부 망가진다
+  if(!isFinite(v)||isNaN(v)) v=CAP;
+  const n=(cur||0)+v;
+  return (!isFinite(n)||isNaN(n))?CAP:Math.min(n,CAP);
+}
+function addMana(v){ S.mana=safeAdd(S.mana,v); S.manaRun=safeAdd(S.manaRun,v); S.manaEver=safeAdd(S.manaEver,v); }
 
 /* ══════════════ 던전 ══════════════ */
 const isBoss=f=>f%10===0;
@@ -1084,7 +1220,7 @@ function cosmosLabel(f){
 function cosmosBonus(f){
   const c=cosmos(f); let v=1;
   for(let i=1;i<COSMOS.length;i++) v*=Math.pow(COSMOS_MUL[i], c[COSMOS[i].k]-1);
-  return isFinite(v)?v:1e300;
+  return isFinite(v)?Math.min(v,1e120):1e120;   // 이 위로 가면 생산이 1e308 을 넘어 ∞ 가 된다
 }
 
 /* 층마다 다른 적이 나온다 */
@@ -1187,18 +1323,20 @@ function foeOf(f){
   return isBoss(f) ? bosses[(Math.floor(f/10)-1)%bosses.length]
                    : foes[(f-1)%foes.length];
 }
-function dungeonPower(){
-  /* 시설 수는 완만하게(0.45제곱) 오르는데 층 체력은 지수로 오른다.
-     그래서 원정대 공격력을 마나 생산에 묶는다. 생산이 오르면 던전도 따라 깊어진다. */
+function dungeonPowerLog(){
   let u=0;for(let i=0;i<PRODUCERS.length;i++)u+=cnt(i);
-  const rate=Math.max(1,manaRate());
-  return (1+Math.pow(u,0.45))*M().dungeon*Math.pow(rate,0.75);
+  return safeLog(1+Math.pow(u,0.45))+safeLog(M().dungeon)+0.75*safeLog(Math.max(1,manaRate()));
 }
-function floorHP(f){
-  /* 200층까지는 가파르게, 그 위로는 완만하게. 자바스크립트 수 한계에 빨리 닿지 않게 한다. */
+function dungeonPower(){ const l=dungeonPowerLog(); return l<300?Math.pow(10,l):Infinity; }
+/* 체력과 공격력을 그대로 곱하면 1e308 에서 ∞ 가 되고 ∞/∞ 가 NaN 이 된다.
+   둘 다 '자릿수'(밑 10 로그)로 다룬다. 로그는 층수에 비례해 선형이라 넘치지 않는다. */
+const L10=Math.log10;
+function safeLog(v){ return (typeof v==='number'&&v>0&&isFinite(v))?L10(v):(v>0?308:0); }
+function floorHPLog(f){
   const a=Math.min(f-1,200), b=Math.max(0,f-1-200);
-  return 40*Math.pow(1.35,a)*Math.pow(1.09,b)*(isBoss(f)?8:1)*elemOf(f).hp;
+  return L10(40)+a*L10(1.35)+b*L10(1.09)+(isBoss(f)?L10(8):0)+safeLog(elemOf(f).hp);
 }
+function floorHP(f){ const l=floorHPLog(f); return l<300?Math.pow(10,l):Infinity; }
 function floorLoot(f){
   const m=M(), b=isBoss(f)?10*m.boss:1, e=elemOf(f);
   return{
@@ -1225,8 +1363,8 @@ function syncChapter(force){
 function clearFloor(){
   const f=S.floor,l=floorLoot(f);
   addMana(l.mana);
-  S.crystal+=l.crystal; S.crystalEver+=l.crystal;
-  if(l.offering){S.offering+=l.offering;S.offerEver+=l.offering}
+  S.crystal=safeAdd(S.crystal,l.crystal); S.crystalEver=safeAdd(S.crystalEver,l.crystal);
+  if(l.offering){S.offering=safeAdd(S.offering,l.offering); S.offerEver=safeAdd(S.offerEver,l.offering);}
   const nw=f>S.deepest;
   if(nw){ S.deepest=f; syncChapter(); }
   const foe=foeOf(f);
@@ -1249,7 +1387,7 @@ function relicGain(){
   return Math.floor(2*Math.pow(S.soulAsc/ASCEND_REQ,0.35)*M().relic);
 }
 function softReset(){
-  const free=8*(S.relicUps.a5||0)+25*(S.starUps.t9||0);
+  const free=8*(S.relicUps.a5||0)+25*(S.starUps.t9||0)+500*((S.eterUps||{}).e13||0);
   S.mana=Math.max(25,startMana(S.soulUps.s7||0));
   S.manaRun=S.mana;
   S.bought=PRODUCERS.map(()=>0); S.gen=PRODUCERS.map(()=>0);
@@ -1261,8 +1399,8 @@ function softReset(){
 function doRebirth(silent){
   const g=soulGain(), o=offerGain();
   if(g<=0) return false;
-  S.soul+=g; S.soulAsc+=g; S.soulEver+=g; S.lastSoulGain=g;
-  S.offering+=o; S.offerEver+=o;
+  S.soul=safeAdd(S.soul,g); S.soulAsc=safeAdd(S.soulAsc,g); S.soulEver=safeAdd(S.soulEver,g); S.lastSoulGain=g; S.rebirthEver=(S.rebirthEver||0)+1;
+  S.offering=safeAdd(S.offering,o); S.offerEver=safeAdd(S.offerEver,o);
   S.rebirths++;
   if(S.chal) exitChallenge(false);
   softReset();
@@ -1274,7 +1412,7 @@ function doRebirth(silent){
 function doAscend(silent){
   const g=relicGain();
   if(g<=0) return false;
-  S.relic+=g; S.relicEver+=g; S.relicTrans+=g; S.lastRelicGain=g; S.ascensions++;
+  S.relic=safeAdd(S.relic,g); S.relicEver=safeAdd(S.relicEver,g); S.relicTrans=safeAdd(S.relicTrans,g); S.lastRelicGain=g; S.ascensions++; S.ascendEver=(S.ascendEver||0)+1;
   S.soul=0; S.soulAsc=0; S.soulUps={}; S.runes={};
   S.rebirths=0; S.deepest=0; S.offering=0; S.lastSoulGain=0; S.sinceAscend=0;
   if(S.chal) exitChallenge(false);
@@ -1297,15 +1435,26 @@ const INF_LAYERS=[
  {k:'void', ko:'공허',  en:"The Void",  from:()=>S.real,     sp:'abysseye'},
  {k:'origin',ko:'근원', en:"Origin",    from:()=>S.void,     sp:'star'},
 ];
+/* 무한만 마나가 넘칠 때 열린다. 그 위로는 아래 계층을 열 개 모아야 한 칸 오른다. */
+const INF_STACK=10;
 const infUnlocked=i=>i===0 ? S.manaEver>=INF_CAP/1e40 || S.inf>0
-                           : (S[INF_LAYERS[i-1].k]||0)>0;
+                           : (S[INF_LAYERS[i-1].k+'Ever']||0)>=INF_STACK;
 /* 돌파 요구치는 돌파할수록 오른다 — 1e300 → 1e303 → 1e306 … (돌파 1회마다 1000배).
    1e308 을 넘어가면 double 로는 못 적으므로 지수(로그) 로 다룬다. */
 function reqLog(i){ return 300+3*(S[INF_LAYERS[i].k+'Count']||0); }
-function reqFor(i){ return Math.pow(10,reqLog(i)); }
+function reqFor(i){
+  if(i>0) return INF_STACK*Math.pow(3,S[INF_LAYERS[i].k+'Count']||0);   // 10 → 30 → 90 …
+  return Math.pow(10,reqLog(i));
+}
 function reqTxt(i){ const r=reqFor(i); return isFinite(r)?fmt(r):('1e'+reqLog(i)); }
 function infGain(i){
-  const v=INF_LAYERS[i].from(), rl=reqLog(i);
+  const v=INF_LAYERS[i].from();
+  if(i>0){                                    // 위 칸은 아래 계층을 세어 바꾼다
+    const r=reqFor(i);
+    if(!isFinite(v)) return 1;
+    return v<r ? 0 : Math.floor(v/r);
+  }
+  const rl=reqLog(i);
   // 이미 넘쳤다면 그것이 곧 최대 돌파. 단 요구치가 오른 만큼(자릿수만큼) 깎인다.
   if(v===Infinity) return Math.max(1,10-(rl-300));
   if(!isFinite(v)||v<reqFor(i)) return 0;
@@ -1317,24 +1466,27 @@ function doInfBreak(i){
   const L=INF_LAYERS[i];
   S[L.k]=(S[L.k]||0)+g; S[L.k+'Ever']=(S[L.k+'Ever']||0)+g; S[L.k+'Count']=(S[L.k+'Count']||0)+1;
   S.sinceInf=0;                        // 자동 돌파 쿨다운 시작 (수동 버튼은 즉시 가능)
-  /* 이 칸 아래는 접는다. 다만 별가루와 별 강화는 남긴다 —
-     초월 탭이 "무엇을 해도 사라지지 않는다"고 약속한 것이 그것이다. */
+  /* 무한 돌파에서는 별가루와 별 강화가 남는다 — 초월 탭이 약속한 것이 그것이다.
+     그러나 영원 위로는 진짜 처음부터다. 별 강화까지 전부 접힌다. */
   for(let j=i-1;j>=0;j--){ S[INF_LAYERS[j].k]=0; }
+  if(i>0){ S.star=0; S.starUps={}; }
+  if(i>1){ S.eterUps={}; }   // 현실 위로 오르면 영원 강화도 접힌다
   S.relic=0; S.relicTrans=0; S.relicUps={};
   S.soul=0; S.soulAsc=0; S.soulUps={}; S.runes={}; S.gear={};
   S.crystal=0; S.offering=0; S.manaEver=0;
   S.rebirths=0; S.ascensions=0; S.transcends=0; S.deepest=0;
   if(S.chal) exitChallenge(false);
   softReset();
-  log(`${icHTML(L.sp)}<b class="gold">${X(L.ko,L.en)} ${X('돌파','Break')}</b> · <b>+${fmt(g)}</b> · ${X('아래 계층이 접혔다 · 별 강화는 남았다','everything below folded away, star upgrades kept')}`,true);
+  log(`${icHTML(L.sp)}<b class="gold">${X(L.ko,L.en)} ${X('돌파','Break')}</b> · <b>+${fmt(g)}</b> · ${i>0?X('모든 것이 처음으로 돌아갔다','everything returned to the beginning'):X('아래 계층이 접혔다 · 별 강화는 남았다','everything below folded away, star upgrades kept')}`,true);
   toast(icHTML(L.sp)+X(` ${L.ko} 돌파 +${fmt(g)}`,` ${L.en} +${fmt(g)}`));
   return true;
 }
 /* 무한 계층은 그 자체가 전체 배율이 된다 */
 function infBonus(){
   let v=1;
-  for(let i=0;i<INF_LAYERS.length;i++) v*=Math.pow(4+i*4, S[INF_LAYERS[i].k+'Ever']||0);
-  return isFinite(v)?v:1e300;
+  // 배율이 너무 세면 돌파 직후 곧바로 되돌아와 초기화가 체감되지 않는다
+  for(let i=0;i<INF_LAYERS.length;i++) v*=Math.pow(1.6+i*0.9, S[INF_LAYERS[i].k+'Ever']||0);
+  return isFinite(v)?Math.min(v,1e120):1e120;   // 이 위로 가면 생산이 1e308 을 넘어 ∞ 가 된다
 }
 
 const TRANS_REQ=500;
@@ -1345,7 +1497,7 @@ function starGain(){
 function doTranscend(silent){
   const g=starGain();
   if(g<=0) return false;
-  S.star+=g; S.starEver+=g; S.lastStarGain=g; S.transcends++;
+  S.star=safeAdd(S.star,g); S.starEver=safeAdd(S.starEver,g); S.lastStarGain=g; S.transcends++; S.transEver=(S.transEver||0)+1;
   S.relic=0; S.relicTrans=0; S.relicUps={};
   S.soul=0; S.soulAsc=0; S.soulUps={}; S.runes={}; S.gear={};
   S.crystal=0; S.offering=0;
@@ -1447,15 +1599,15 @@ const AUTO_DEFS=[
  {k:'gather', nm:{ko:'마나 채집',en:"Mana Gathering"},     d:()=>X('채집 버튼을 대신 눌러 준다',"Presses the gather button for you"),                unlock:()=>S.manaEver>=1e3,                  req:()=>X('누적 마나 1,000',"1,000 total mana")},
  {k:'build',  nm:{ko:'시설 건설',en:"Construction"},     d:()=>X('여유 마나로 가장 비싼 시설부터 사들인다',"Buys the priciest affordable building"),   unlock:()=>S.manaEver>=2e4,                  req:()=>X('누적 마나 2만',"20,000 total mana")},
  {k:'dungeon',nm:{ko:'던전 연속 탐험',en:"Continuous Delving"},d:()=>X('층을 깬 뒤 멈추지 않고 계속 내려간다',"Keeps descending after each floor"),       unlock:()=>S.deepest>=20,                    req:()=>X('던전 20층 돌파',"Reach dungeon floor 20")},
- {k:'research',nm:{ko:'연구 구매',en:"Research Buying"},    d:()=>X('조건을 만족한 연구를 순서대로 사들인다',"Buys available researches in order"),     unlock:()=>S.rebirths>=5||S.ascensions>0,    req:()=>X('환생 5회',"5 rebirths")},
- {k:'rune',   nm:{ko:'룬 강화',en:"Rune Upgrading"},       d:()=>X('오퍼링으로 가장 싼 룬부터 새긴다',"Engraves the cheapest rune first"),           unlock:()=>S.ascensions>=1,                  req:()=>X('승천 1회',"1 ascension")},
- {k:'gear',   nm:{ko:'장비 제작',en:"Gear Crafting"},     d:()=>X('결정으로 가장 싼 장비부터 벼린다',"Forges the cheapest gear first"),           unlock:()=>S.ascensions>=1,                  req:()=>X('승천 1회',"1 ascension")},
- {k:'soulup', nm:{ko:'영혼 강화 구매',en:"Soul Upgrade Buying"},d:()=>X('영혼석으로 가장 싼 강화를 사들인다',"Buys the cheapest soul upgrade"),         unlock:()=>S.rebirths>=10||S.ascensions>0,   req:()=>X('환생 10회',"10 rebirths")},
+ {k:'research',nm:{ko:'연구 구매',en:"Research Buying"},    d:()=>X('조건을 만족한 연구를 순서대로 사들인다',"Buys available researches in order"),     unlock:()=>(S.rebirthEver||S.rebirths)>=5||(S.ascendEver||S.ascensions)>0,    req:()=>X('환생 5회',"5 rebirths")},
+ {k:'rune',   nm:{ko:'룬 강화',en:"Rune Upgrading"},       d:()=>X('오퍼링으로 가장 싼 룬부터 새긴다',"Engraves the cheapest rune first"),           unlock:()=>(S.ascendEver||S.ascensions)>=1,                  req:()=>X('승천 1회',"1 ascension")},
+ {k:'gear',   nm:{ko:'장비 제작',en:"Gear Crafting"},     d:()=>X('결정으로 가장 싼 장비부터 벼린다',"Forges the cheapest gear first"),           unlock:()=>(S.ascendEver||S.ascensions)>=1,                  req:()=>X('승천 1회',"1 ascension")},
+ {k:'soulup', nm:{ko:'영혼 강화 구매',en:"Soul Upgrade Buying"},d:()=>X('영혼석으로 가장 싼 강화를 사들인다',"Buys the cheapest soul upgrade"),         unlock:()=>(S.rebirthEver||S.rebirths)>=10||(S.ascendEver||S.ascensions)>0,   req:()=>X('환생 10회',"10 rebirths")},
  {k:'inf',    nm:{ko:'자동 무한 돌파',en:"Auto Infinity"}, d:()=>X('수가 넘칠 지경이 되면 알아서 한 칸 올라간다',"Breaks a rung as soon as a number is ready to overflow"), unlock:()=>(S.infEver||0)>0, req:()=>X('무한 돌파 1회',"1 infinity break")},
- {k:'trans',  nm:{ko:'자동 초월',en:"Auto Transcend"}, d:()=>X('직전 주기보다 1.5배 이상 벌릴 때 초월한다',"Transcends when the cycle beats the last by 1.5x"), unlock:()=>S.transcends>=1||S.starEver>0, req:()=>X('초월 1회',"1 transcendence")},
- {k:'rebirth',nm:{ko:'자동 환생',en:"Auto Rebirth"},     d:()=>X('직전 회차보다 1.5배 이상 벌릴 때 환생한다',"Rebirths when the run beats the last by 1.5x"),  unlock:()=>S.rebirths>=20||S.ascensions>0,   req:()=>X('환생 20회',"20 rebirths")},
- {k:'relicup',nm:{ko:'유물 강화 구매',en:"Relic Upgrade Buying"},d:()=>X('유물로 가장 싼 강화를 사들인다',"Buys the cheapest relic upgrade"),             unlock:()=>S.ascensions>=2,                  req:()=>X('승천 2회',"2 ascensions")},
- {k:'ascend', nm:{ko:'자동 승천',en:"Auto Ascension"},     d:()=>X('유물이 충분히 쌓이면 승천한다',"Ascends once relics pile up"),              unlock:()=>S.ascensions>=3,                  req:()=>X('승천 3회',"3 ascensions")},
+ {k:'trans',  nm:{ko:'자동 초월',en:"Auto Transcend"}, d:()=>X('직전 주기보다 1.5배 이상 벌릴 때 초월한다',"Transcends when the cycle beats the last by 1.5x"), unlock:()=>(S.transEver||S.transcends)>=1||S.starEver>0, req:()=>X('초월 1회',"1 transcendence")},
+ {k:'rebirth',nm:{ko:'자동 환생',en:"Auto Rebirth"},     d:()=>X('직전 회차보다 1.5배 이상 벌릴 때 환생한다',"Rebirths when the run beats the last by 1.5x"),  unlock:()=>(S.rebirthEver||S.rebirths)>=20||(S.ascendEver||S.ascensions)>0,   req:()=>X('환생 20회',"20 rebirths")},
+ {k:'relicup',nm:{ko:'유물 강화 구매',en:"Relic Upgrade Buying"},d:()=>X('유물로 가장 싼 강화를 사들인다',"Buys the cheapest relic upgrade"),             unlock:()=>(S.ascendEver||S.ascensions)>=2,                  req:()=>X('승천 2회',"2 ascensions")},
+ {k:'ascend', nm:{ko:'자동 승천',en:"Auto Ascension"},     d:()=>X('유물이 충분히 쌓이면 승천한다',"Ascends once relics pile up"),              unlock:()=>(S.ascendEver||S.ascensions)>=3,                  req:()=>X('승천 3회',"3 ascensions")},
  {k:'chal',   nm:{ko:'자동 시련',en:"Auto Trials"},     d:()=>X('환생할 때마다 감당 가능한 시련에 들어간다',"Enters a reachable trial on each rebirth"),  unlock:()=>chalTotal()>=3,                   req:()=>X('시련 3단계 완료',"Clear 3 trial stages")},
 ];
 const AUTO_DEF=k=>AUTO_DEFS.find(a=>a.k===k);
@@ -1530,7 +1682,7 @@ function runAutomation(dt){
     if(best&&S.relic>=bc){S.relic-=bc;S.relicUps[best.id]=(S.relicUps[best.id]||0)+1;recalc()}
   }
   // 환생 / 승천 · 직전 회차보다 확실히 나아졌을 때만
-  if(autoOK('rebirth')&&S.sinceRebirth>20){
+  if(autoOK('rebirth')&&S.sinceRebirth>90){   // 회차가 너무 짧으면 연구·룬이 쌓일 틈이 없다
     const g=soulGain();
     if(g>=10&&g>=1.5*(S.lastSoulGain||0)) doRebirth(true);
   }
@@ -1538,9 +1690,9 @@ function runAutomation(dt){
     const g=relicGain();
     if(g>=3&&g>=1.5*(S.lastRelicGain||0)) doAscend(true);
   }
-  for(let i=INF_LAYERS.length-1;i>=0;i--){
-    if(autoOK('inf')&&(S.sinceInf||0)>=INF_AUTO_CD&&infUnlocked(i)&&infGain(i)>0){ doInfBreak(i); break; }
-  }
+  /* 자동 돌파는 무한까지만. 영원 위로는 손으로 눌러야 한다 —
+     아래 계층을 열 개 모아 바꾸는 결정이라 저절로 일어나면 안 된다. */
+  if(autoOK('inf')&&S.sinceInf>=INF_AUTO_CD&&infUnlocked(0)&&infGain(0)>0){ doInfBreak(0); }
   /* 자동 시련이 환생 직후에만 걸려 있었다. 자동 환생을 끄면 영영 발동하지 않는다.
      자동화 고리에서도 직접 걸되, 들어가기 전에 회차를 정산해 손해가 없게 한다. */
   if(autoOK('chal')&&!S.chal&&(S.chalCd||0)<=0){
@@ -1551,9 +1703,9 @@ function runAutomation(dt){
     const g=starGain();
     if(g>=2&&g>=1.5*(S.lastStarGain||0)) doTranscend(true);
   }
-  for(let i=INF_LAYERS.length-1;i>=0;i--){
-    if(autoOK('inf')&&(S.sinceInf||0)>=INF_AUTO_CD&&infUnlocked(i)&&infGain(i)>0){ doInfBreak(i); break; }
-  }
+  /* 자동 돌파는 무한까지만. 영원 위로는 손으로 눌러야 한다 —
+     아래 계층을 열 개 모아 바꾸는 결정이라 저절로 일어나면 안 된다. */
+  if(autoOK('inf')&&S.sinceInf>=INF_AUTO_CD&&infUnlocked(0)&&infGain(0)>0){ doInfBreak(0); }
   if(autoOK('trans')&&S.sinceTrans>300){
     const g=starGain();
     if(g>=2&&g>=1.5*(S.lastStarGain||0)) doTranscend(true);
@@ -1566,22 +1718,24 @@ function tick(dt){
   for(let i=PRODUCERS.length-1;i>=1;i--) S.gen[i-1]+=cnt(i)*PRODUCERS[i].rate*m.tUp*d;
   addMana(cnt(0)*PRODUCERS[0].rate*m.t0*m.prod*d);
   if(S.exploring&&!(ch&&ch.rule.noDungeon)){
-    /* 지연 없이 바로바로 넘어가되 1·2·3 세어 올라가는 것처럼 보이게 한다.
-       한 층마다 FLOOR_MIN_TIME 만큼의 시간을 쓰고, 한 틱에 최대 FLOOR_MAX_STEPS 층까지만. */
+    /* 진행도를 절대 피해량으로 쌓으면 깊은 층에서 ∞ 가 된다.
+       공격력과 체력의 자릿수 차이만 보고 0~1 비율로 채운다. */
     let rem=d, steps=0;
     while(rem>0&&steps<FLOOR_MAX_STEPS){
-      const hp=floorHP(S.floor), pw=dungeonPower();
-      const cd=Math.min(rem,S.floorCd||0);            // 남은 쿨다운부터 소비한다
-      if(cd>0){ rem-=cd; S.floorCd=(S.floorCd||0)-cd; S.prog+=isFinite(pw)?pw*cd:Infinity; }
-      if((S.floorCd||0)>0) break;                     // 시간이 모자라 이번 틱은 여기까지
-      const need=Math.max(0,hp-S.prog);
-      const t=need<=0?0:(pw>0?(isFinite(pw)?need/pw:0):Infinity);   // 이 층을 깨는 데 남은 시간
-      if(!(t<=rem)){ if(isFinite(pw)) S.prog+=pw*rem; rem=0; break; }
+      const gap=dungeonPowerLog()-floorHPLog(S.floor);
+      const per=gap>=8?1e8:(gap<=-300?0:Math.pow(10,gap));   // 초당 채우는 비율
+      const cd=Math.min(rem,S.floorCd||0);
+      if(cd>0){ rem-=cd; S.floorCd=(S.floorCd||0)-cd; S.prog=Math.min(1,S.prog+per*cd); }
+      if((S.floorCd||0)>0) break;
+      const need=Math.max(0,1-S.prog);
+      const t=need<=0?0:(per>0?need/per:Infinity);
+      if(!(t<=rem)){ S.prog=Math.min(1,S.prog+per*rem); rem=0; break; }
       rem-=t; S.prog=0; S.floorCd=FLOOR_MIN_TIME; steps++; clearFloor();
-      if(!autoOK('dungeon')){ S.exploring=false; break; }   // 수동: 한 층마다 직접 다시 출격
+      if(!autoOK('dungeon')){ S.exploring=false; break; }
     }
-    S.prog=Math.min(S.prog,floorHP(S.floor));
+    S.prog=Math.max(0,Math.min(1,S.prog||0));
   }
+
   runAutomation(dt);
   if(ch){
     S.chalTime+=dt;
@@ -1748,15 +1902,15 @@ function toggleRow(def){
   const nm=el('div'); nm.style.cssText='font-family:var(--serif);font-size:14px';
   const ds=el('div','hint'); ds.style.margin='0';
   left.append(nm,ds);
-  const b=btn('sm','',()=>{ if(def.unlock()) S.auto[def.k]=S.auto[def.k]?0:1; });
+  const b=btn('sm','',()=>{ S.auto[def.k]=S.auto[def.k]?0:1; });   // 잠김과 무관하게 토글
   r.append(left,b);
   updaters.push(()=>{
-    const un=autoUnlocked(def.k), on=!!S.auto[def.k]&&un;
+    const un=autoUnlocked(def.k), on=!!S.auto[def.k];   // 잠겨 있어도 미리 켜 둘 수 있다
     nm.innerHTML=NM(def.nm)+(un?'':' <span class="lv">🔒</span>');
     ds.innerHTML=un?DS(def):`<span class="dim">${X('해금 조건','Unlocks at')}: <b>${DSF(def.req)}</b></span>`;
-    b.disabled=!un;
+    b.disabled=false;
     b.className='btn sm '+(on?'on':'off');
-    const lab=un?(on?X('자동 ON','AUTO'):X('수동 OFF','MANUAL')):X('잠김','LOCKED');
+    const lab=on?(un?X('자동 ON','AUTO'):X('대기 중','ARMED')):X('수동 OFF','MANUAL');
     b.innerHTML=`<img class="px sw" src="art/ui/sw_${on?'on':'off'}.png" width="22" height="12" alt="">${lab}`;
   });
   return r;
@@ -1894,16 +2048,18 @@ function buildDungeon(p){
   lc.appendChild(lg); p.appendChild(lc);
 
   updaters.push(()=>{
-    const f=S.floor,h=floorHP(f),pw=dungeonPower(),l=floorLoot(f),boss=isBoss(f);
+    const f=S.floor,hl=floorHPLog(f),pl=dungeonPowerLog(),l=floorLoot(f),boss=isBoss(f);
     foe.classList.toggle('boss',boss);
     const fo=foeOf(f), want=spriteURL(fo.sp);
     if(foeIco.src!==want) foeIco.src=want;
     ftitle.innerHTML=`<b class="gold">${NM(fo.nm)}</b> ${boss?'<span class="tag bad" style="vertical-align:2px">보스</span> ':''}<span class="dim" style="font-size:12.5px">${f}층 · 최심층 ${S.deepest}층</span>`;
-    const r=Math.max(0,Math.min(1,S.prog/h));
+    const r=Math.max(0,Math.min(1,S.prog||0));
+    const gap=pl-hl, per=gap>=8?1e8:(gap<=-300?0:Math.pow(10,gap));
     hp.querySelector('i').style.width=(r*100).toFixed(1)+'%';
-    hp.querySelector('span').textContent=`${fmt(S.prog)} / ${fmt(h)} (${(r*100).toFixed(1)}%)`;
-    stat.innerHTML=`<span class="tag">공격력 <b>${fmt(pw)}</b>${X('/초','/s')}</span>
-      <span class="tag">${X('소요','ETA')} <b>${fmtTime(h/Math.max(pw,1e-9))}</b></span>
+    hp.querySelector('span').textContent=`${(r*100).toFixed(1)}%`;
+    stat.innerHTML=`<span class="tag">${X('공격력','Power')} <b>${fmtLog(pl)}</b>${X('/초','/s')}</span>
+      <span class="tag">${X('체력','HP')} <b>${fmtLog(hl)}</b></span>
+      <span class="tag">${X('소요','ETA')} <b>${per>0?fmtTime((1-r)/per):'—'}</b></span>
       <span class="tag">${icHTML('mana')}<b>${fmt(l.mana)}</b></span>
       <span class="tag">${icHTML('crystal')}<b>${fmt(l.crystal)}</b></span>
       ${l.offering?`<span class="tag">${icHTML('offering')}<b>${fmt(l.offering)}</b></span>`:''}`;
@@ -2073,7 +2229,16 @@ function buildInf(p){
           `Gain <b class="gold">+${fmt(infGain(i))} ${L.en}</b>.<br>Everything below resets — stardust and star upgrades stay.`),
         ()=>doInfBreak(i));
     });
-    lc.appendChild(b); p.appendChild(lc);
+    lc.appendChild(b);
+    if(L.k==='eter'){
+      const eu=el('div'); eu.style.marginTop='10px';
+      eu.appendChild(levelGrid(ETER_UPS,id=>S.eterUps[id]||0,()=>S.eter,
+        (c2,id)=>{S.eter-=c2;S.eterUps[id]=(S.eterUps[id]||0)+1},'hourglass'));
+      lc.appendChild(el('div','hint',X('영원으로만 살 수 있다. 아래 계층을 통째로 갈아 넣고 얻는 것이라 효과가 크다.',
+                                       "Bought with eternity alone. You fed whole layers into this, so it hits hard.")));
+      lc.appendChild(eu);
+    }
+    p.appendChild(lc);
     updaters.push(()=>{
       const open=infUnlocked(i), g=infGain(i), v=L.from();
       lc.style.display=open?'':'none';
@@ -2158,7 +2323,7 @@ function buildAch(p){
 function buildAuto(p){
   const c=card([X('자동화',"Automation"),'cog'],X('자동화는 <b>진행으로 얻어내는 보상</b>이다. 처음에는 채집·건설·연구·던전을 직접 해야 하고, 조건을 만족할 때마다 하나씩 열린다.',"Automation is a <b>reward you earn</b>. At first you gather, build, research and delve by hand; each one unlocks as you progress."));
   const bar=el('div','row'); bar.style.marginBottom='8px';
-  const onAll=btn('sm',X('모두 켜기','All on'),()=>{AUTO_DEFS.forEach(d=>{if(autoUnlocked(d.k))S.auto[d.k]=1});refresh()});
+  const onAll=btn('sm',X('모두 켜기','All on'),()=>{AUTO_DEFS.forEach(d=>{S.auto[d.k]=1});refresh()});
   const offAll=btn('sm',X('모두 끄기','All off'),()=>{AUTO_DEFS.forEach(d=>S.auto[d.k]=0);refresh()});
   const note=el('span','tag');
   bar.append(onAll,offAll,note); c.appendChild(bar);
@@ -2255,7 +2420,7 @@ function buildRes(){
 function updateSide(){
   const box=$('sidestat'); if(!box) return;
   const m=M(), f=S.floor, hp=floorHP(f), fo=foeOf(f);
-  const pr=Math.max(0,Math.min(1,S.prog/hp));
+  const pr=Math.max(0,Math.min(1,S.prog||0));
   const nextAuto=AUTO_DEFS.find(d=>!d.unlock());
   const ch=curChal();
   box.innerHTML=`
@@ -2326,7 +2491,10 @@ function mergeState(o){
     while(s[k].length<PRODUCERS.length) s[k].push(0);
     s[k].length=PRODUCERS.length;
   }
-  for(const k of ['research','runes','gear','soulUps','relicUps','starUps','achs','chalDone','autoUnlocked'])
+  s.rebirthEver=Math.max(s.rebirthEver||0, s.rebirths||0);   // 옛 세이브 보정
+  s.ascendEver =Math.max(s.ascendEver ||0, s.ascensions||0);
+  s.transEver  =Math.max(s.transEver  ||0, s.transcends||0);
+  for(const k of ['research','runes','gear','soulUps','relicUps','starUps','eterUps','achs','chalDone','autoUnlocked'])
     if(!s[k]||typeof s[k]!=='object') s[k]={};
   for(const k of ['mana','manaRun','manaEver','offering','offerEver','crystal','crystalEver',
                   'soul','soulAsc','soulEver','relic','relicEver','relicTrans','star','starEver',
