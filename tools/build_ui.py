@@ -7,7 +7,7 @@ UI 도트 프레임 · 로고 빌드
 art/ui/ 에 9-slice 테두리 PNG 와 로고를 굽는다.
 테두리는 CSS border-image 로 쓴다. 가운데는 비워 두어 원래 배경이 비친다.
 """
-import os
+import os, sys
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -258,15 +258,49 @@ def stamp(dst,mask,ox,oy,ramp,outline='#08080a',shine=True):
         for (x,y) in hit:
             if (x,y-1) not in hit: put(ox+x,oy+y,ram[-1])
 
-t1=bitmap_text('마탑',21)
-t2=bitmap_text('심연의 왕국',12)
-EMB=32; GAP=7; PADX=1; PADY=2
+# ── 상징 : 무한 고리를 뚫고 솟은 탑 ─────────────
+import json as _json
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import pixkit as PK
+PK.set_scale(1.0)
+_PAL=_json.load(open(os.path.join(ROOT,'tools','sprites.json'),encoding='utf-8'))['palette']
+
+def render_rows(rows,n):
+    im=Image.new('RGBA',(n,n),T); px=im.load()
+    for y,r in enumerate(rows):
+        for x,ch in enumerate(r):
+            if ch!='.' and ch in _PAL:
+                v=_PAL[ch]; px[x,y]=(int(v[1:3],16),int(v[3:5],16),int(v[5:7],16),255)
+    return im
+
+def emblem():
+    c=PK.C(32)
+    # 무한 고리 두 개
+    r1=PK.m_ellipse(9,21,8.5,7)-PK.m_ellipse(9,21,4.2,3.0)
+    r2=PK.m_ellipse(23,21,8.5,7)-PK.m_ellipse(23,21,4.2,3.0)
+    ring=PK.sm(r1|r2)
+    PK.bands(c,ring,['b','c','d','e'],n=4); PK.edge(c,ring,'A')
+    # 고리를 뚫고 솟은 첨탑
+    shaft=PK.m_poly([(14,11),(18,11),(19,28),(13,28)])
+    PK.bands(c,shaft,['I','J','K','8'],n=4,mode='axis'); PK.edge(c,shaft,'M')
+    for y in (15,20,25): c.rect(14,y,18,y,'I')
+    c.rect(15,17,17,19,'0'); c.rect(15,17,17,18,'d'); c.px(15,17,'f')
+    roof=PK.m_poly([(16,4),(21,11),(11,11)])
+    PK.bands(c,roof,['u','v','w','x'],n=4); PK.edge(c,roof,'E')
+    # 꼭대기 별
+    star=PK.m_poly([(16,0),(17.4,2.6),(20.5,3.4),(17.4,4.4),(16,7),(14.6,4.4),(11.5,3.4),(14.6,2.6)])
+    PK.bands(c,star,['c','d','e','f'],n=4,mode='glow',cx=16,cy=3.4,r=4.5); PK.edge(c,star,'A')
+    for p in ((3,6),(28,9),(5,27),(27,26)): c.px(*p,'e')
+    return render_rows(c.rows(),32)
+
+t1=bitmap_text('무한의 탑',21)
+t2=bitmap_text('지구에서 근원까지',12)
+EMB=32; GAP=8; PADX=1; PADY=2
 tx=PADX+EMB+GAP
 W=tx+max(t1.width,t2.width)+3
 H=max(EMB, PADY+t1.height+4+t2.height+PADY)
 logo=Image.new('RGBA',(W,H),T)
-tw=Image.open(os.path.join(ROOT,'art','sprites','tower.png'))
-logo.alpha_composite(tw,(PADX,(H-EMB)//2))
+logo.alpha_composite(emblem(),(PADX,(H-EMB)//2))
 ty=(H-(t1.height+4+t2.height))//2
 stamp(logo, t1, tx, ty, GOLD)
 stamp(logo, t2, tx+1, ty+t1.height+4, ['#6b5222','#a8823a','#d4a94a','#ecd08a'], shine=False)
