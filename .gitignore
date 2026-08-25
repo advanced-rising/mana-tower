@@ -2,3 +2,7 @@ art/*.png
 art/*.gpl
 _preview.html
 _orig.html
+_verify.html
+_ag*.html
+node_modules/
+.DS_Store

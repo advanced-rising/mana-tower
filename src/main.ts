@@ -1,0 +1,2589 @@
+'use strict';
+/* ══════════════════════════════════════════════════════════════
+   무한의 탑  v2
+   단일 HTML · 외부 의존 없음 · 모든 시스템 자동화 지원
+   ══════════════════════════════════════════════════════════════ */
+const VERSION='2.1.0', SAVE_KEY='manaTowerSave2';
+
+/* ── 언어 ── */
+let LANG = (localStorage.getItem('manaTowerLang')
+  || ((navigator.language||'en').toLowerCase().startsWith('ko') ? 'ko' : 'en'));
+const X  = (ko,en) => LANG==='en' ? en : ko;                 // 그때그때 번역
+const NM = v => typeof v==='string' ? v : (v[LANG]||v.ko);   // {ko,en} 이름
+const DS = (o,l,p) => typeof o.d==='function' ? o.d(l,p) : o.d;
+const DSF = v => typeof v==='function' ? v() : v;
+function setLang(l){
+  LANG=l; localStorage.setItem('manaTowerLang',l);
+  document.documentElement.lang=l;
+  document.title = X('무한의 탑','Tower of Infinity');
+  render();
+}
+
+/* ───────── 도트 스프라이트 ─────────
+   그림은 art/sprites/*.png 파일이다. tools/sprites.json 의 문자 격자를
+   tools/build_sprites.py 가 바운딩 박스 기준으로 정중앙에 배치해 구워 낸다.
+   여기에는 파일 이름과 원본 크기만 둔다. */
+const SPR={"abysscrown":16,"abysseye":16,"abysseye2":16,"academy":16,"agespoils":16,"amulet":16,"anvil":16,"apprentice":16,"banner":16,"barehand":16,"bat":16,"beacon":16,"beast":16,"belt":16,"blessing":16,"blind":16,"bolt":16,"bone":16,"book":16,"boots":16,"boss_archlich_arcane":16,"boss_archlich_blood":16,"boss_archlich_fire":16,"boss_archlich_frost":16,"boss_archlich_shadow":16,"boss_archlich_stone":16,"boss_archlich_thunder":16,"boss_archlich_venom":16,"boss_behemoth_arcane":16,"boss_behemoth_blood":16,"boss_behemoth_fire":16,"boss_behemoth_frost":16,"boss_behemoth_shadow":16,"boss_behemoth_stone":16,"boss_behemoth_thunder":16,"boss_behemoth_venom":16,"boss_demon_arcane":16,"boss_demon_blood":16,"boss_demon_fire":16,"boss_demon_frost":16,"boss_demon_shadow":16,"boss_demon_stone":16,"boss_demon_thunder":16,"boss_demon_venom":16,"boss_dragon_arcane":16,"boss_dragon_blood":16,"boss_dragon_fire":16,"boss_dragon_frost":16,"boss_dragon_shadow":16,"boss_dragon_stone":16,"boss_dragon_thunder":16,"boss_dragon_venom":16,"boss_hydra_arcane":16,"boss_hydra_blood":16,"boss_hydra_fire":16,"boss_hydra_frost":16,"boss_hydra_shadow":16,"boss_hydra_stone":16,"boss_hydra_thunder":16,"boss_hydra_venom":16,"boss_skull_arcane":16,"boss_skull_blood":16,"boss_skull_fire":16,"boss_skull_frost":16,"boss_skull_shadow":16,"boss_skull_stone":16,"boss_skull_thunder":16,"boss_skull_venom":16,"boss_titan_arcane":16,"boss_titan_blood":16,"boss_titan_fire":16,"boss_titan_frost":16,"boss_titan_shadow":16,"boss_titan_stone":16,"boss_titan_thunder":16,"boss_titan_venom":16,"boss_wyrm_arcane":16,"boss_wyrm_blood":16,"boss_wyrm_fire":16,"boss_wyrm_frost":16,"boss_wyrm_shadow":16,"boss_wyrm_stone":16,"boss_wyrm_thunder":16,"boss_wyrm_venom":16,"brokencog":16,"bulwark":16,"cboss_gcore_arcane":16,"cboss_gcore_blood":16,"cboss_gcore_fire":16,"cboss_gcore_frost":16,"cboss_gcore_shadow":16,"cboss_gcore_stone":16,"cboss_gcore_thunder":16,"cboss_gcore_venom":16,"cboss_quasar_arcane":16,"cboss_quasar_blood":16,"cboss_quasar_fire":16,"cboss_quasar_frost":16,"cboss_quasar_shadow":16,"cboss_quasar_stone":16,"cboss_quasar_thunder":16,"cboss_quasar_venom":16,"cboss_supernova_arcane":16,"cboss_supernova_blood":16,"cboss_supernova_fire":16,"cboss_supernova_frost":16,"cboss_supernova_shadow":16,"cboss_supernova_stone":16,"cboss_supernova_thunder":16,"cboss_supernova_venom":16,"cboss_watcher_arcane":16,"cboss_watcher_blood":16,"cboss_watcher_fire":16,"cboss_watcher_frost":16,"cboss_watcher_shadow":16,"cboss_watcher_stone":16,"cboss_watcher_thunder":16,"cboss_watcher_venom":16,"chain":16,"chalice":16,"chisel":16,"cloak":16,"clock":16,"cog":16,"cogstop":16,"coinpurse":16,"compass":16,"constellation":16,"cos_asteroid_arcane":16,"cos_asteroid_blood":16,"cos_asteroid_fire":16,"cos_asteroid_frost":16,"cos_asteroid_shadow":16,"cos_asteroid_stone":16,"cos_asteroid_thunder":16,"cos_asteroid_venom":16,"cos_blackhole_arcane":16,"cos_blackhole_blood":16,"cos_blackhole_fire":16,"cos_blackhole_frost":16,"cos_blackhole_shadow":16,"cos_blackhole_stone":16,"cos_blackhole_thunder":16,"cos_blackhole_venom":16,"cos_dyson_arcane":16,"cos_dyson_blood":16,"cos_dyson_fire":16,"cos_dyson_frost":16,"cos_dyson_shadow":16,"cos_dyson_stone":16,"cos_dyson_thunder":16,"cos_dyson_venom":16,"cos_gravity_arcane":16,"cos_gravity_blood":16,"cos_gravity_fire":16,"cos_gravity_frost":16,"cos_gravity_shadow":16,"cos_gravity_stone":16,"cos_gravity_thunder":16,"cos_gravity_venom":16,"cos_guardian_arcane":16,"cos_guardian_blood":16,"cos_guardian_fire":16,"cos_guardian_frost":16,"cos_guardian_shadow":16,"cos_guardian_stone":16,"cos_guardian_thunder":16,"cos_guardian_venom":16,"cos_nebula_arcane":16,"cos_nebula_blood":16,"cos_nebula_fire":16,"cos_nebula_frost":16,"cos_nebula_shadow":16,"cos_nebula_stone":16,"cos_nebula_thunder":16,"cos_nebula_venom":16,"cos_probe_arcane":16,"cos_probe_blood":16,"cos_probe_fire":16,"cos_probe_frost":16,"cos_probe_shadow":16,"cos_probe_stone":16,"cos_probe_thunder":16,"cos_probe_venom":16,"cos_rift_arcane":16,"cos_rift_blood":16,"cos_rift_fire":16,"cos_rift_frost":16,"cos_rift_shadow":16,"cos_rift_stone":16,"cos_rift_thunder":16,"cos_rift_venom":16,"cos_satellite_arcane":16,"cos_satellite_blood":16,"cos_satellite_fire":16,"cos_satellite_frost":16,"cos_satellite_shadow":16,"cos_satellite_stone":16,"cos_satellite_thunder":16,"cos_satellite_venom":16,"cos_sentinel_arcane":16,"cos_sentinel_blood":16,"cos_sentinel_fire":16,"cos_sentinel_frost":16,"cos_sentinel_shadow":16,"cos_sentinel_stone":16,"cos_sentinel_thunder":16,"cos_sentinel_venom":16,"cos_spore_arcane":16,"cos_spore_blood":16,"cos_spore_fire":16,"cos_spore_frost":16,"cos_spore_shadow":16,"cos_spore_stone":16,"cos_spore_thunder":16,"cos_spore_venom":16,"cos_stareater_arcane":16,"cos_stareater_blood":16,"cos_stareater_fire":16,"cos_stareater_frost":16,"cos_stareater_shadow":16,"cos_stareater_stone":16,"cos_stareater_thunder":16,"cos_stareater_venom":16,"council":16,"crackedvial":16,"crown16":16,"crystal":16,"darkeye":16,"dboss_origin_arcane":16,"dboss_origin_blood":16,"dboss_origin_fire":16,"dboss_origin_frost":16,"dboss_origin_shadow":16,"dboss_origin_stone":16,"dboss_origin_thunder":16,"dboss_origin_venom":16,"dboss_worldeater_arcane":16,"dboss_worldeater_blood":16,"dboss_worldeater_fire":16,"dboss_worldeater_frost":16,"dboss_worldeater_shadow":16,"dboss_worldeater_stone":16,"dboss_worldeater_thunder":16,"dboss_worldeater_venom":16,"deep_ascendant_arcane":16,"deep_ascendant_blood":16,"deep_ascendant_fire":16,"deep_ascendant_frost":16,"deep_ascendant_shadow":16,"deep_ascendant_stone":16,"deep_ascendant_thunder":16,"deep_ascendant_venom":16,"deep_breaker_arcane":16,"deep_breaker_blood":16,"deep_breaker_fire":16,"deep_breaker_frost":16,"deep_breaker_shadow":16,"deep_breaker_stone":16,"deep_breaker_thunder":16,"deep_breaker_venom":16,"deep_circuit_arcane":16,"deep_circuit_blood":16,"deep_circuit_fire":16,"deep_circuit_frost":16,"deep_circuit_shadow":16,"deep_circuit_stone":16,"deep_circuit_thunder":16,"deep_circuit_venom":16,"deep_darkmatter_arcane":16,"deep_darkmatter_blood":16,"deep_darkmatter_fire":16,"deep_darkmatter_frost":16,"deep_darkmatter_shadow":16,"deep_darkmatter_stone":16,"deep_darkmatter_thunder":16,"deep_darkmatter_venom":16,"deep_devourer_arcane":16,"deep_devourer_blood":16,"deep_devourer_fire":16,"deep_devourer_frost":16,"deep_devourer_shadow":16,"deep_devourer_stone":16,"deep_devourer_thunder":16,"deep_devourer_venom":16,"deep_fracture_arcane":16,"deep_fracture_blood":16,"deep_fracture_fire":16,"deep_fracture_frost":16,"deep_fracture_shadow":16,"deep_fracture_stone":16,"deep_fracture_thunder":16,"deep_fracture_venom":16,"deep_legion_arcane":16,"deep_legion_blood":16,"deep_legion_fire":16,"deep_legion_frost":16,"deep_legion_shadow":16,"deep_legion_stone":16,"deep_legion_thunder":16,"deep_legion_venom":16,"deep_lens_arcane":16,"deep_lens_blood":16,"deep_lens_fire":16,"deep_lens_frost":16,"deep_lens_shadow":16,"deep_lens_stone":16,"deep_lens_thunder":16,"deep_lens_venom":16,"deep_primeval_arcane":16,"deep_primeval_blood":16,"deep_primeval_fire":16,"deep_primeval_frost":16,"deep_primeval_shadow":16,"deep_primeval_stone":16,"deep_primeval_thunder":16,"deep_primeval_venom":16,"deep_swarm_arcane":16,"deep_swarm_blood":16,"deep_swarm_fire":16,"deep_swarm_frost":16,"deep_swarm_shadow":16,"deep_swarm_stone":16,"deep_swarm_thunder":16,"deep_swarm_venom":16,"deep_tendril_arcane":16,"deep_tendril_blood":16,"deep_tendril_fire":16,"deep_tendril_frost":16,"deep_tendril_shadow":16,"deep_tendril_stone":16,"deep_tendril_thunder":16,"deep_tendril_venom":16,"deep_wall_arcane":16,"deep_wall_blood":16,"deep_wall_fire":16,"deep_wall_frost":16,"deep_wall_shadow":16,"deep_wall_stone":16,"deep_wall_thunder":16,"deep_wall_venom":16,"demon":16,"doom":16,"dryaltar":16,"dryspring":16,"emptypouch":16,"engrave":16,"eonring":16,"eontear":16,"etercrown":16,"eternalhand":16,"eternight":16,"etersigil":16,"far_branching_arcane":16,"far_branching_blood":16,"far_branching_fire":16,"far_branching_frost":16,"far_branching_shadow":16,"far_branching_stone":16,"far_branching_thunder":16,"far_branching_venom":16,"far_cosmiclens_arcane":16,"far_cosmiclens_blood":16,"far_cosmiclens_fire":16,"far_cosmiclens_frost":16,"far_cosmiclens_shadow":16,"far_cosmiclens_stone":16,"far_cosmiclens_thunder":16,"far_cosmiclens_venom":16,"far_edgeofall_arcane":16,"far_edgeofall_blood":16,"far_edgeofall_fire":16,"far_edgeofall_frost":16,"far_edgeofall_shadow":16,"far_edgeofall_stone":16,"far_edgeofall_thunder":16,"far_edgeofall_venom":16,"far_firstecho_arcane":16,"far_firstecho_blood":16,"far_firstecho_fire":16,"far_firstecho_frost":16,"far_firstecho_shadow":16,"far_firstecho_stone":16,"far_firstecho_thunder":16,"far_firstecho_venom":16,"far_greatvoid_arcane":16,"far_greatvoid_blood":16,"far_greatvoid_fire":16,"far_greatvoid_frost":16,"far_greatvoid_shadow":16,"far_greatvoid_stone":16,"far_greatvoid_thunder":16,"far_greatvoid_venom":16,"far_horizon_arcane":16,"far_horizon_blood":16,"far_horizon_fire":16,"far_horizon_frost":16,"far_horizon_shadow":16,"far_horizon_stone":16,"far_horizon_thunder":16,"far_horizon_venom":16,"far_knot_arcane":16,"far_knot_blood":16,"far_knot_fire":16,"far_knot_frost":16,"far_knot_shadow":16,"far_knot_stone":16,"far_knot_thunder":16,"far_knot_venom":16,"far_lattice_arcane":16,"far_lattice_blood":16,"far_lattice_fire":16,"far_lattice_frost":16,"far_lattice_shadow":16,"far_lattice_stone":16,"far_lattice_thunder":16,"far_lattice_venom":16,"far_mirroruni_arcane":16,"far_mirroruni_blood":16,"far_mirroruni_fire":16,"far_mirroruni_frost":16,"far_mirroruni_shadow":16,"far_mirroruni_stone":16,"far_mirroruni_thunder":16,"far_mirroruni_venom":16,"far_pulse_arcane":16,"far_pulse_blood":16,"far_pulse_fire":16,"far_pulse_frost":16,"far_pulse_shadow":16,"far_pulse_stone":16,"far_pulse_thunder":16,"far_pulse_venom":16,"far_shroud_arcane":16,"far_shroud_blood":16,"far_shroud_fire":16,"far_shroud_frost":16,"far_shroud_shadow":16,"far_shroud_stone":16,"far_shroud_thunder":16,"far_shroud_venom":16,"far_spinner_arcane":16,"far_spinner_blood":16,"far_spinner_fire":16,"far_spinner_frost":16,"far_spinner_shadow":16,"far_spinner_stone":16,"far_spinner_thunder":16,"far_spinner_venom":16,"far_strand_arcane":16,"far_strand_blood":16,"far_strand_fire":16,"far_strand_frost":16,"far_strand_shadow":16,"far_strand_stone":16,"far_strand_thunder":16,"far_strand_venom":16,"far_theend_arcane":16,"far_theend_blood":16,"far_theend_fire":16,"far_theend_frost":16,"far_theend_shadow":16,"far_theend_stone":16,"far_theend_thunder":16,"far_theend_venom":16,"far_uniswarm_arcane":16,"far_uniswarm_blood":16,"far_uniswarm_fire":16,"far_uniswarm_frost":16,"far_uniswarm_shadow":16,"far_uniswarm_stone":16,"far_uniswarm_thunder":16,"far_uniswarm_venom":16,"far_weaver_arcane":16,"far_weaver_blood":16,"far_weaver_fire":16,"far_weaver_frost":16,"far_weaver_shadow":16,"far_weaver_stone":16,"far_weaver_thunder":16,"far_weaver_venom":16,"fastfwd":16,"fboss_allmind_arcane":16,"fboss_allmind_blood":16,"fboss_allmind_fire":16,"fboss_allmind_frost":16,"fboss_allmind_shadow":16,"fboss_allmind_stone":16,"fboss_allmind_thunder":16,"fboss_allmind_venom":16,"fboss_loomgod_arcane":16,"fboss_loomgod_blood":16,"fboss_loomgod_fire":16,"fboss_loomgod_frost":16,"fboss_loomgod_shadow":16,"fboss_loomgod_stone":16,"fboss_loomgod_thunder":16,"fboss_loomgod_venom":16,"feather":16,"firstseed":16,"flask":16,"foe_bat_arcane":16,"foe_bat_blood":16,"foe_bat_fire":16,"foe_bat_frost":16,"foe_bat_shadow":16,"foe_bat_stone":16,"foe_bat_thunder":16,"foe_bat_venom":16,"foe_beast_arcane":16,"foe_beast_blood":16,"foe_beast_fire":16,"foe_beast_frost":16,"foe_beast_shadow":16,"foe_beast_stone":16,"foe_beast_thunder":16,"foe_beast_venom":16,"foe_crab_arcane":16,"foe_crab_blood":16,"foe_crab_fire":16,"foe_crab_frost":16,"foe_crab_shadow":16,"foe_crab_stone":16,"foe_crab_thunder":16,"foe_crab_venom":16,"foe_eyeball_arcane":16,"foe_eyeball_blood":16,"foe_eyeball_fire":16,"foe_eyeball_frost":16,"foe_eyeball_shadow":16,"foe_eyeball_stone":16,"foe_eyeball_thunder":16,"foe_eyeball_venom":16,"foe_gargoyle_arcane":16,"foe_gargoyle_blood":16,"foe_gargoyle_fire":16,"foe_gargoyle_frost":16,"foe_gargoyle_shadow":16,"foe_gargoyle_stone":16,"foe_gargoyle_thunder":16,"foe_gargoyle_venom":16,"foe_goblin_arcane":16,"foe_goblin_blood":16,"foe_goblin_fire":16,"foe_goblin_frost":16,"foe_goblin_shadow":16,"foe_goblin_stone":16,"foe_goblin_thunder":16,"foe_goblin_venom":16,"foe_golem_arcane":16,"foe_golem_blood":16,"foe_golem_fire":16,"foe_golem_frost":16,"foe_golem_shadow":16,"foe_golem_stone":16,"foe_golem_thunder":16,"foe_golem_venom":16,"foe_harpy_arcane":16,"foe_harpy_blood":16,"foe_harpy_fire":16,"foe_harpy_frost":16,"foe_harpy_shadow":16,"foe_harpy_stone":16,"foe_harpy_thunder":16,"foe_harpy_venom":16,"foe_hound_arcane":16,"foe_hound_blood":16,"foe_hound_fire":16,"foe_hound_frost":16,"foe_hound_shadow":16,"foe_hound_stone":16,"foe_hound_thunder":16,"foe_hound_venom":16,"foe_imp_arcane":16,"foe_imp_blood":16,"foe_imp_fire":16,"foe_imp_frost":16,"foe_imp_shadow":16,"foe_imp_stone":16,"foe_imp_thunder":16,"foe_imp_venom":16,"foe_knight_arcane":16,"foe_knight_blood":16,"foe_knight_fire":16,"foe_knight_frost":16,"foe_knight_shadow":16,"foe_knight_stone":16,"foe_knight_thunder":16,"foe_knight_venom":16,"foe_lich_arcane":16,"foe_lich_blood":16,"foe_lich_fire":16,"foe_lich_frost":16,"foe_lich_shadow":16,"foe_lich_stone":16,"foe_lich_thunder":16,"foe_lich_venom":16,"foe_mushroom_arcane":16,"foe_mushroom_blood":16,"foe_mushroom_fire":16,"foe_mushroom_frost":16,"foe_mushroom_shadow":16,"foe_mushroom_stone":16,"foe_mushroom_thunder":16,"foe_mushroom_venom":16,"foe_ooze_arcane":16,"foe_ooze_blood":16,"foe_ooze_fire":16,"foe_ooze_frost":16,"foe_ooze_shadow":16,"foe_ooze_stone":16,"foe_ooze_thunder":16,"foe_ooze_venom":16,"foe_rat_arcane":16,"foe_rat_blood":16,"foe_rat_fire":16,"foe_rat_frost":16,"foe_rat_shadow":16,"foe_rat_stone":16,"foe_rat_thunder":16,"foe_rat_venom":16,"foe_scorpion_arcane":16,"foe_scorpion_blood":16,"foe_scorpion_fire":16,"foe_scorpion_frost":16,"foe_scorpion_shadow":16,"foe_scorpion_stone":16,"foe_scorpion_thunder":16,"foe_scorpion_venom":16,"foe_serpent_arcane":16,"foe_serpent_blood":16,"foe_serpent_fire":16,"foe_serpent_frost":16,"foe_serpent_shadow":16,"foe_serpent_stone":16,"foe_serpent_thunder":16,"foe_serpent_venom":16,"foe_skeleton_arcane":16,"foe_skeleton_blood":16,"foe_skeleton_fire":16,"foe_skeleton_frost":16,"foe_skeleton_shadow":16,"foe_skeleton_stone":16,"foe_skeleton_thunder":16,"foe_skeleton_venom":16,"foe_spider_arcane":16,"foe_spider_blood":16,"foe_spider_fire":16,"foe_spider_frost":16,"foe_spider_shadow":16,"foe_spider_stone":16,"foe_spider_thunder":16,"foe_spider_venom":16,"foe_treant_arcane":16,"foe_treant_blood":16,"foe_treant_fire":16,"foe_treant_frost":16,"foe_treant_shadow":16,"foe_treant_stone":16,"foe_treant_thunder":16,"foe_treant_venom":16,"foe_wisp_arcane":16,"foe_wisp_blood":16,"foe_wisp_fire":16,"foe_wisp_frost":16,"foe_wisp_shadow":16,"foe_wisp_stone":16,"foe_wisp_thunder":16,"foe_wisp_venom":16,"foe_worm_arcane":16,"foe_worm_blood":16,"foe_worm_fire":16,"foe_worm_frost":16,"foe_worm_shadow":16,"foe_worm_stone":16,"foe_worm_thunder":16,"foe_worm_venom":16,"foe_wraith_arcane":16,"foe_wraith_blood":16,"foe_wraith_fire":16,"foe_wraith_frost":16,"foe_wraith_shadow":16,"foe_wraith_stone":16,"foe_wraith_thunder":16,"foe_wraith_venom":16,"foe_zombie_arcane":16,"foe_zombie_blood":16,"foe_zombie_fire":16,"foe_zombie_frost":16,"foe_zombie_shadow":16,"foe_zombie_stone":16,"foe_zombie_thunder":16,"foe_zombie_venom":16,"fold":16,"forge":16,"formless":16,"gauntlet":16,"gem":16,"genesis":16,"giantbone":16,"gift":16,"glory":16,"golem":16,"grimoire":16,"helm":16,"horn":16,"hourglass":16,"idol":16,"incense":16,"inf_burst":16,"inf_core":16,"inf_cross":16,"inf_disc":16,"inf_frame":16,"inf_glass":16,"inf_orbit":16,"inf_prism":16,"inf_seal":16,"inf_twin":16,"infinity":16,"lantern":16,"ledger":16,"library":16,"lone":16,"loupe":16,"mana":16,"map":16,"mastery":16,"medal":16,"medal_b":16,"medal_s":16,"milestone":16,"mirror":16,"moon":16,"narrow":16,"night":16,"nosleep":16,"nothing":16,"nulleconomy":16,"offering":16,"oldseal":16,"omniforge":16,"onlyone":16,"orig_all":16,"orig_crown":16,"orig_eye":16,"orig_flame":16,"orig_seed":16,"orig_tree":16,"origintrial":16,"pickaxe":16,"pillar":16,"portal":16,"real_bloom":16,"real_cube":16,"real_eye":16,"real_gate":16,"real_key":16,"real_net":16,"real_pillar":16,"real_shard":16,"real_spiral":16,"real_wave":16,"relic":16,"relicheart":16,"reliquary":16,"ring":16,"riverclock":16,"robe":16,"route":16,"rune_abyss":16,"rune_echo":16,"rune_flow":16,"rune_forge":16,"rune_gate":16,"rune_guard":16,"rune_might":16,"rune_mind":16,"rune_speed":16,"rune_star":16,"rune_time":16,"rune_void":16,"rune_wealth":16,"rune_wisdom":16,"runebook":16,"runering":16,"scales":16,"scroll":16,"scythe":16,"sealedbook":16,"sealedvein":16,"sealrune":16,"seed":16,"serpent":16,"shield":16,"sigil":16,"silentstar":16,"skull":16,"slime":16,"soul":16,"soulforge":16,"sparkle":16,"spiral":16,"spire":16,"spoils":16,"staff":16,"star":16,"starcog":16,"starcompass":16,"starcrown":16,"starshard":16,"starsigil":16,"storm":16,"sword":16,"swordup":16,"throne":16,"timeaxis":16,"timecrown":16,"tome":16,"torpor":16,"touch":16,"tower":16,"treasure":16,"trialcrown":16,"unknown":16,"unsealed":16,"vault":16,"vial":16,"void_chain":16,"void_crown":16,"void_gate":16,"void_hand":16,"void_maw":16,"void_rift":16,"void_star":16,"void_tear":16,"voidheart":16,"voyage":16,"voyager":16,"weight":16,"withersoul":16,"workshop":16,"wraith":16};
+const SPR_DIR='art/sprites/';
+const spriteURL = name => SPR_DIR + name + '.png';
+function ic(name,size){
+  const n=size||SPR[name]||16;
+  const i=document.createElement('img');
+  i.className='px'; i.src=spriteURL(name); i.width=n; i.height=n; i.alt=''; i.loading='eager';
+  return i;
+}
+function icHTML(name,size){
+  const n=size||16;   // 글 속에서는 원본 크기 그대로
+  return `<img class="px" src="${spriteURL(name)}" width="${n}" height="${n}" alt="">`;
+}
+
+/* ══════════════ 콘텐츠 정의 ══════════════
+   모든 항목은 apply(m, lv)로 배율 객체 m을 직접 수정한다.
+   새 요소는 배열에 한 줄 추가하면 UI·계산에 자동 반영. */
+
+const PRODUCERS=[
+ {id:'apprentice',sp:'apprentice',nm:{ko:'견습 마법사',en:"Apprentice Mage"},base:15,   g:1.15,rate:1,    makes:{ko:'마나',en:"Mana"}},
+ {id:'workshop',  sp:'workshop',  nm:{ko:'마법 공방',en:"Arcane Workshop"},  base:400,  g:1.18,rate:0.12, makes:{ko:'견습 마법사',en:"Apprentices"}},
+ {id:'tower',     sp:'tower',     nm:{ko:'마탑',en:"Mage Tower"},       base:2.5e4,g:1.21,rate:0.07, makes:{ko:'마법 공방',en:"Workshops"}},
+ {id:'academy',   sp:'academy',   nm:{ko:'아카데미',en:"Academy"},   base:3e6,  g:1.25,rate:0.045,makes:{ko:'마탑',en:"Towers"}},
+ {id:'council',   sp:'council',   nm:{ko:'대현자 회의',en:"Archsage Council"},base:1.5e9,g:1.30,rate:0.03, makes:{ko:'아카데미',en:"Academies"}},
+ {id:'spire',     sp:'spire',     nm:{ko:'별빛 첨탑',en:"Starlight Spire"},base:1.2e12,g:1.36,rate:0.02, makes:{ko:'대현자 회의',en:"Councils"}},
+];
+
+const RESEARCH=[
+ {id:'q1', sp:'flask',    nm:{ko:'마나 정제',en:"Mana Refinement"},   cost:100,  d:()=>X('마나 생산 ×2',"Mana output ×2"),        apply:m=>m.prod*=2},
+ {id:'q2', sp:'feather',  nm:{ko:'룬 각인',en:"Rune Engraving"},     cost:4e3,  d:()=>X('마나 생산 ×2.5',"Mana output ×2.5"), req:'q1', apply:m=>m.prod*=2.5},
+ {id:'q3', sp:'book',     nm:{ko:'견습 훈련소',en:"Apprentice Drill"}, cost:5e4,  d:()=>X('견습 마법사 효율 ×3',"Apprentice output ×3"), req:'q1', apply:m=>m.t0*=3},
+ {id:'q4', sp:'cog',      nm:{ko:'공방 확장',en:"Workshop Expansion"},   cost:8e5,  d:()=>X('상위 시설 효율 ×2.5',"Higher tiers ×2.5"), req:'q2', apply:m=>m.tUp*=2.5},
+ {id:'q5', sp:'spiral',   nm:{ko:'자동 소환진',en:"Summoning Circle"}, cost:1e7,  d:()=>X('자동 구매가 한 번에 최대 수량 구매',"Auto-buy purchases the max amount at once"), apply:m=>m.autoMax=true},
+ {id:'q6', sp:'lantern',  nm:{ko:'심연의 등불',en:"Abyssal Lantern"}, cost:1e8,  d:()=>X('던전 공격력 ×3',"Dungeon power ×3"),      apply:m=>m.dungeon*=3},
+ {id:'q7', sp:'incense', nm:{ko:'봉헌의 예법',en:"Rites of Offering"}, cost:6e8,  d:()=>X('오퍼링 획득 ×2',"Offerings ×2"),      apply:m=>m.offer*=2},
+ {id:'q8', sp:'bolt',     nm:{ko:'마나 폭풍',en:"Mana Storm"},   cost:2e9,  d:()=>X('마나 생산 ×4',"Mana output ×4"),   req:'q4', apply:m=>m.prod*=4},
+ {id:'q9', sp:'hourglass',nm:{ko:'시간 왜곡',en:"Time Warp"},   cost:5e10, d:()=>X('게임 속도 ×1.25',"Game speed ×1.25"),     apply:m=>m.speed*=1.25},
+ {id:'q10',sp:'loupe',  nm:{ko:'결정 감정법',en:"Crystal Appraisal"}, cost:2e11, d:()=>X('결정 획득 ×2',"Crystals ×2"),        apply:m=>m.crystal*=2},
+ {id:'q11',sp:'vial',     nm:{ko:'영혼 추출기',en:"Soul Extractor"}, cost:1e12, d:()=>X('영혼석 획득 ×1.5',"Soul Shards ×1.5"),    apply:m=>m.soul*=1.5},
+ {id:'q12',sp:'swordup',  nm:{ko:'심연 검술',en:"Abyssal Swordplay"},   cost:5e12, d:()=>X('던전 공격력 ×5',"Dungeon power ×5"), req:'q6', apply:m=>m.dungeon*=5},
+ {id:'q13',sp:'star',     nm:{ko:'대마법 이론',en:"Grand Magic Theory"}, cost:2e13, d:()=>X('마나 생산 ×8',"Mana output ×8"),   req:'q8', apply:m=>m.prod*=8},
+ {id:'q14',sp:'runebook',nm:{ko:'룬 해독학',en:"Rune Decipherment"}, cost:1e14, d:()=>X('룬 최대 레벨 +10',"Rune level cap +10"),    apply:m=>m.runeCap+=10},
+ {id:'q15',sp:'map',      nm:{ko:'무한 회랑',en:"Endless Corridor"},   cost:5e14, d:()=>X('층당 배율 2% → 5%',"Depth bonus 2% → 5%"),   apply:m=>m.floorPct=Math.max(m.floorPct,0.05)},
+ {id:'q16',sp:'scroll',   nm:{ko:'봉헌 의식',en:"Offering Ritual"},   cost:2e15, d:()=>X('오퍼링 획득 ×3',"Offerings ×3"), req:'q7', apply:m=>m.offer*=3},
+ {id:'q17',sp:'anvil', nm:{ko:'장비 연성',en:"Gear Transmutation"},   cost:1e16, d:()=>X('장비 효과 지수 ×1.5',"Gear effect exponent ×1.5"), apply:m=>m.gearPow*=1.5},
+ {id:'q18',sp:'portal',   nm:{ko:'차원 균열',en:"Dimensional Rift"},   cost:5e16, d:()=>X('마나 생산 ×15',"Mana output ×15"), req:'q13',apply:m=>m.prod*=15},
+ {id:'q19',sp:'bone',    nm:{ko:'보스 해부학',en:"Boss Anatomy"}, cost:5e17, d:()=>X('보스 보상 ×5',"Boss rewards ×5"),        apply:m=>m.boss*=5},
+ {id:'q20',sp:'infinity', nm:{ko:'무한의 계시',en:"Infinite Revelation"}, cost:1e19, d:()=>X('마나 생산 ×50',"Mana output ×50"), req:'q18',apply:m=>m.prod*=50},
+];
+
+/* 룬 · 오퍼링으로 강화, 승천 시 초기화 */
+const RUNES=[
+ {id:'speed', sp:'rune_speed', nm:{ko:'신속의 룬',en:"Rune of Haste"}, d:l=>`${X('게임 속도',"Game speed")} +${pctTxt(1.5*l)}% → +${pctTxt(1.5*(l+1))}%`,        apply:(m,l)=>m.speed*=1+0.015*l},
+ {id:'wealth',sp:'rune_wealth',nm:{ko:'풍요의 룬',en:"Rune of Plenty"}, d:l=>`${X('마나 생산',"Mana output")} ×${powTxt(1.06,l)} → ×${powTxt(1.06,l+1)}`,      apply:(m,l)=>m.prod*=Math.pow(1.06,l)},
+ {id:'wisdom',sp:'rune_wisdom',nm:{ko:'지혜의 룬',en:"Rune of Wisdom"}, d:l=>`${X('오퍼링 획득',"Offerings")} +${(8*l)}% → +${(8*(l+1))}%`,                   apply:(m,l)=>m.offer*=1+0.08*l},
+ {id:'guard', sp:'rune_guard', nm:{ko:'수호의 룬',en:"Rune of Warding"}, d:l=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(1.12,l)} → ×${powTxt(1.12,l+1)}`,    apply:(m,l)=>m.dungeon*=Math.pow(1.12,l)},
+ {id:'abyss', sp:'rune_abyss', nm:{ko:'심연의 룬',en:"Rune of the Abyss"}, d:l=>`${X('영혼석 획득',"Soul Shards")} ×${powTxt(1.08,l)} → ×${powTxt(1.08,l+1)}`,    apply:(m,l)=>m.soul*=Math.pow(1.08,l)},
+];
+RUNES.push(
+ {id:'might', sp:'rune_might', nm:{ko:'맹위의 룬',en:"Rune of Fury"},
+  d:l=>`${X('던전 보상',"Dungeon rewards")} ×${powTxt(1.10,l)} → ×${powTxt(1.10,l+1)}`, apply:(m,l)=>m.floorLoot*=Math.pow(1.10,l)},
+ {id:'mind',  sp:'rune_mind',  nm:{ko:'사색의 룬',en:"Rune of Contemplation"},
+  d:l=>`${X('아래 두 단계 효율',"Bottom two tiers")} ×${powTxt(1.09,l)} → ×${powTxt(1.09,l+1)}`, apply:(m,l)=>m.t0*=Math.pow(1.09,l)},
+ {id:'flow',  sp:'rune_flow',  nm:{ko:'물결의 룬',en:"Rune of Currents"},
+  d:l=>`${X('자동화 주기',"Automation interval")} ×${Math.pow(0.985,l).toFixed(3)} → ×${Math.pow(0.985,l+1).toFixed(3)}`, apply:(m,l)=>m.autoSpeed*=Math.pow(0.985,l)},
+ {id:'hollow',sp:'rune_void',  nm:{ko:'공동의 룬',en:"Rune of the Hollow"},
+  d:l=>`${X('보스 보상',"Boss rewards")} ×${powTxt(1.11,l)} → ×${powTxt(1.11,l+1)}`, apply:(m,l)=>m.boss*=Math.pow(1.11,l)},
+ {id:'gate',  sp:'rune_gate',  nm:{ko:'관문의 룬',en:"Rune of Gates"},
+  d:l=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${powTxt(1.07,l)} → ×${powTxt(1.07,l+1)}`, apply:(m,l)=>m.floorPct*=Math.pow(1.07,l)},
+ {id:'temper',sp:'rune_forge', nm:{ko:'담금질의 룬',en:"Rune of Tempering"},
+  d:l=>`${X('장비 효과 지수',"Gear exponent")} ×${powTxt(1.05,l)} → ×${powTxt(1.05,l+1)}`, apply:(m,l)=>m.gearPow*=Math.pow(1.05,l)},
+ {id:'echo',  sp:'rune_echo',  nm:{ko:'메아리의 룬',en:"Rune of Echoes"},
+  d:l=>`${X('도전 보상',"Trial rewards")} ×${powTxt(1.08,l)} → ×${powTxt(1.08,l+1)}`, apply:(m,l)=>m.chalPow*=Math.pow(1.08,l)},
+);
+const runeCost=l=>12*Math.pow(1.30,l);
+
+/* 장비 · 결정으로 강화, 영구 유지 */
+const GEAR=[
+ {id:'grimoire',sp:'grimoire',nm:{ko:'마도서',en:"Grimoire"}, d:(l,p)=>`${X('마나 생산',"Mana output")} ×${powTxt(1.15,l*p)} → ×${powTxt(1.15,(l+1)*p)}`,    apply:(m,l)=>m.prod*=Math.pow(1.15,l*m.gearPow)},
+ {id:'staff',   sp:'staff',   nm:{ko:'지팡이',en:"Staff"}, d:(l,p)=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(1.25,l*p)} → ×${powTxt(1.25,(l+1)*p)}`,  apply:(m,l)=>m.dungeon*=Math.pow(1.25,l*m.gearPow)},
+ {id:'amulet',  sp:'amulet',  nm:{ko:'부적',en:"Amulet"},   d:(l,p)=>`${X('결정·오퍼링',"Crystals & Offerings")} ×${powTxt(1.12,l*p)} → ×${powTxt(1.12,(l+1)*p)}`,  apply:(m,l)=>{const v=Math.pow(1.12,l*m.gearPow);m.crystal*=v;m.offer*=v;}},
+];
+GEAR.push(
+ {id:'shield', sp:'shield',  nm:{ko:'수호 방패',en:"Aegis"},
+  d:(l,p)=>`${X('던전 보상',"Dungeon rewards")} ×${powTxt(1.18,l*p)} → ×${powTxt(1.18,(l+1)*p)}`, apply:(m,l)=>m.floorLoot*=Math.pow(1.18,l*m.gearPow)},
+ {id:'gauntlet',sp:'gauntlet',nm:{ko:'강철 건틀릿',en:"Steel Gauntlet"},
+  d:(l,p)=>`${X('보스 보상',"Boss rewards")} ×${powTxt(1.22,l*p)} → ×${powTxt(1.22,(l+1)*p)}`, apply:(m,l)=>m.boss*=Math.pow(1.22,l*m.gearPow)},
+ {id:'ring',   sp:'ring',    nm:{ko:'현자의 반지',en:"Sage Ring"},
+  /* 상한을 장비 지수에 비례시키면 고리가 돈다 — 상한이 오르면 담금질 룬을 더 올릴 수 있고,
+     그 룬이 다시 지수를 올린다. 지수가 1e70 까지 뛴 것이 이 고리 때문이었다. 끊는다. */
+  d:(l,p)=>`${X('룬 최대 레벨',"Rune level cap")} +${2*l} → +${2*(l+1)}`, apply:(m,l)=>m.runeCap+=2*l},
+ {id:'robe',   sp:'robe',    nm:{ko:'별빛 로브',en:"Starlit Robe"},
+  d:(l,p)=>`${X('영혼석 획득',"Soul Shards")} ×${powTxt(1.16,l*p)} → ×${powTxt(1.16,(l+1)*p)}`, apply:(m,l)=>m.soul*=Math.pow(1.16,l*m.gearPow)},
+ {id:'crown',  sp:'crown16', nm:{ko:'왕관',en:"Crown"},
+  d:(l,p)=>`${X('오퍼링 획득',"Offerings")} ×${powTxt(1.16,l*p)} → ×${powTxt(1.16,(l+1)*p)}`, apply:(m,l)=>m.offer*=Math.pow(1.16,l*m.gearPow)},
+ {id:'lantern2',sp:'voyager',nm:{ko:'항해 등불',en:"Voyager Lantern"},
+  d:(l,p)=>`${X('게임 속도',"Game speed")} +${pctTxt(2*l*p)}% → +${pctTxt(2*(l+1)*p)}%`, apply:(m,l)=>m.speed*=1+0.02*l*m.gearPow},
+ {id:'compass2',sp:'compass',nm:{ko:'항성 나침반',en:"Stellar Compass"},
+  d:(l,p)=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${powTxt(1.12,l*p)} → ×${powTxt(1.12,(l+1)*p)}`, apply:(m,l)=>m.floorPct*=Math.pow(1.12,l*m.gearPow)},
+);
+GEAR.push(
+ {id:'helm',  sp:'helm',  nm:{ko:'파쇄 투구',en:"Breaker Helm"},
+  d:(l,p)=>`${X('보스 보상',"Boss rewards")} ×${powTxt(1.20,l*p)} → ×${powTxt(1.20,(l+1)*p)}`, apply:(m,l)=>m.boss*=Math.pow(1.20,l*m.gearPow)},
+ {id:'boots', sp:'boots', nm:{ko:'질주의 장화',en:"Striding Boots"},
+  d:(l,p)=>`${X('게임 속도',"Game speed")} +${pctTxt(1.8*l*p)}% → +${pctTxt(1.8*(l+1)*p)}%`, apply:(m,l)=>m.speed*=1+0.018*l*m.gearPow},
+ {id:'cloak', sp:'cloak', nm:{ko:'그림자 망토',en:"Shadow Cloak"},
+  d:(l,p)=>`${X('던전 보상',"Dungeon rewards")} ×${powTxt(1.17,l*p)} → ×${powTxt(1.17,(l+1)*p)}`, apply:(m,l)=>m.floorLoot*=Math.pow(1.17,l*m.gearPow)},
+ {id:'belt',  sp:'belt',  nm:{ko:'절약의 허리띠',en:"Thrift Belt"},
+  d:(l,p)=>`${X('남는 시설 비용',"Building cost left")} ${cutTxt(0.985,l*p)} → ${cutTxt(0.985,(l+1)*p)}`, apply:(m,l)=>m.costMul*=Math.pow(0.985,l*m.gearPow)},
+ {id:'tome',  sp:'tome',  nm:{ko:'대현자의 비망록',en:"Archsage Codex"},
+  d:(l,p)=>`${X('상위 시설 효율',"Higher tiers")} ×${powTxt(1.14,l*p)} → ×${powTxt(1.14,(l+1)*p)}`, apply:(m,l)=>m.tUp*=Math.pow(1.14,l*m.gearPow)},
+ {id:'horn',  sp:'horn',  nm:{ko:'시련의 뿔피리',en:"Trialhorn"},
+  d:(l,p)=>`${X('도전 보상',"Trial rewards")} ×${powTxt(1.13,l*p)} → ×${powTxt(1.13,(l+1)*p)}`, apply:(m,l)=>m.chalPow*=Math.pow(1.13,l*m.gearPow)},
+ {id:'mirror',sp:'mirror',nm:{ko:'결정 거울',en:"Crystal Mirror"},
+  d:(l,p)=>`${X('결정 획득',"Crystals")} ×${powTxt(1.19,l*p)} → ×${powTxt(1.19,(l+1)*p)}`, apply:(m,l)=>m.crystal*=Math.pow(1.19,l*m.gearPow)},
+ {id:'sigil', sp:'sigil', nm:{ko:'만상의 인장',en:"Sigil of All Things"},
+  d:(l,p)=>`${X('모든 생산·획득',"All output")} ×${powTxt(1.09,l*p)} → ×${powTxt(1.09,(l+1)*p)}`,
+  apply:(m,l)=>{const v=Math.pow(1.09,l*m.gearPow);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+);
+const gearCost=l=>8*Math.pow(1.6,l);
+/* 등비수열이라 n 단계를 한 번에 사는 값은 닫힌 식으로 구한다.
+   장비를 100 단계씩 올리고 싶을 때 백 번 누르지 않아도 된다. */
+function bulkCost(costFn,from,n,g){
+  const c0=costFn(from);
+  return c0*(Math.pow(g,n)-1)/(g-1);
+}
+function bulkMax(costFn,from,budget,g){
+  const c0=costFn(from);
+  const v=budget*(g-1)/c0+1;
+  return v<=1?0:Math.max(0,Math.floor(Math.log(v)/Math.log(g)));
+}
+function buyAmtFor(costFn,from,budget,g){
+  if(S.buyAmt==='max') return bulkMax(costFn,from,budget,g);
+  const n=S.buyAmt;
+  return bulkCost(costFn,from,n,g)<=budget?n:0;
+}
+
+/* 영혼 강화 · 환생 통화, 승천 시 초기화 */
+const SOUL_UPS=[
+ {id:'s1', sp:'gem',      nm:{ko:'영혼 각인',en:"Soul Sigil"},  max:Infinity,c:l=>2*Math.pow(1.7,l),  d:l=>`${X('마나 생산',"Mana output")} ×${powTxt(1.15,l)} → ×${powTxt(1.15,l+1)}`, apply:(m,l)=>m.prod*=Math.pow(1.15,l)},
+ {id:'s2', sp:'coinpurse',   nm:{ko:'값싼 주문서',en:"Cheap Scrolls"},max:Infinity,      c:l=>6*Math.pow(2.1,l),  d:l=>`${X('시설 비용 증가율',"Cost growth")} ×${cutTxt(0.93,l)} → ×${cutTxt(0.93,l+1)}`, apply:(m,l)=>m.costMul*=Math.pow(0.93,l)},
+ {id:'s3', sp:'fastfwd',  nm:{ko:'신속한 손길',en:"Swift Hands"},max:Infinity,c:l=>10*Math.pow(2.1,l), d:l=>`${X('자동화 주기',"Automation interval")} ${pctTxt(Math.pow(0.88,l)*100)}% → ${pctTxt(Math.pow(0.88,l+1)*100)}%`, apply:(m,l)=>m.autoSpeed*=Math.pow(0.88,l)},
+ {id:'s4', sp:'sparkle',  nm:{ko:'영혼 공명',en:"Soul Resonance"},  max:Infinity,c:l=>14*Math.pow(2.2,l), d:l=>`${X('영혼석 획득',"Soul Shards")} ×${powTxt(1.3,l)} → ×${powTxt(1.3,l+1)}`, apply:(m,l)=>m.soul*=Math.pow(1.3,l)},
+ {id:'s5', sp:'mastery',  nm:{ko:'던전 숙련',en:"Dungeon Mastery"},  max:Infinity,c:l=>9*Math.pow(1.95,l), d:l=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(1.35,l)} → ×${powTxt(1.35,l+1)}`, apply:(m,l)=>m.dungeon*=Math.pow(1.35,l)},
+ {id:'s6', sp:'moon',     nm:{ko:'오프라인 계약',en:"Offline Pact"},max:Infinity,    c:l=>18*Math.pow(1.8,l), d:l=>`${X('오프라인 상한',"Offline cap")} ${4+2*l}${X("시간","h")} → ${6+2*l}${X("시간","h")}`, apply:(m,l)=>m.offline=4+2*l},
+ {id:'s7', sp:'gift',     nm:{ko:'시작 지원금',en:"Starting Grant"},max:Infinity,c:l=>22*Math.pow(2.6,l), d:l=>`${X('환생 직후 마나',"Mana right after rebirth")} ${fmtLog(startManaLog(l))} → ${fmtLog(startManaLog(l+1))}`, apply:()=>{}},
+ {id:'s8', sp:'runering',nm:{ko:'룬 친화',en:"Rune Affinity"}, max:Infinity,       c:l=>25*Math.pow(2.4,l), d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${5*l} → +${5*(l+1)}`, apply:(m,l)=>m.runeCap+=5*l},
+ {id:'s9', sp:'chisel',  nm:{ko:'결정 세공',en:"Crystal Cutting"},  max:Infinity,c:l=>16*Math.pow(2.3,l), d:l=>`${X('결정 획득',"Crystals")} ×${powTxt(1.5,l)} → ×${powTxt(1.5,l+1)}`, apply:(m,l)=>m.crystal*=Math.pow(1.5,l)},
+ {id:'s10',sp:'chalice', nm:{ko:'봉헌의 축복',en:"Blessing of Offering"},max:Infinity,c:l=>20*Math.pow(2.35,l),d:l=>`${X('오퍼링 획득',"Offerings")} ×${powTxt(1.4,l)} → ×${powTxt(1.4,l+1)}`, apply:(m,l)=>m.offer*=Math.pow(1.4,l)},
+];
+
+SOUL_UPS.push(
+ {id:'s11',sp:'bulwark',   nm:{ko:'영혼 방벽',en:"Soul Bulwark"}, max:Infinity,c:l=>18*Math.pow(2.4,l),
+  d:l=>`${X('던전 보상',"Dungeon rewards")} ×${powTxt(1.6,l)} → ×${powTxt(1.6,l+1)}`, apply:(m,l)=>m.floorLoot*=Math.pow(1.6,l)},
+ {id:'s12',sp:'spoils',     nm:{ko:'전리품 감식',en:"Spoils Appraisal"}, max:Infinity,c:l=>24*Math.pow(2.5,l),
+  d:l=>`${X('보스 보상',"Boss rewards")} ×${powTxt(1.8,l)} → ×${powTxt(1.8,l+1)}`, apply:(m,l)=>m.boss*=Math.pow(1.8,l)},
+ {id:'s13',sp:'starshard',     nm:{ko:'별의 조각',en:"Shard of Stars"}, max:Infinity,c:l=>30*Math.pow(2.7,l),
+  d:l=>`${X('모든 생산·획득',"All output")} ×${powTxt(1.25,l)} → ×${powTxt(1.25,l+1)}`,
+  apply:(m,l)=>{const v=Math.pow(1.25,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+ {id:'s14',sp:'route',      nm:{ko:'항로 기록',en:"Charted Routes"}, max:Infinity,c:l=>26*Math.pow(2.45,l),
+  d:l=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${powTxt(1.3,l)} → ×${powTxt(1.3,l+1)}`, apply:(m,l)=>m.floorPct*=Math.pow(1.3,l)},
+ {id:'s15',sp:'unsealed', nm:{ko:'금서 해방',en:"Unsealed Tome"}, max:Infinity,c:l=>34*Math.pow(2.8,l),
+  d:l=>`${X('상위 시설 효율',"Higher tiers")} ×${powTxt(1.7,l)} → ×${powTxt(1.7,l+1)}`, apply:(m,l)=>m.tUp*=Math.pow(1.7,l)},
+ {id:'s16',sp:'soulforge',    nm:{ko:'혼의 벼림',en:"Soulforge"}, max:Infinity,c:l=>40*Math.pow(2.9,l),
+  d:l=>`${X('장비 효과 지수',"Gear exponent")} ×${powTxt(1.2,l)} → ×${powTxt(1.2,l+1)}`, apply:(m,l)=>m.gearPow*=Math.pow(1.2,l)},
+);
+
+/* 유물 강화 · 승천 통화, 영구 */
+const RELIC_UPS=[
+ {id:'a1', sp:'idol',    nm:{ko:'고대 유물',en:"Ancient Relic"},  max:Infinity,c:l=>1*Math.pow(3,l),    d:l=>`${X('마나 생산',"Mana output")} ×${powTxt(2,l)} → ×${powTxt(2,l+1)}`, apply:(m,l)=>m.prod*=Math.pow(2,l)},
+ {id:'a2', sp:'pickaxe',  nm:{ko:'영혼 광맥',en:"Soul Vein"},  max:Infinity,c:l=>2*Math.pow(3.2,l),  d:l=>`${X('영혼석 획득',"Soul Shards")} ×${powTxt(2.5,l)} → ×${powTxt(2.5,l+1)}`, apply:(m,l)=>m.soul*=Math.pow(2.5,l)},
+ {id:'a3', sp:'clock',nm:{ko:'시간 가속',en:"Time Acceleration"},  max:Infinity,      c:l=>3*Math.pow(4,l),    d:l=>`${X('게임 속도',"Game speed")} +${12*l}% → +${12*(l+1)}%`, apply:(m,l)=>m.speed*=1+0.12*l},
+ {id:'a4', sp:'voyage',  nm:{ko:'심연 항해',en:"Abyssal Voyage"},  max:Infinity,c:l=>4*Math.pow(3.4,l),  d:l=>`${X('던전 보상',"Dungeon rewards")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`, apply:(m,l)=>m.floorLoot*=Math.pow(3,l)},
+ {id:'a5', sp:'blessing',  nm:{ko:'왕국의 축복',en:"Kingdom's Blessing"},max:Infinity,c:l=>5*Math.pow(3.5,l),  d:l=>X(`환생 후 각 시설 ${8*l}개 → ${8*(l+1)}개 무료`,`Free buildings after rebirth: ${8*l} → ${8*(l+1)}`), apply:()=>{}},
+ {id:'a6', sp:'banner',      nm:{ko:'심연의 지도',en:"Map of the Abyss"},max:Infinity,c:l=>6*Math.pow(3.8,l),  d:l=>`${X('층당 배율',"Depth bonus")} +${2*l}%p → +${2*(l+1)}%p`, apply:(m,l)=>m.floorPct+=0.02*l},
+ {id:'a7', sp:'engrave',nm:{ko:'룬 각인술',en:"Rune Inscription"}, max:Infinity,       c:l=>10*Math.pow(4.5,l), d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${10*l} → +${10*(l+1)}`, apply:(m,l)=>m.runeCap+=10*l},
+ {id:'a8', sp:'treasure',      nm:{ko:'보물 감식',en:"Treasure Appraisal"},  max:Infinity,c:l=>8*Math.pow(3.6,l),  d:l=>`${X('결정 획득',"Crystals")} ×${powTxt(2,l)} → ×${powTxt(2,l+1)}`, apply:(m,l)=>m.crystal*=Math.pow(2,l)},
+ {id:'a9', sp:'chain',    nm:{ko:'시련의 인장',en:"Seal of Trials"},max:Infinity,c:l=>12*Math.pow(4,l),   d:l=>`${X('도전 보상',"Trial rewards")} ×${powTxt(1.5,l)} → ×${powTxt(1.5,l+1)}`, apply:(m,l)=>m.chalPow*=Math.pow(1.5,l)},
+ {id:'a10',sp:'seed',     nm:{ko:'초월의 씨앗',en:"Seed of Transcendence"},max:Infinity,c:l=>20*Math.pow(5,l),   d:l=>`${X('모든 생산·획득',"All output")} ×${powTxt(1.35,l)} → ×${powTxt(1.35,l+1)}`, apply:(m,l)=>{const v=Math.pow(1.35,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+];
+
+RELIC_UPS.push(
+ {id:'a11',sp:'beacon', nm:{ko:'심연의 등대',en:"Abyssal Beacon"}, max:Infinity,c:l=>7*Math.pow(3.4,l),
+  d:l=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${powTxt(1.8,l)} → ×${powTxt(1.8,l+1)}`,
+  apply:(m,l)=>m.floorPct*=Math.pow(1.8,l)},
+ {id:'a12',sp:'forge',   nm:{ko:'불멸의 벼림',en:"Undying Forge"}, max:Infinity,c:l=>9*Math.pow(3.7,l),
+  d:l=>`${X('장비 효과 지수',"Gear exponent")} ×${powTxt(1.35,l)} → ×${powTxt(1.35,l+1)}`,
+  apply:(m,l)=>m.gearPow*=Math.pow(1.35,l)},
+ {id:'a13',sp:'eternalhand', nm:{ko:'영원한 손길',en:"Eternal Hands"}, max:Infinity,c:l=>11*Math.pow(3.9,l),
+  d:l=>`${X('자동화 주기',"Automation interval")} ×${(Math.pow(0.85,l)).toFixed(3)} → ×${(Math.pow(0.85,l+1)).toFixed(3)}`,
+  apply:(m,l)=>m.autoSpeed*=Math.pow(0.85,l)},
+ {id:'a14',sp:'giantbone',    nm:{ko:'거인의 유해',en:"Bones of Giants"}, max:Infinity,c:l=>13*Math.pow(4.1,l),
+  d:l=>`${X('보스 보상',"Boss rewards")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`,
+  apply:(m,l)=>m.boss*=Math.pow(3,l)},
+ {id:'a15',sp:'nosleep',    nm:{ko:'잠들지 않는 탑',en:"Sleepless Tower"}, max:Infinity,c:l=>10*Math.pow(3.2,l),
+  d:l=>`${X('오프라인 상한',"Offline cap")} +${4*l}${X('시간','h')} → +${4*(l+1)}${X('시간','h')}`,
+  apply:(m,l)=>m.offline+=4*l},
+ {id:'a16',sp:'relicheart',     nm:{ko:'유물의 심장',en:"Heart of Relics"}, max:Infinity,c:l=>16*Math.pow(4.6,l),
+  d:l=>`${X('승천 유물 획득',"Relics on ascension")} ×${powTxt(1.6,l)} → ×${powTxt(1.6,l+1)}`,
+  apply:(m,l)=>m.relic*=Math.pow(1.6,l)},
+);
+
+RELIC_UPS.push(
+ {id:'a17',sp:'oldseal',  nm:{ko:'고대의 인장',en:"Ancient Seal"}, max:Infinity,c:l=>15*Math.pow(4.2,l),
+  d:l=>`${X('모든 생산·획득',"All output")} ×${powTxt(1.5,l)} → ×${powTxt(1.5,l+1)}`,
+  apply:(m,l)=>{const v=Math.pow(1.5,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+ {id:'a18',sp:'throne',   nm:{ko:'부서진 왕좌',en:"Broken Throne"}, max:Infinity,c:l=>18*Math.pow(4.4,l),
+  d:l=>`${X('상위 시설 효율',"Higher tiers")} ×${powTxt(2.2,l)} → ×${powTxt(2.2,l+1)}`,
+  apply:(m,l)=>m.tUp*=Math.pow(2.2,l)},
+ {id:'a19',sp:'voidheart',nm:{ko:'심연의 심장',en:"Heart of the Abyss"}, max:Infinity,c:l=>20*Math.pow(4.6,l),
+  d:l=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`,
+  apply:(m,l)=>m.dungeon*=Math.pow(3,l)},
+ {id:'a20',sp:'firstseed',nm:{ko:'시원의 씨앗',en:"Primordial Seed"}, max:Infinity,c:l=>22*Math.pow(4.8,l),
+  d:l=>`${X('아래 두 단계 효율',"Bottom two tiers")} ×${powTxt(2.5,l)} → ×${powTxt(2.5,l+1)}`,
+  apply:(m,l)=>m.t0*=Math.pow(2.5,l)},
+ {id:'a21',sp:'reliquary',nm:{ko:'유물함',en:"Reliquary"}, max:Infinity,c:l=>14*Math.pow(4,l),
+  d:l=>`${X('결정 획득',"Crystals")} ×${powTxt(2.4,l)} → ×${powTxt(2.4,l+1)}`,
+  apply:(m,l)=>m.crystal*=Math.pow(2.4,l)},
+ {id:'a22',sp:'pillar',   nm:{ko:'무너진 기둥',en:"Fallen Pillar"}, max:Infinity,c:l=>17*Math.pow(4.3,l),
+  d:l=>`${X('오퍼링 획득',"Offerings")} ×${powTxt(2.4,l)} → ×${powTxt(2.4,l+1)}`,
+  apply:(m,l)=>m.offer*=Math.pow(2.4,l)},
+ {id:'a23',sp:'starcompass',nm:{ko:'별의 나침반',en:"Star Compass"}, max:Infinity,c:l=>19*Math.pow(4.5,l),
+  d:l=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${powTxt(2,l)} → ×${powTxt(2,l+1)}`,
+  apply:(m,l)=>m.floorPct*=Math.pow(2,l)},
+ {id:'a24',sp:'glory',    nm:{ko:'영광의 깃발',en:"Banner of Glory"}, max:Infinity,c:l=>25*Math.pow(5,l),
+  d:l=>`${X('도전 보상',"Trial rewards")} ×${powTxt(2,l)} → ×${powTxt(2,l+1)}`,
+  apply:(m,l)=>m.chalPow*=Math.pow(2,l)},
+);
+
+/* 별 강화 · 초월 통화. 무엇을 해도 사라지지 않는다 */
+const STAR_UPS=[
+ {id:'t1', sp:'starsigil',     nm:{ko:'별의 인장',en:"Star Sigil"},     max:Infinity,c:l=>1*Math.pow(3,l),
+  d:l=>`${X('모든 생산·획득',"All output")} ×${powTxt(2,l)} → ×${powTxt(2,l+1)}`,
+  apply:(m,l)=>{const v=Math.pow(2,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+ {id:'t2', sp:'constellation',  nm:{ko:'성좌의 축복',en:"Constellation"},max:Infinity,c:l=>2*Math.pow(3.5,l),
+  d:l=>`${X('마나 생산',"Mana output")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`,
+  apply:(m,l)=>m.prod*=Math.pow(3,l)},
+ {id:'t3', sp:'riverclock',nm:{ko:'시간의 강',en:"River of Time"},  max:Infinity, c:l=>3*Math.pow(5,l),
+  d:l=>`${X('게임 속도',"Game speed")} +${20*l}% → +${20*(l+1)}%`, apply:(m,l)=>m.speed*=1+0.20*l},
+ {id:'t4', sp:'soul',     nm:{ko:'영혼의 대양',en:"Sea of Souls"}, max:Infinity,c:l=>3*Math.pow(3.6,l),
+  d:l=>`${X('영혼석 획득',"Soul Shards")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`,
+  apply:(m,l)=>m.soul*=Math.pow(3,l)},
+ {id:'t5', sp:'relic',    nm:{ko:'유물 감응',en:"Relic Attunement"},max:Infinity,c:l=>5*Math.pow(4,l),
+  d:l=>`${X('승천 유물 획득',"Relics on ascension")} ×${powTxt(2,l)} → ×${powTxt(2,l+1)}`,
+  apply:(m,l)=>m.relic*=Math.pow(2,l)},
+ {id:'t6', sp:'ledger',nm:{ko:'무한 서고',en:"Endless Library"},max:Infinity,  c:l=>4*Math.pow(4.5,l),
+  d:l=>`${X('시설 비용 증가율',"Cost growth")} ×${cutTxt(0.88,l)} → ×${cutTxt(0.88,l+1)}`,
+  apply:(m,l)=>m.costMul*=Math.pow(0.88,l)},
+ {id:'t7', sp:'abysseye2', nm:{ko:'심연의 눈',en:"Eye of the Abyss"},max:Infinity,c:l=>4*Math.pow(3.8,l),
+  d:l=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(4,l)} → ×${powTxt(4,l+1)}`,
+  apply:(m,l)=>m.dungeon*=Math.pow(4,l)},
+ {id:'t8', sp:'crystal',  nm:{ko:'별빛 광맥',en:"Starlit Vein"},   max:Infinity,c:l=>4*Math.pow(3.7,l),
+  d:l=>`${X('결정 획득',"Crystals")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`,
+  apply:(m,l)=>m.crystal*=Math.pow(3,l)},
+ {id:'t9', sp:'touch',  nm:{ko:'초월의 손길',en:"Transcendent Touch"},max:Infinity,c:l=>6*Math.pow(4.2,l),
+  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${25*l} → ${25*(l+1)}${X('개 무료',' free')}`,
+  apply:()=>{}},
+ {id:'t10',sp:'starcrown', nm:{ko:'별의 왕관',en:"Crown of Stars"}, max:Infinity,  c:l=>8*Math.pow(5,l),
+  d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${25*l} → +${25*(l+1)}`, apply:(m,l)=>m.runeCap+=25*l},
+];
+
+STAR_UPS.push(
+ {id:'t11',sp:'fold',  nm:{ko:'차원 접기',en:"Folded Space"}, max:Infinity,c:l=>7*Math.pow(4.4,l),
+  d:l=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${powTxt(2.5,l)} → ×${powTxt(2.5,l+1)}`, apply:(m,l)=>m.floorPct*=Math.pow(2.5,l)},
+ {id:'t12',sp:'skull',   nm:{ko:'거신 사냥',en:"Titan Hunt"}, max:Infinity,c:l=>9*Math.pow(4.6,l),
+  d:l=>`${X('보스 보상',"Boss rewards")} ×${powTxt(4,l)} → ×${powTxt(4,l+1)}`, apply:(m,l)=>m.boss*=Math.pow(4,l)},
+ {id:'t13',sp:'vault',nm:{ko:'별의 금고',en:"Vault of Stars"}, max:Infinity,c:l=>10*Math.pow(4.2,l),
+  d:l=>`${X('던전 보상',"Dungeon rewards")} ×${powTxt(3.5,l)} → ×${powTxt(3.5,l+1)}`, apply:(m,l)=>m.floorLoot*=Math.pow(3.5,l)},
+ {id:'t14',sp:'trialcrown',   nm:{ko:'시련의 왕관',en:"Crown of Trials"}, max:Infinity,c:l=>12*Math.pow(4.8,l),
+  d:l=>`${X('도전 보상',"Trial rewards")} ×${powTxt(2,l)} → ×${powTxt(2,l+1)}`, apply:(m,l)=>m.chalPow*=Math.pow(2,l)},
+ {id:'t15',sp:'library',    nm:{ko:'무한 서고 확장',en:"Library Expansion"}, max:Infinity,c:l=>11*Math.pow(4.3,l),
+  d:l=>`${X('아래 두 단계 효율',"Bottom two tiers")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`, apply:(m,l)=>m.t0*=Math.pow(3,l)},
+ {id:'t16',sp:'night',    nm:{ko:'영원한 밤',en:"Endless Night"}, max:Infinity,c:l=>14*Math.pow(4.0,l),
+  d:l=>`${X('오프라인 상한',"Offline cap")} +${8*l}${X('시간','h')} → +${8*(l+1)}${X('시간','h')}`, apply:(m,l)=>m.offline+=8*l},
+);
+
+/* 영원 강화 · 영원으로만 산다. 계층을 통째로 갈아 넣고 얻는 것이라 효과가 크다.
+   영원 돌파에도 살아남지 않는다 — 그때는 정말 처음부터다. */
+const ETER_UPS=[
+ {id:'e1', sp:'etersigil', nm:{ko:'영원의 각인',en:"Eternal Sigil"}, max:Infinity,c:l=>1*Math.pow(2.5,l),
+  d:l=>`${X('모든 생산·획득',"All output")} ×${powTxt(10,l)} → ×${powTxt(10,l+1)}`,
+  apply:(m,l)=>{const v=Math.pow(10,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+ {id:'e2', sp:'timecrown',nm:{ko:'시간의 지배',en:"Mastery of Time"}, max:Infinity,c:l=>2*Math.pow(3,l),
+  d:l=>`${X('게임 속도',"Game speed")} ×${powTxt(2,l)} → ×${powTxt(2,l+1)}`,
+  apply:(m,l)=>m.speed*=Math.pow(2,l)},
+ {id:'e3', sp:'abysscrown', nm:{ko:'심연의 지배',en:"Dominion of the Abyss"}, max:Infinity,c:l=>2*Math.pow(2.8,l),
+  d:l=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(20,l)} → ×${powTxt(20,l+1)}`,
+  apply:(m,l)=>m.dungeon*=Math.pow(20,l)},
+ {id:'e4', sp:'agespoils', nm:{ko:'영겁의 전리품',en:"Spoils of Ages"}, max:Infinity,c:l=>3*Math.pow(3,l),
+  d:l=>`${X('던전·보스 보상',"Dungeon & boss rewards")} ×${powTxt(8,l)} → ×${powTxt(8,l+1)}`,
+  apply:(m,l)=>{const v=Math.pow(8,l);m.floorLoot*=v;m.boss*=v;}},
+ {id:'e5', sp:'omniforge',    nm:{ko:'전지의 벼림',en:"Omniscient Forge"}, max:Infinity,c:l=>4*Math.pow(3.4,l),
+  d:l=>`${X('장비 효과 지수',"Gear exponent")} ×${powTxt(2,l)} → ×${powTxt(2,l+1)}`,
+  apply:(m,l)=>m.gearPow*=Math.pow(2,l)},
+ {id:'e6', sp:'etercrown',nm:{ko:'영원의 왕관',en:"Eternal Crown"}, max:Infinity,c:l=>4*Math.pow(3.2,l),
+  d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${200*l} → +${200*(l+1)}`, apply:(m,l)=>m.runeCap+=200*l},
+ {id:'e7', sp:'nulleconomy',   nm:{ko:'무의 경제',en:"Economy of Nothing"}, max:Infinity,c:l=>5*Math.pow(3.6,l),
+  d:l=>`${X('남는 시설 비용',"Building cost left")} ${cutTxt(0.7,l)} → ${cutTxt(0.7,l+1)}`,
+  apply:(m,l)=>m.costMul*=Math.pow(0.7,l)},
+ {id:'e8', sp:'eternight',    nm:{ko:'잠들지 않는 영원',en:"Sleepless Eternity"}, max:Infinity,c:l=>3*Math.pow(2.6,l),
+  d:l=>`${X('오프라인 상한',"Offline cap")} +${24*l}${X('시간','h')} → +${24*(l+1)}${X('시간','h')}`,
+  apply:(m,l)=>m.offline+=24*l},
+];
+ETER_UPS.push(
+ {id:'e9', sp:'eonring',   nm:{ko:'영겁의 고리',en:"Ring of Aeons"}, max:Infinity,c:l=>4*Math.pow(3,l),
+  d:l=>`${X('모든 생산·획득',"All output")} ×${powTxt(6,l)} → ×${powTxt(6,l+1)}`,
+  apply:(m,l)=>{const v=Math.pow(6,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+ {id:'e10',sp:'timeaxis',  nm:{ko:'시간의 축',en:"Axis of Time"}, max:Infinity,c:l=>5*Math.pow(3.2,l),
+  d:l=>`${X('자동화 주기',"Automation interval")} ×${Math.pow(0.6,l).toFixed(3)} → ×${Math.pow(0.6,l+1).toFixed(3)}`,
+  apply:(m,l)=>m.autoSpeed*=Math.pow(0.6,l)},
+ {id:'e11',sp:'genesis',   nm:{ko:'창세의 불',en:"Fire of Genesis"}, max:Infinity,c:l=>6*Math.pow(3.4,l),
+  d:l=>`${X('마나 생산',"Mana output")} ×${powTxt(25,l)} → ×${powTxt(25,l+1)}`,
+  apply:(m,l)=>m.prod*=Math.pow(25,l)},
+ {id:'e12',sp:'scales',    nm:{ko:'만상의 저울',en:"Scales of All"}, max:Infinity,c:l=>5*Math.pow(3.1,l),
+  d:l=>`${X('영혼석·오퍼링 획득',"Soul Shards & Offerings")} ×${powTxt(12,l)} → ×${powTxt(12,l+1)}`,
+  apply:(m,l)=>{const v=Math.pow(12,l);m.soul*=v;m.offer*=v;}},
+ {id:'e13',sp:'formless',  nm:{ko:'무형의 손',en:"Formless Hand"}, max:Infinity,c:l=>7*Math.pow(3.6,l),
+  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${500*l} → ${500*(l+1)}${X('개 무료',' free')}`,
+  apply:()=>{}},
+ {id:'e14',sp:'scythe',    nm:{ko:'종언의 낫',en:"Scythe of Ending"}, max:Infinity,c:l=>6*Math.pow(3.3,l),
+  d:l=>`${X('보스 보상',"Boss rewards")} ×${powTxt(15,l)} → ×${powTxt(15,l+1)}`,
+  apply:(m,l)=>m.boss*=Math.pow(15,l)},
+ {id:'e15',sp:'starcog',   nm:{ko:'별의 태엽',en:"Stellar Mainspring"}, max:Infinity,c:l=>8*Math.pow(3.8,l),
+  d:l=>`${X('승천 유물 획득',"Relics on ascension")} ×${powTxt(5,l)} → ×${powTxt(5,l+1)}`,
+  apply:(m,l)=>m.relic*=Math.pow(5,l)},
+ {id:'e16',sp:'eontear',   nm:{ko:'영원의 눈물',en:"Tear of Eternity"}, max:Infinity,c:l=>6*Math.pow(3.5,l),
+  d:l=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${powTxt(8,l)} → ×${powTxt(8,l+1)}`,
+  apply:(m,l)=>m.floorPct*=Math.pow(8,l)},
+);
+
+/* 무한·현실·공허·근원 강화 — 계층마다 자기 통화로만 사는 나무.
+   위로 갈수록 수가 적고 효과가 크다. 한 칸 올라가면 그 아래 나무는 접힌다. */
+const INF_UPS=[
+ {id:'i1', sp:'inf_core',  nm:{ko:'무한의 핵',en:"Infinite Core"}, max:Infinity,c:l=>1*Math.pow(2.2,l),
+  d:l=>`${X('모든 생산·획득',"All output")} ×${powTxt(4,l)} → ×${powTxt(4,l+1)}`,
+  apply:(m,l)=>{const v=Math.pow(4,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+ {id:'i2', sp:'inf_prism', nm:{ko:'무한 프리즘',en:"Infinite Prism"}, max:Infinity,c:l=>1*Math.pow(2.4,l),
+  d:l=>`${X('마나 생산',"Mana output")} ×${powTxt(8,l)} → ×${powTxt(8,l+1)}`, apply:(m,l)=>m.prod*=Math.pow(8,l)},
+ {id:'i3', sp:'inf_cross', nm:{ko:'교차하는 길',en:"Crossing Paths"}, max:Infinity,c:l=>2*Math.pow(2.6,l),
+  d:l=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(10,l)} → ×${powTxt(10,l+1)}`, apply:(m,l)=>m.dungeon*=Math.pow(10,l)},
+ {id:'i4', sp:'inf_disc',  nm:{ko:'무한 원반',en:"Infinite Disc"}, max:Infinity,c:l=>2*Math.pow(2.5,l),
+  d:l=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${powTxt(4,l)} → ×${powTxt(4,l+1)}`, apply:(m,l)=>m.floorPct*=Math.pow(4,l)},
+ {id:'i5', sp:'inf_burst', nm:{ko:'터지는 빛',en:"Bursting Light"}, max:Infinity,c:l=>3*Math.pow(2.7,l),
+  d:l=>`${X('던전·보스 보상',"Dungeon & boss rewards")} ×${powTxt(5,l)} → ×${powTxt(5,l+1)}`,
+  apply:(m,l)=>{const v=Math.pow(5,l);m.floorLoot*=v;m.boss*=v;}},
+ {id:'i6', sp:'inf_glass', nm:{ko:'모래시계 유리',en:"Hourglass Pane"}, max:Infinity,c:l=>3*Math.pow(3,l),
+  d:l=>`${X('게임 속도',"Game speed")} ×${powTxt(1.5,l)} → ×${powTxt(1.5,l+1)}`, apply:(m,l)=>m.speed*=Math.pow(1.5,l)},
+ {id:'i7', sp:'inf_orbit', nm:{ko:'무한 궤도',en:"Infinite Orbit"}, max:Infinity,c:l=>3*Math.pow(2.8,l),
+  d:l=>`${X('영혼석·오퍼링 획득',"Soul Shards & Offerings")} ×${powTxt(6,l)} → ×${powTxt(6,l+1)}`,
+  apply:(m,l)=>{const v=Math.pow(6,l);m.soul*=v;m.offer*=v;}},
+ {id:'i8', sp:'inf_seal',  nm:{ko:'무한의 인장',en:"Infinite Seal"}, max:Infinity,c:l=>4*Math.pow(3.1,l),
+  d:l=>`${X('결정 획득',"Crystals")} ×${powTxt(6,l)} → ×${powTxt(6,l+1)}`, apply:(m,l)=>m.crystal*=Math.pow(6,l)},
+ {id:'i9', sp:'inf_frame', nm:{ko:'경계의 틀',en:"Frame of Bounds"}, max:Infinity,c:l=>4*Math.pow(2.9,l),
+  d:l=>`${X('남는 시설 비용',"Building cost left")} ${cutTxt(0.8,l)} → ${cutTxt(0.8,l+1)}`,
+  apply:(m,l)=>m.costMul*=Math.pow(0.8,l)},
+ {id:'i10',sp:'inf_twin',  nm:{ko:'쌍둥이 고리',en:"Twin Rings"}, max:Infinity,c:l=>5*Math.pow(3.2,l),
+  d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${50*l} → +${50*(l+1)}`, apply:(m,l)=>m.runeCap+=50*l},
+];
+const REAL_UPS=[
+ {id:'r1', sp:'real_gate',  nm:{ko:'현실의 문',en:"Gate of Reality"}, max:Infinity,c:l=>1*Math.pow(2.6,l),
+  d:l=>`${X('모든 생산·획득',"All output")} ×${powTxt(30,l)} → ×${powTxt(30,l+1)}`,
+  apply:(m,l)=>{const v=Math.pow(30,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+ {id:'r2', sp:'real_cube',  nm:{ko:'세계의 정육면체',en:"World Cube"}, max:Infinity,c:l=>2*Math.pow(2.8,l),
+  d:l=>`${X('마나 생산',"Mana output")} ×${powTxt(80,l)} → ×${powTxt(80,l+1)}`, apply:(m,l)=>m.prod*=Math.pow(80,l)},
+ {id:'r3', sp:'real_wave',  nm:{ko:'실재의 파동',en:"Wave of Being"}, max:Infinity,c:l=>2*Math.pow(3,l),
+  d:l=>`${X('게임 속도',"Game speed")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`, apply:(m,l)=>m.speed*=Math.pow(3,l)},
+ {id:'r4', sp:'real_eye',   nm:{ko:'현실을 보는 눈',en:"Eye of Reality"}, max:Infinity,c:l=>3*Math.pow(3.1,l),
+  d:l=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(60,l)} → ×${powTxt(60,l+1)}`, apply:(m,l)=>m.dungeon*=Math.pow(60,l)},
+ {id:'r5', sp:'real_pillar',nm:{ko:'세계의 기둥',en:"World Pillar"}, max:Infinity,c:l=>3*Math.pow(2.9,l),
+  d:l=>`${X('상위 시설 효율',"Higher tiers")} ×${powTxt(10,l)} → ×${powTxt(10,l+1)}`, apply:(m,l)=>m.tUp*=Math.pow(10,l)},
+ {id:'r6', sp:'real_spiral',nm:{ko:'회귀의 나선',en:"Spiral of Return"}, max:Infinity,c:l=>4*Math.pow(3.2,l),
+  d:l=>`${X('자동화 주기',"Automation interval")} ×${Math.pow(0.5,l).toFixed(3)} → ×${Math.pow(0.5,l+1).toFixed(3)}`,
+  apply:(m,l)=>m.autoSpeed*=Math.pow(0.5,l)},
+ {id:'r7', sp:'real_shard', nm:{ko:'현실 파편',en:"Reality Shard"}, max:Infinity,c:l=>4*Math.pow(3,l),
+  d:l=>`${X('결정 획득',"Crystals")} ×${powTxt(30,l)} → ×${powTxt(30,l+1)}`, apply:(m,l)=>m.crystal*=Math.pow(30,l)},
+ {id:'r8', sp:'real_net',   nm:{ko:'인과의 그물',en:"Net of Causes"}, max:Infinity,c:l=>5*Math.pow(3.3,l),
+  d:l=>`${X('도전 보상',"Trial rewards")} ×${powTxt(4,l)} → ×${powTxt(4,l+1)}`, apply:(m,l)=>m.chalPow*=Math.pow(4,l)},
+ {id:'r9', sp:'real_bloom', nm:{ko:'만개하는 세계',en:"Blooming World"}, max:Infinity,c:l=>5*Math.pow(3.4,l),
+  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${5000*l} → ${5000*(l+1)}${X('개 무료',' free')}`, apply:()=>{}},
+ {id:'r10',sp:'real_key',   nm:{ko:'현실의 열쇠',en:"Key of Reality"}, max:Infinity,c:l=>6*Math.pow(3.6,l),
+  d:l=>`${X('승천 유물 획득',"Relics on ascension")} ×${powTxt(10,l)} → ×${powTxt(10,l+1)}`, apply:(m,l)=>m.relic*=Math.pow(10,l)},
+];
+const VOID_UPS=[
+ {id:'v1', sp:'void_maw',   nm:{ko:'공허의 아가리',en:"Maw of the Void"}, max:Infinity,c:l=>1*Math.pow(3,l),
+  d:l=>`${X('모든 생산·획득',"All output")} ×${powTxt(200,l)} → ×${powTxt(200,l+1)}`,
+  apply:(m,l)=>{const v=Math.pow(200,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+ {id:'v2', sp:'void_rift',  nm:{ko:'공허의 균열',en:"Void Rift"}, max:Infinity,c:l=>2*Math.pow(3.2,l),
+  d:l=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${powTxt(40,l)} → ×${powTxt(40,l+1)}`, apply:(m,l)=>m.floorPct*=Math.pow(40,l)},
+ {id:'v3', sp:'void_hand',  nm:{ko:'삼키는 손',en:"Swallowing Hand"}, max:Infinity,c:l=>2*Math.pow(3.1,l),
+  d:l=>`${X('남는 시설 비용',"Building cost left")} ${cutTxt(0.5,l)} → ${cutTxt(0.5,l+1)}`,
+  apply:(m,l)=>m.costMul*=Math.pow(0.5,l)},
+ {id:'v4', sp:'void_crown', nm:{ko:'공허의 관',en:"Crown of the Void"}, max:Infinity,c:l=>3*Math.pow(3.4,l),
+  d:l=>`${X('보스 보상',"Boss rewards")} ×${powTxt(100,l)} → ×${powTxt(100,l+1)}`, apply:(m,l)=>m.boss*=Math.pow(100,l)},
+ {id:'v5', sp:'void_chain', nm:{ko:'끊긴 사슬',en:"Severed Chain"}, max:Infinity,c:l=>3*Math.pow(3.3,l),
+  d:l=>`${X('도전 보상',"Trial rewards")} ×${powTxt(8,l)} → ×${powTxt(8,l+1)}`, apply:(m,l)=>m.chalPow*=Math.pow(8,l)},
+ {id:'v6', sp:'void_star',  nm:{ko:'꺼진 별',en:"Dead Star"}, max:Infinity,c:l=>4*Math.pow(3.5,l),
+  d:l=>`${X('영혼석 획득',"Soul Shards")} ×${powTxt(150,l)} → ×${powTxt(150,l+1)}`, apply:(m,l)=>m.soul*=Math.pow(150,l)},
+ {id:'v7', sp:'void_gate',  nm:{ko:'없음의 문',en:"Door of Nothing"}, max:Infinity,c:l=>4*Math.pow(3.6,l),
+  d:l=>`${X('게임 속도',"Game speed")} ×${powTxt(5,l)} → ×${powTxt(5,l+1)}`, apply:(m,l)=>m.speed*=Math.pow(5,l)},
+ {id:'v8', sp:'void_tear',  nm:{ko:'공허의 눈물',en:"Tear of the Void"}, max:Infinity,c:l=>5*Math.pow(3.8,l),
+  d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${2000*l} → +${2000*(l+1)}`, apply:(m,l)=>m.runeCap+=2000*l},
+];
+const ORIGIN_UPS=[
+ {id:'o1', sp:'orig_seed',  nm:{ko:'근원의 씨',en:"Seed of Origin"}, max:Infinity,c:l=>1*Math.pow(3.5,l),
+  d:l=>`${X('모든 생산·획득',"All output")} ×${powTxt(2000,l)} → ×${powTxt(2000,l+1)}`,
+  apply:(m,l)=>{const v=Math.pow(2000,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+ {id:'o2', sp:'orig_flame', nm:{ko:'첫 불꽃',en:"First Flame"}, max:Infinity,c:l=>2*Math.pow(3.6,l),
+  d:l=>`${X('마나 생산',"Mana output")} ×${powTxt(5000,l)} → ×${powTxt(5000,l+1)}`, apply:(m,l)=>m.prod*=Math.pow(5000,l)},
+ {id:'o3', sp:'orig_tree',  nm:{ko:'세계수',en:"World Tree"}, max:Infinity,c:l=>2*Math.pow(3.7,l),
+  d:l=>`${X('아래 두 단계 효율',"Bottom two tiers")} ×${powTxt(500,l)} → ×${powTxt(500,l+1)}`, apply:(m,l)=>m.t0*=Math.pow(500,l)},
+ {id:'o4', sp:'orig_eye',   nm:{ko:'처음을 본 눈',en:"Eye That Saw First"}, max:Infinity,c:l=>3*Math.pow(3.8,l),
+  d:l=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(1000,l)} → ×${powTxt(1000,l+1)}`, apply:(m,l)=>m.dungeon*=Math.pow(1000,l)},
+ {id:'o5', sp:'orig_crown', nm:{ko:'근원의 왕관',en:"Crown of Origin"}, max:Infinity,c:l=>4*Math.pow(4,l),
+  d:l=>`${X('게임 속도',"Game speed")} ×${powTxt(10,l)} → ×${powTxt(10,l+1)}`, apply:(m,l)=>m.speed*=Math.pow(10,l)},
+ {id:'o6', sp:'orig_all',   nm:{ko:'모든 것의 시작',en:"Beginning of All"}, max:Infinity,c:l=>6*Math.pow(4.5,l),
+  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${fmt(1e5*l)} → ${fmt(1e5*(l+1))}${X('개 무료',' free')}`, apply:()=>{}},
+];
+
+/* 도전 · 승천 1회 후 해금. 제약을 걸고 목표 마나 달성 시 영구 보상 */
+const CHALLENGES=[
+ {id:'c1',sp:'sealedbook',   nm:{ko:'침묵의 시련',en:"Trial of Silence"}, rule:{noResearch:1}, base:1e9,  max:100,
+  desc:()=>X('연구를 사용할 수 없다',"Research cannot be used"),            rw:c=>`${X('마나 생산',"Mana output")} ×${powTxt(1.8,c)}`, apply:(m,c)=>m.prod*=Math.pow(1.8,c)},
+ {id:'c2',sp:'emptypouch',   nm:{ko:'빈곤의 시련',en:"Trial of Poverty"}, rule:{maxTier:2},    base:1e8,  max:100,
+  desc:()=>X('마탑 이상 시설을 지을 수 없다',"Towers and above cannot be built"),    rw:c=>`${X('시설 비용 증가율',"Cost growth")} ×${cutTxt(0.92,c)}`, apply:(m,c)=>m.costMul*=Math.pow(0.92,c)},
+ {id:'c3',sp:'brokencog',    nm:{ko:'고독의 시련',en:"Trial of Solitude"}, rule:{noAuto:1},     base:1e10, max:100,
+  desc:()=>X('모든 자동화가 멈춘다',"All automation halts"),             rw:c=>`${X('자동화 주기',"Automation interval")} -${(10*c)}%`, apply:(m,c)=>m.autoSpeed*=Math.pow(0.9,c)},
+ {id:'c4',sp:'darkeye',  nm:{ko:'어둠의 시련',en:"Trial of Darkness"}, rule:{noDungeon:1},  base:1e12, max:100,
+  desc:()=>X('던전에 들어갈 수 없다',"The dungeon is sealed"),            rw:c=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(2.2,c)}`, apply:(m,c)=>m.dungeon*=Math.pow(2.2,c)},
+ {id:'c5',sp:'crackedvial',   nm:{ko:'고갈의 시련',en:"Trial of Drought"}, rule:{drain:1e3},    base:1e7,  max:100,
+  desc:()=>X('마나 생산이 1000분의 1로 줄어든다',"Mana output is cut to 1/1000"),rw:c=>`${X('오퍼링 획득',"Offerings")} ×${powTxt(2,c)}`, apply:(m,c)=>m.offer*=Math.pow(2,c)},
+ {id:'c6',sp:'abysseye',  nm:{ko:'심연의 시련',en:"Trial of the Abyss"}, rule:{noResearch:1,noAuto:1,noDungeon:1,drain:10}, base:1e13, max:100,
+  desc:()=>X('위의 시련이 한꺼번에 몰아친다',"All of the above at once"),    rw:c=>`${X('모든 생산·획득',"All output")} ×${powTxt(2,c)}`, apply:(m,c)=>{const v=Math.pow(2,c);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+];
+CHALLENGES.push(
+ {id:'c7',sp:'torpor',nm:{ko:'무기력의 시련',en:"Trial of Torpor"}, rule:{noAuto:1,drain:100}, base:1e11, max:100,
+  desc:()=>X('자동화가 멈추고 마나 생산이 100분의 1이 된다',"No automation, and mana output cut to 1/100"),
+  rw:c=>`${X('게임 속도',"Game speed")} +${(6*c)}%`, apply:(m,c)=>m.speed*=1+0.06*c},
+ {id:'c8',sp:'narrow',nm:{ko:'좁은 길의 시련',en:"Trial of the Narrow Path"}, rule:{maxTier:1}, base:1e7, max:100,
+  desc:()=>X('견습 마법사와 공방만 지을 수 있다',"Only the two lowest buildings can be built"),
+  rw:c=>`${X('아래 두 단계 효율',"Bottom two tiers")} ×${powTxt(2.2,c)}`, apply:(m,c)=>m.t0*=Math.pow(2.2,c)},
+ {id:'c9',sp:'weight',nm:{ko:'무게의 시련',en:"Trial of Weight"}, rule:{maxTier:3,noAuto:1}, base:1e9, max:100,
+  desc:()=>X('아카데미 이상을 지을 수 없고 자동화도 멈춘다',"No Academy or above, and no automation"),
+  rw:c=>`${X('상위 시설 효율',"Higher tiers")} ×${powTxt(2,c)}`, apply:(m,c)=>m.tUp*=Math.pow(2,c)},
+ {id:'c10',sp:'blind',nm:{ko:'눈먼 시련',en:"Trial of the Blind"}, rule:{noDungeon:1,noResearch:1}, base:1e12, max:100,
+  desc:()=>X('던전도 연구도 막힌다',"Neither the dungeon nor research"),
+  rw:c=>`${X('던전 보상',"Dungeon rewards")} ×${powTxt(2.5,c)}`, apply:(m,c)=>m.floorLoot*=Math.pow(2.5,c)},
+ {id:'c11',sp:'silentstar',nm:{ko:'침묵하는 별',en:"The Silent Star"}, rule:{noResearch:1,noRelicGear:1}, base:1e13, max:100,
+  desc:()=>X('연구와 룬·장비가 모두 봉인된다',"Research, runes and gear all sealed"),
+  rw:c=>`${X('결정·오퍼링 획득',"Crystals & Offerings")} ×${powTxt(2.2,c)}`,
+  apply:(m,c)=>{const v=Math.pow(2.2,c);m.crystal*=v;m.offer*=v;}},
+ {id:'c12',sp:'origintrial',nm:{ko:'근원의 시련',en:"Trial of the Origin"},
+  rule:{noResearch:1,noAuto:1,noDungeon:1,noRelicGear:1,drain:1e4}, base:1e15, max:100,
+  desc:()=>X('모든 것이 막히고 생산은 만분의 일이 된다',"Everything sealed, output cut to 1/10000"),
+  rw:c=>`${X('모든 생산·획득',"All output")} ×${powTxt(3,c)}`,
+  apply:(m,c)=>{const v=Math.pow(3,c);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+);
+
+CHALLENGES.push(
+ {id:'c13',sp:'dryspring',nm:{ko:'메마른 샘',en:"The Dry Spring"}, rule:{drain:1e6}, base:1e10, max:100,
+  desc:()=>X('마나 생산이 백만분의 일이 된다',"Mana output cut to one millionth"),
+  rw:c=>`${X('마나 생산',"Mana output")} ×${powTxt(2.6,c)}`, apply:(m,c)=>m.prod*=Math.pow(2.6,c)},
+ {id:'c14',sp:'lone',nm:{ko:'홀로 선 자',en:"The Lone Apprentice"}, rule:{maxTier:0}, base:1e6, max:100,
+  desc:()=>X('견습 마법사만 고용할 수 있다',"Only apprentices can be hired"),
+  rw:c=>`${X('견습 마법사 효율',"Apprentice output")} ×${powTxt(2.6,c)}`, apply:(m,c)=>m.t0*=Math.pow(2.6,c)},
+ {id:'c15',sp:'cogstop',nm:{ko:'멈춘 톱니',en:"Seized Gears"}, rule:{noAuto:1,noResearch:1}, base:1e11, max:100,
+  desc:()=>X('자동화도 연구도 없다',"No automation, no research"),
+  rw:c=>`${X('자동화 주기',"Automation interval")} ×${(Math.pow(0.88,c)).toFixed(3)}`, apply:(m,c)=>m.autoSpeed*=Math.pow(0.88,c)},
+ {id:'c16',sp:'sealedvein',nm:{ko:'닫힌 광맥',en:"The Sealed Vein"}, rule:{noDungeon:1,drain:1e3}, base:1e9, max:100,
+  desc:()=>X('던전이 막히고 생산이 천분의 일이 된다',"The dungeon is sealed and output cut to 1/1000"),
+  rw:c=>`${X('결정 획득',"Crystals")} ×${powTxt(2.8,c)}`, apply:(m,c)=>m.crystal*=Math.pow(2.8,c)},
+ {id:'c17',sp:'barehand',nm:{ko:'맨손의 시련',en:"Bare Hands"}, rule:{noRelicGear:1,noAuto:1}, base:1e10, max:100,
+  desc:()=>X('룬·장비가 봉인되고 자동화도 멈춘다',"Runes and gear sealed, no automation"),
+  rw:c=>`${X('장비 효과 지수',"Gear exponent")} ×${powTxt(1.5,c)}`, apply:(m,c)=>m.gearPow*=Math.pow(1.5,c)},
+ {id:'c18',sp:'dryaltar',nm:{ko:'마른 제단',en:"The Dry Altar"}, rule:{maxTier:4,noDungeon:1}, base:1e12, max:100,
+  desc:()=>X('별빛 첨탑을 지을 수 없고 던전도 막힌다',"No Starlight Spire, and the dungeon is sealed"),
+  rw:c=>`${X('오퍼링 획득',"Offerings")} ×${powTxt(2.6,c)}`, apply:(m,c)=>m.offer*=Math.pow(2.6,c)},
+ {id:'c19',sp:'withersoul',nm:{ko:'혼이 마르는 곳',en:"Where Souls Wither"}, rule:{noResearch:1,drain:1e8}, base:1e13, max:100,
+  desc:()=>X('연구가 막히고 생산이 억분의 일이 된다',"No research, output cut to one hundred-millionth"),
+  rw:c=>`${X('영혼석 획득',"Soul Shards")} ×${powTxt(2.8,c)}`, apply:(m,c)=>m.soul*=Math.pow(2.8,c)},
+ {id:'c20',sp:'nothing',nm:{ko:'무의 시련',en:"Trial of Nothing"},
+  rule:{noResearch:1,noAuto:1,noDungeon:1,noRelicGear:1,maxTier:1,drain:1e6}, base:1e16, max:100,
+  desc:()=>X('아무것도 없이, 생산은 백만분의 일로',"Nothing at all, and output at one millionth"),
+  rw:c=>`${X('모든 생산·획득',"All output")} ×${powTxt(4,c)}`,
+  apply:(m,c)=>{const v=Math.pow(4,c);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
+);
+
+const chalGoal=(ch,c)=>ch.base*Math.pow(120,c);
+
+/* ── 끝이 없도록 ──────────────────────────────
+   손으로 만든 항목이 바닥나면 게임이 끝난 느낌이 든다.
+   그 뒤로는 같은 규칙으로 단계를 계속 찍어 낸다. */
+/* 한 가지 효과만 240번 반복하면 그냥 숫자놀음이다.
+   여덟 갈래를 돌려 가며 이름도 계층에 맞춰 바꾼다. */
+const RX_KINDS=[
+ ['star',    '대이론',    "Grand Theory",   ()=>X('마나 생산 ×3',"Mana output ×3"),      m=>m.prod*=3],
+ ['swordup', '전술 교본',  "Battle Doctrine",()=>X('던전 공격력 ×4',"Dungeon power ×4"),   m=>m.dungeon*=4],
+ ['soul',    '영혼 해석',  "Soul Analysis",  ()=>X('영혼석 획득 ×2.5',"Soul Shards ×2.5"), m=>m.soul*=2.5],
+ ['crystal', '결정 공학',  "Crystal Engineering",()=>X('결정 획득 ×2.5',"Crystals ×2.5"),  m=>m.crystal*=2.5],
+ ['offering','봉헌 확장',  "Offering Rites", ()=>X('오퍼링 획득 ×2.5',"Offerings ×2.5"),   m=>m.offer*=2.5],
+ ['hourglass','시간 압축', "Time Compression",()=>X('게임 속도 +8%',"Game speed +8%"),     m=>m.speed*=1.08],
+ ['coinpurse','물류 최적화',"Logistics",     ()=>X('시설 비용 증가율 -3%',"Building cost growth -3%"), m=>m.costMul*=0.97],
+ ['runering','룬 확장',    "Rune Expansion", ()=>X('룬 최대 레벨 +5',"Rune level cap +5"),  m=>m.runeCap+=5],
+];
+const RX_ERA=[['지상','Terrestrial'],['항성','Stellar'],['은하','Galactic'],['초월','Transcendent'],['무한','Infinite']];
+for(let k=0;k<240;k++){
+  const kind=RX_KINDS[k%RX_KINDS.length];
+  const era=RX_ERA[Math.min(RX_ERA.length-1,Math.floor(k/48))];
+  const step=Math.floor(k/RX_KINDS.length)+1;
+  RESEARCH.push({
+    id:'qx'+k, sp:kind[0],
+    nm:{ko:`${era[0]} ${kind[1]} ${step}`, en:`${era[1]} ${kind[2]} ${step}`},
+    cost:5e19*Math.pow(12,k),
+    d:kind[3], req: k===0 ? 'q20' : 'qx'+(k-1),
+    apply:kind[4],
+  });
+}
+
+
+
+/* 환생 마일스톤 · 환생 횟수만으로 열리는 영구 보너스 (승천 시 초기화) */
+const MILESTONES=[
+ {n:5,   d:()=>X('마나 생산 ×2',"Mana output ×2"),        apply:m=>m.prod*=2},
+ {n:10,  d:()=>X('던전 공격력 ×2',"Dungeon power ×2"),     apply:m=>m.dungeon*=2},
+ {n:25,  d:()=>X('오퍼링 획득 ×2',"Offerings ×2"),         apply:m=>m.offer*=2},
+ {n:50,  d:()=>X('마나 생산 ×5',"Mana output ×5"),         apply:m=>m.prod*=5},
+ {n:100, d:()=>X('결정 획득 ×3',"Crystals ×3"),            apply:m=>m.crystal*=3},
+ {n:200, d:()=>X('모든 생산·획득 ×2',"All output ×2"),     apply:m=>{m.prod*=2;m.soul*=2;m.offer*=2;m.crystal*=2;m.dungeon*=2}},
+ {n:500, d:()=>X('마나 생산 ×25',"Mana output ×25"),       apply:m=>m.prod*=25},
+];
+
+/* ── 업적 이름과 배지 ──────────────────────────
+   "초월 137회" 는 이름이 아니라 세는 소리다. 이백 개가 그렇게 붙어 있었고
+   그림도 starcrown 한 장을 이백 개가 나눠 썼다. 이름은 형용사×명사로 짓고
+   (몬스터를 기본형×속성으로 불린 것과 같은 방법이다), 배지는 테두리×색×문양
+   576 종에서 하나씩 떼어 준다. 무엇을 요구하는지는 설명 줄이 그대로 말한다. */
+const ACH_NOUN=[['계약',"Pact"],['인장',"Sigil"],['서약',"Oath"],['왕관',"Crown"],
+ ['문장',"Emblem"],['발자국',"Footfall"],['이정표',"Milestone"],['관문',"Gate"],
+ ['궤적',"Arc"],['유산',"Legacy"],['표식',"Mark"],['서사',"Saga"]];
+const ACH_ADJ={
+ mx:[['넘치는',"Overflowing"],['마르지 않는',"Unfailing"],['샘솟는',"Welling"],['깊은',"Deep"],
+     ['광대한',"Vast"],['눈부신',"Radiant"],['끝없는',"Endless"],['범람하는',"Flooding"]],
+ dx:[['내려가는',"Descending"],['가라앉은',"Sunken"],['어두워진',"Darkened"],['흔들리지 않는',"Steadfast"],
+     ['심연의',"Abyssal"]],
+ rx:[['되풀이되는',"Recurring"],['다시 도는',"Returning"],['낡지 않는',"Unworn"],['이어지는',"Continuing"],
+     ['거듭난',"Reborn"],['순환하는',"Cycling"]],
+ ax:[['오르는',"Rising"],['드높은',"Lofty"],['벼려진',"Tempered"],['성스러운',"Hallowed"],
+     ['굽히지 않는',"Unbending"],['빛나는',"Gleaming"],['우뚝한',"Towering"],['승리한',"Triumphant"],
+     ['정련된',"Refined"]],
+ tx:[['넘어선',"Surpassing"],['별을 삼킨',"Star-eating"],['경계 밖의',"Outward"],['이름 없는',"Nameless"],
+     ['처음의',"Primordial"],['마지막의',"Final"],['헤아릴 수 없는',"Unfathomed"],['접히지 않는',"Unfolding"],
+     ['스스로 있는',"Self-existent"],['오래된',"Elder"],['남겨진',"Remaining"],['무너지지 않는',"Unbroken"],
+     ['아득한',"Distant"],['저편의',"Beyond"],['태초의',"Primeval"],['완전한',"Whole"],['조용한',"Silent"]],
+ ix:[['봉인된',"Sealed"],['열린',"Opened"],['되찾은',"Reclaimed"],['잠긴',"Locked"]],
+};
+function achName(fam,i){
+  const A=ACH_ADJ[fam], a=A[Math.floor(i/ACH_NOUN.length)%A.length], n=ACH_NOUN[i%ACH_NOUN.length];
+  return {ko:`${a[0]} ${n[0]}`, en:`${a[1]} ${n[1]}`};
+}
+const BADGE_FRAME=['disc','ring','shield','hex','gem','burst'];
+const BADGE_PAL=['gold','steel','wood','blue','lilac','moss','rust','void'];
+const BADGE_EMB=['dot','cross','chev','moon','flame','eye','spiral','bolt','tri','ring','bar','crown'];
+const BADGES=[];
+for(const f of BADGE_FRAME) for(const c of BADGE_PAL) for(const e of BADGE_EMB) BADGES.push(`badge_${f}_${c}_${e}`);
+const ACHS=[
+ {id:'h1', sp:'apprentice', nm:{ko:'첫 걸음',en:"First Step"},      d:()=>X('견습 마법사 고용',"Hire an Apprentice Mage"),      f:()=>S.bought[0]>=1},
+ {id:'h2', sp:'coinpurse', nm:{ko:'소규모 길드',en:"Small Guild"},  d:()=>X('마나 1,000',"1,000 mana"),            f:()=>S.manaPeakL>=3},
+ {id:'h3', sp:'treasure', nm:{ko:'마나 부자',en:"Mana Rich"},    d:()=>X('마나 1e6',"1e6 mana"),              f:()=>S.manaPeakL>=6},
+ {id:'h4', sp:'vault', nm:{ko:'대부호',en:"Magnate"},       d:()=>X('마나 1e12',"1e12 mana"),             f:()=>S.manaPeakL>=12},
+ {id:'h5', sp:'starcompass', nm:{ko:'천문학자',en:"Astronomer"},     d:()=>X('마나 1e20',"1e20 mana"),             f:()=>S.manaPeakL>=20},
+ {id:'h6', sp:'inf_frame', nm:{ko:'무한의 문턱',en:"Brink of Infinity"},  d:()=>X('마나 1e40',"1e40 mana"),             f:()=>S.manaPeakL>=40},
+ {id:'h7', sp:'workshop', nm:{ko:'공방장',en:"Workshop Master"},       d:()=>X('마법 공방 25개',"25 Arcane Workshops"),        f:()=>cnt(1)>=25},
+ {id:'h8', sp:'tower', nm:{ko:'탑주',en:"Tower Lord"},         d:()=>X('마탑 25개',"25 Mage Towers"),             f:()=>cnt(2)>=25},
+ {id:'h9', sp:'academy', nm:{ko:'학장',en:"Dean"},         d:()=>X('아카데미 25개',"25 Academies"),         f:()=>cnt(3)>=25},
+ {id:'h10', sp:'council',nm:{ko:'대현자',en:"Archsage"},       d:()=>X('대현자 회의 10개',"10 Archsage Councils"),      f:()=>cnt(4)>=10},
+ {id:'h11', sp:'soul',nm:{ko:'첫 환생',en:"First Rebirth"},      d:()=>X('환생 1회',"Rebirth once"),              f:()=>(S.rebirthEver||S.rebirths)>=1},
+ {id:'h12', sp:'spiral',nm:{ko:'윤회',en:"Samsara"},         d:()=>X('환생 25회',"Rebirth 25 times"),             f:()=>(S.rebirthEver||S.rebirths)>=25},
+ {id:'h13', sp:'eonring',nm:{ko:'영원한 순환',en:"Eternal Cycle"},  d:()=>X('환생 100회',"Rebirth 100 times"),            f:()=>(S.rebirthEver||S.rebirths)>=100},
+ {id:'h14', sp:'reliquary',nm:{ko:'승천자',en:"Ascendant"},       d:()=>X('승천 1회',"Ascend once"),              f:()=>(S.ascendEver||S.ascensions)>=1},
+ {id:'h15', sp:'starcrown',nm:{ko:'초월자',en:"Transcendent"},       d:()=>X('승천 10회',"Ascend 10 times"),             f:()=>(S.ascendEver||S.ascensions)>=10},
+ {id:'h16', sp:'compass',nm:{ko:'탐험가',en:"Explorer"},       d:()=>X('던전 10층',"Dungeon floor 10"),             f:()=>(S.deepestEver||S.deepest)>=10},
+ {id:'h17', sp:'skull',nm:{ko:'보스 사냥꾼',en:"Boss Hunter"},  d:()=>X('던전 30층',"Dungeon floor 30"),             f:()=>(S.deepestEver||S.deepest)>=30},
+ {id:'h18', sp:'abysscrown',nm:{ko:'심연 정복자',en:"Abyss Conqueror"},  d:()=>X('던전 75층',"Dungeon floor 75"),             f:()=>(S.deepestEver||S.deepest)>=75},
+ {id:'h19', sp:'runebook',nm:{ko:'룬 수집가',en:"Rune Collector"},    d:()=>X('룬 합계 레벨 25',"25 total rune levels"),       f:()=>runeTotal()>=25},
+ {id:'h20', sp:'rune_forge',nm:{ko:'룬 대가',en:"Rune Master"},      d:()=>X('룬 합계 레벨 100',"100 total rune levels"),      f:()=>runeTotal()>=100},
+ {id:'h21', sp:'helm',nm:{ko:'무장',en:"Armed"},         d:()=>X('장비 합계 레벨 15',"15 total gear levels"),     f:()=>gearTotal()>=15},
+ {id:'h22', sp:'omniforge',nm:{ko:'전설의 장비',en:"Legendary Gear"},  d:()=>X('장비 합계 레벨 45',"45 total gear levels"),     f:()=>gearTotal()>=45},
+ {id:'h23', sp:'book',nm:{ko:'학자',en:"Scholar"},         d:()=>X('연구 10개 완료',"Complete 10 researches"),        f:()=>Object.keys(S.research).length>=10},
+ {id:'h24', sp:'library',nm:{ko:'전지',en:"Omniscient"},         d:()=>X('연구 20개 모두 완료',"Complete all 20 researches"),   f:()=>Object.keys(S.research).length>=20},
+ {id:'h25', sp:'offering',nm:{ko:'봉헌자',en:"Devotee"},       d:()=>X('오퍼링 1,000 획득',"Earn 1,000 offerings"),     f:()=>S.offerEver>=1e3},
+ {id:'h26', sp:'gem',nm:{ko:'보석상',en:"Jeweler"},       d:()=>X('결정 1,000 획득',"Earn 1,000 crystals"),       f:()=>S.crystalEver>=1e3},
+ {id:'h27', sp:'chain',nm:{ko:'도전자',en:"Challenger"},       d:()=>X('도전 1회 완료',"Clear 1 trial stage"),         f:()=>chalTotal()>=1},
+ {id:'h28', sp:'trialcrown',nm:{ko:'시련의 주인',en:"Master of Trials"},  d:()=>X('도전 15회 완료',"Clear 15 trial stages"),        f:()=>chalTotal()>=15},
+ {id:'h29', sp:'relicheart',nm:{ko:'유물 사냥꾼',en:"Relic Hunter"},  d:()=>X('유물 50개 획득',"Earn 50 relics"),        f:()=>S.relicEver>=50},
+ {id:'h30', sp:'throne',nm:{ko:'왕국의 지배자',en:"Ruler of the Kingdom"},d:()=>X('전체 배율 1e6 돌파',"Total multiplier past 1e6"),    f:()=>M().prod>=1e6},
+];
+
+/* ══════════════ 상태 ══════════════ */
+function newState(){return{
+  v:VERSION,
+  mana:0, manaRun:0, manaEver:0,
+  manaL:-Infinity, manaRunL:-Infinity, manaEverL:-Infinity,   // 진실의 원천 (log10, 0 은 -Infinity)
+  offering:0, offerEver:0, crystal:0, crystalEver:0,
+  bought:PRODUCERS.map(()=>0), gen:PRODUCERS.map(()=>0),
+  genL:PRODUCERS.map(()=>-Infinity),   // 상위 시설이 만들어 낸 수 · 자릿수(log10)가 진실. 0 은 -Infinity
+  research:{}, runes:{}, gear:{},
+  soul:0, soulAsc:0, soulEver:0, soulUps:{},
+  relic:0, relicEver:0, relicUps:{}, relicTrans:0,
+  star:0, starEver:0, starUps:{},
+  inf:0, infEver:0, infCount:0,
+  infUps:{}, eterUps:{}, realUps:{}, voidUps:{}, originUps:{}, eter:0, eterEver:0, eterCount:0,
+  real:0, realEver:0, realCount:0, void:0, voidEver:0, voidCount:0,
+  origin:0, originEver:0, originCount:0,
+  rebirths:0, ascensions:0, transcends:0,
+  rebirthEver:0, ascendEver:0, transEver:0,   // 어떤 초기화에도 줄지 않는다
+  deepestEver:0, manaPeakL:-Infinity,         // 업적이 기다릴 수 있는 최고 기록
+  lastSoulGain:0, lastRelicGain:0, lastStarGain:0,
+  sinceRebirth:0, sinceAscend:0, sinceTrans:0, sinceInf:0,
+  deepest:0, floor:1, prog:0, exploring:false,
+  chal:null, chalDone:{}, chalTime:0, chalCd:0, bestRun:0, floorCd:0, autoUnlocked:{},
+  achs:{},
+  auto:{gather:1,build:1,research:1,rune:1,gear:1,dungeon:1,soulup:1,rebirth:1,relicup:1,starup:1,upinf:1,upeter:1,upreal:1,upvoid:1,uporigin:1,brketer:1,brkreal:1,brkvoid:1,brkorigin:1,ascend:1,trans:1,inf:1,chal:1},
+  timers:{build:0,research:0,rune:0,gear:0,gather:0},
+  buyAmt:'max',
+  started:Date.now(), lastTick:Date.now(), playtime:0, clicks:0,
+}}
+let S=newState(), LOG=[], MC=null;
+
+/* ══════════════ 유틸 ══════════════ */
+/* ── 숫자 표기 사다리 ─────────────────────────
+   1,234 → 1.23M → 1.23B → 1.23T → 1.23aa … 1.23zz(1e2040)
+   → 1.23aaa … 1.23zzz(1e54,768) → e54,771 → ee4.74 → eee → (e^12)3.4
+   문자는 세 자리까지 쓰고 그 위로는 지수를 층으로 쌓는다. 끝은 없다. */
+const SUF1=['K','M','B','T'];
+const SUF_MAX_TIER=4+676+17576;          // T 다음 aa..zz 676개, aaa..zzz 17576개
+function suffixOf(tier){
+  if(tier<=4) return SUF1[tier-1];
+  let n=tier-5, len=2, count=676;
+  while(n>=count){ n-=count; len++; count=Math.pow(26,len); }
+  let s='';
+  for(let i=0;i<len;i++){ s=String.fromCharCode(97+(n%26))+s; n=Math.floor(n/26); }
+  return s;
+}
+function headNum(m){
+  return m<10?m.toFixed(2):m<100?m.toFixed(1):String(Math.round(m));
+}
+/* 자릿수(밑 10 로그)를 글자로 */
+function fmtLog(l){
+  if(typeof l!=='number'||isNaN(l)) return '0';
+  if(l===Infinity) return '∞';
+  if(l===-Infinity) return '0';
+  if(l<6){                                  // 백만 아래는 쉼표로 그대로 읽힌다
+    const v=Math.pow(10,l);
+    if(v<10) return (Math.round(v*100)/100).toString();
+    if(v<100) return (Math.round(v*10)/10).toString();
+    return Math.round(v).toLocaleString(LANG==='en'?'en-US':'ko-KR');
+  }
+  const tier=Math.floor(l/3);
+  if(tier<=SUF_MAX_TIER) return headNum(Math.pow(10,l-tier*3))+suffixOf(tier);
+  let layer=1, v=l;
+  while(v>=1e6&&layer<1e9){ v=L10(v); layer++; }   // 1e6 아래는 e 한 겹으로 읽힌다 (e54,771)
+  const h=v>=1000?Math.round(v).toLocaleString():v>=100?v.toFixed(1):v.toFixed(2);
+  return layer<=4?'e'.repeat(layer)+h:'(e^'+layer+')'+h;
+}
+/* 설명 문구도 자릿수로 적는다. b^e 는 e 가 조금만 커져도 ∞ 가 되어
+   화면에 "×∞ → ×∞" 만 남고, 백분율은 2.1e+73% 같은 날 숫자가 새어 나왔다. */
+const powTxt=(b,e)=>fmtLog(e*L10(b));
+const pctTxt=v=>(!isFinite(v)?'∞':Math.abs(v)<1e4?v.toFixed(1):fmt(v));
+/* 절감률은 99.9% 를 넘어서면 100.0% 에 붙어 버려 더 나아지는 것이 안 보인다.
+   그때부터는 깎인 몫이 아니라 남는 몫을 "1/1e12" 처럼 적는다. */
+const cutTxt=(b,e)=>{ const l=-e*L10(b); return l<3 ? (Math.pow(10,-l)*100).toFixed(1)+'%' : '1/'+fmtLog(l); };
+function fmt(n){
+  if(n===Infinity) return '∞';
+  if(n===-Infinity) return '-∞';
+  if(typeof n!=='number'||isNaN(n)) return '0';   // 망가진 값만 0. 무한대는 무한대로 보여 준다.
+  if(n<0) return '-'+fmt(-n);
+  if(n===0) return '0';
+  if(n<1e3){
+    if(n<10) return (Math.round(n*100)/100).toString();
+    if(n<100) return (Math.round(n*10)/10).toString();
+    return Math.floor(n).toString();
+  }
+  if(n<1e6) return Math.floor(n).toLocaleString(LANG==='en'?'en-US':'ko-KR');
+  return fmtLog(Math.log10(n));                 // 백만 위로는 같은 사다리를 탄다
+}
+
+
+function fmtTime(s){
+  s=Math.floor(s);
+  const U=LANG==='en'?['s','m','h','d']:['초','분','시간','일'];
+  const j=(a,b)=>LANG==='en'?a+' '+b:a+' '+b;
+  if(s<60) return s+U[0];
+  if(s<3600) return j(Math.floor(s/60)+U[1], (s%60)+U[0]);
+  if(s<86400) return j(Math.floor(s/3600)+U[2], Math.floor(s%3600/60)+U[1]);
+  return j(Math.floor(s/86400)+U[3], Math.floor(s%86400/3600)+U[2]);
+}
+/* 시설 수도 자릿수가 진실이다. 산 것(bought)은 정수라 그대로 두고,
+   윗 단계가 만들어 낸 것(genL)만 로그로 센다 — 이쪽이 1e308 을 넘어간다.
+   S.gen 은 세이브 호환과 옛 조건식을 위한 읽기 전용 파생값. */
+const genNum=l=>((typeof l!=='number'||isNaN(l)||l===-Infinity)?0:(l<300?Math.pow(10,l):Infinity));
+function syncGen(){ for(let i=0;i<S.genL.length;i++) S.gen[i]=genNum(S.genL[i]); }
+const cntLog=i=>logAdd(numLog(S.bought[i]),S.genL[i]);
+const cnt=i=>S.bought[i]+S.gen[i];
+const achCount=()=>Object.keys(S.achs).length;
+const runeTotal=()=>RUNES.reduce((a,r)=>a+(S.runes[r.id]||0),0);
+const gearTotal=()=>GEAR.reduce((a,g)=>a+(S.gear[g.id]||0),0);
+const chalTotal=()=>CHALLENGES.reduce((a,c)=>a+(S.chalDone[c.id]||0),0);
+const curChal=()=>S.chal?CHALLENGES.find(c=>c.id===S.chal):null;
+function startManaLog(l){return l<=0?-Infinity:2*l}
+function startMana(l){const x=startManaLog(l);return x<300?Math.pow(10,x):Infinity}
+
+/* ══════════════ 배율 계산 ══════════════ */
+/* 배율도 마나·비용처럼 자릿수(log10)가 진실이다.
+   강화 정의(apply)는 하나도 건드리지 않는다. 대신 항목을 하나씩 빈 그릇에 따로 적용해
+   그 항목이 만든 배수만 재고, 로그로 더한다. 한 항목이 혼자 1e308 을 넘기면
+   레벨을 잘게 줄여 재고 로그를 그만큼 도로 키운다 — 이 게임의 곱셈 강화는 전부
+   base^(레벨에 선형인 식) 꼴이라 이렇게 재도 값이 같다.
+   m.<필드>Log 가 진실이고 m.<필드> 는 읽기 전용 파생값이다. */
+const MUL_FIELDS=['prod','t0','tUp','speed','soul','offer','crystal','dungeon','relic',
+                  'floorLoot','boss','gearPow','autoSpeed','chalPow','costMul'];
+const ADD_FIELDS=['runeCap','offline'];
+/* floorPct 만 예외 — 곱셈(×1.07^l)·덧셈(+0.02l)·max 가 섞여 있다.
+   섞여 있어도 '적용 전 값 대비 배수'로 재면 셋 다 그대로 로그가 된다.
+   그래서 되먹임되는 두 값(floorPct·gearPow)만 진짜 값을 그릇에 넣어 준다. */
+const SEED_CAP=1e250;                    // 되먹임 값이 이보다 커지면 여기서 자른다
+const deriveNum=l=>(isNaN(l)?1:(l<308?Math.pow(10,l):Infinity));   // double 이 버티는 끝까지는 옛 값 그대로 준다
+const deriveSeed=l=>(isNaN(l)?1:(l<250?Math.pow(10,l):SEED_CAP));
+const _sm={prod:1,t0:1,tUp:1,speed:1,soul:1,offer:1,crystal:1,dungeon:1,relic:1,
+  floorPct:0.02,floorLoot:1,boss:1,costMul:1,runeCap:25,gearPow:1,
+  autoSpeed:1,offline:4,chalPow:1,autoMax:false};      // 항목 하나를 잴 때만 쓰는 그릇
+function _seedM(gp,fp,rc,off){
+  for(let i=0;i<MUL_FIELDS.length;i++) _sm[MUL_FIELDS[i]]=1;
+  _sm.gearPow=gp; _sm.floorPct=fp; _sm.runeCap=rc; _sm.offline=off; _sm.autoMax=false;
+}
+/* 항목 하나를 재서 st 에 로그로 얹는다. lv 를 주면 넘칠 때 잘게 줄여 잰다. */
+function foldUp(st,fn,lv){
+  const scalable=(typeof lv==='number'&&isFinite(lv)&&lv>0);
+  let f=1;
+  for(let it=0;it<400;it++){
+    const sg=st.gearPow, sf=st.floorPct;
+    _seedM(sg,sf,st.runeCap,st.offline);
+    try{ fn(_sm, scalable?lv*f:lv); }catch(e){ return; }
+    let ok=(_sm.floorPct>0&&isFinite(_sm.floorPct)&&_sm.gearPow>0&&isFinite(_sm.gearPow));
+    if(ok) for(let i=0;i<MUL_FIELDS.length;i++){
+      const v=_sm[MUL_FIELDS[i]]; if(!(v>0)||!isFinite(v)){ ok=false; break; }
+    }
+    if(!ok){
+      if(!scalable) return;              // 레벨이 없는 항목은 줄일 수 없다
+      f*=(it<10?0.5:1e-3);               // 처음엔 반씩, 그래도 넘치면 크게 줄인다
+      continue;
+    }
+    const inv=1/f;
+    for(let i=0;i<MUL_FIELDS.length;i++){
+      const k=MUL_FIELDS[i];
+      if(k==='gearPow'){ if(_sm.gearPow!==sg) st.gearPowL+=L10(_sm.gearPow/sg)*inv; }
+      else if(_sm[k]!==1) st[k+'L']+=L10(_sm[k])*inv;
+    }
+    if(_sm.floorPct!==sf) st.floorPctL+=L10(_sm.floorPct/sf)*inv;
+    for(let i=0;i<ADD_FIELDS.length;i++){ const k=ADD_FIELDS[i]; if(_sm[k]!==st[k]) st[k]=_sm[k]; }
+    if(_sm.autoMax) st.autoMax=true;
+    st.gearPow=deriveSeed(st.gearPowL);
+    st.floorPct=deriveSeed(st.floorPctL);
+    return;
+  }
+}
+function computeM(){
+  const st={runeCap:25,offline:4,autoMax:false,gearPow:1,floorPct:0.02,floorPctL:L10(0.02)};
+  for(let i=0;i<MUL_FIELDS.length;i++) st[MUL_FIELDS[i]+'L']=0;
+  const ch=curChal();
+  if(!(ch&&ch.rule.noResearch)) for(const r of RESEARCH) if(S.research[r.id]) foldUp(st,r.apply);
+  if(!(ch&&ch.rule.noRelicGear)){
+    for(const r of RUNES){const l=S.runes[r.id]||0; if(l) foldUp(st,r.apply,l);}
+    for(const g of GEAR){const l=S.gear[g.id]||0; if(l) foldUp(st,g.apply,l);}
+  }
+  for(const u of SOUL_UPS){const l=S.soulUps[u.id]||0; if(l) foldUp(st,u.apply,l);}
+  for(const u of RELIC_UPS){const l=S.relicUps[u.id]||0; if(l) foldUp(st,u.apply,l);}
+  for(const u of STAR_UPS){const l=S.starUps[u.id]||0; if(l) foldUp(st,u.apply,l);}
+  for(const L of INF_LAYERS){
+    if(!L.ups) continue;
+    const store=S[L.store]||{};
+    for(const u of L.ups()){ const l=store[u.id]||0; if(l) foldUp(st,u.apply,l); }
+  }
+  { const v=L10(infBonus());             // infBonus·cosmosBonus 는 1e120 에서 잘려 넘치지 않는다
+    st.prodL+=v; st.soulL+=v; st.offerL+=v; st.crystalL+=v; st.dungeonL+=v; st.relicL+=v; }
+  { const cp=deriveSeed(st.chalPowL);
+    for(const c of CHALLENGES){const n=S.chalDone[c.id]||0; if(n) foldUp(st,c.apply,n*cp);} }
+  for(const ms of MILESTONES) if(S.rebirths>=ms.n) foldUp(st,ms.apply);
+  st.prodL+=L10(1+0.02*achCount());
+  st.prodL+=L10(1+0.05*S.rebirths);
+  st.prodL+=logAdd(0,st.floorPctL+numLog(S.deepest));   // 1+floorPct*deepest
+  { const v=L10(cosmosBonus(S.deepest||1));             // 행성·행성계·은하를 넘길 때마다
+    st.prodL+=v; st.soulL+=v; st.offerL+=v; st.crystalL+=v; st.dungeonL+=v; }
+  st.dungeonL+=L10(1+0.03*S.deepest);
+  if(ch&&ch.rule.drain) st.prodL-=L10(ch.rule.drain);   // 나누기는 로그에서 빼기다
+  if(ch&&ch.rule.slow) st.speedL-=L10(ch.rule.slow);
+  st.autoSpeedL=Math.max(L10(0.15),st.autoSpeedL);
+  const m={autoMax:st.autoMax,runeCap:st.runeCap,offline:st.offline,
+           floorPctLog:st.floorPctL,floorPct:deriveNum(st.floorPctL)};
+  for(let i=0;i<MUL_FIELDS.length;i++){
+    const k=MUL_FIELDS[i], l=st[k+'L'];
+    m[k+'Log']=l; m[k]=deriveNum(l);     // 옛 코드가 읽는 평범한 수는 파생값으로 남긴다
+  }
+  return m;
+}
+function recalc(){MC=computeM(); syncMana();}
+function M(){return MC||(MC=computeM())}
+
+/* 증가율을 덧셈으로 깎으면 하한(1.05)에 금방 막혀 더 사도 아무 일이 없다.
+   증가분(g-1) 자체를 곱으로 깎아 계속 줄어들되 1 아래로는 안 가게 한다. */
+function growth(i){return Math.max(1.0005,1+(PRODUCERS[i].g-1)*M().costMul)}
+/* 비용은 자릿수(log10)로 센다. g^bought 는 금방 1e308 을 넘지만 자릿수는 넘지 않는다. */
+function costLogOf(i,n){
+  const g=growth(i),b=S.bought[i];
+  return numLog(PRODUCERS[i].base)+b*L10(g)+geoSumLog(g,n);
+}
+function costOf(i,n){ const l=costLogOf(i,n); return l<300?Math.pow(10,l):Infinity; }
+function maxAfford(i){
+  const g=growth(i),b=S.bought[i],lg=L10(g);
+  const x=S.manaL-numLog(PRODUCERS[i].base)-b*lg;   // log10(mana / (base*g^bought))
+  if(isNaN(x)||x===-Infinity) return 0;
+  let n;
+  if(x>300){ n=Math.floor((x+L10(g-1))/lg); }       // 10^x 가 넘치는 구간은 근사식으로
+  else{ const v=Math.pow(10,x)*(g-1)+1; n=v<=1?0:Math.floor(Math.log(v)/Math.log(g)); }
+  if(!isFinite(n)||n<0) n=0;
+  n=Math.min(n,1e12);
+  let k=0;                                          // 부동소수 오차만큼만 되돌린다
+  while(n>0&&costLogOf(i,n)>S.manaL&&k++<64) n--;
+  k=0;
+  while(costLogOf(i,n+1)<=S.manaL&&k++<64) n++;
+  return n;
+}
+function tierLocked(i){const ch=curChal();return !!(ch&&ch.rule.maxTier!==undefined&&i>ch.rule.maxTier)}
+function buyProducer(i){
+  if(tierLocked(i)) return false;
+  const n=S.buyAmt==='max'?maxAfford(i):S.buyAmt;
+  if(n<=0) return false;
+  const cl=costLogOf(i,n);
+  if(!(S.manaL>=cl)) return false;
+  S.manaL=logSub(S.manaL,cl); S.bought[i]+=n; recalc(); return true;
+}
+/* 각 항을 따로 로그로 바꿔 더한다 — 곱하는 순간 넘치던 자리가 여기서 풀린다 */
+function manaRateLog(){
+  const m=M(), cl=cntLog(0);
+  if(isNaN(cl)||cl===-Infinity) return -Infinity;
+  return cl+numLog(PRODUCERS[0].rate)+m.t0Log+m.prodLog;
+}
+function manaRate(){ const l=manaRateLog(); return l<300?Math.pow(10,l):Infinity; }
+function gatherAmountLog(){ return Math.max(0,manaRateLog()+L10(0.5)); }
+function gatherAmount(){ const l=gatherAmountLog(); return l<300?Math.pow(10,l):Infinity; }
+function gather(){addManaLog(gatherAmountLog());S.clicks++}
+const CAP=1e300;
+function safeAdd(cur,v){                       // ∞ 나 NaN 이 한 번 새면 그 뒤가 전부 망가진다
+  if(!isFinite(v)||isNaN(v)) v=CAP;
+  const n=(cur||0)+v;
+  return (!isFinite(n)||isNaN(n))?CAP:Math.min(n,CAP);
+}
+/* 마나의 진실은 manaL / manaRunL / manaEverL (log10) 이다.
+   S.mana / S.manaRun / S.manaEver 는 세이브 호환과 옛 조건식을 위한 읽기 전용 파생값. */
+function syncMana(){
+  const f=l=>(isNaN(l)?0:(l<300?Math.pow(10,l):Infinity));
+  S.mana=f(S.manaL); S.manaRun=f(S.manaRunL); S.manaEver=f(S.manaEverL);
+}
+function addManaLog(vLog){
+  if(isNaN(vLog)||vLog===-Infinity) return;
+  S.manaL=logAdd(S.manaL,vLog);
+  S.manaRunL=logAdd(S.manaRunL,vLog);
+  S.manaEverL=logAdd(S.manaEverL,vLog);
+  if(!(S.manaPeakL>=S.manaEverL)) S.manaPeakL=S.manaEverL;   // 돌파해도 줄지 않는다
+  syncMana();
+}
+function addMana(v){ addManaLog(numLog(v)); }
+
+/* ══════════════ 던전 ══════════════ */
+const isBoss=f=>f%10===0;
+/* 0.05 초는 초당 스무 층이다. 그 속도에서는 어떤 몬스터도 눈에 남지 않아
+   내내 같은 것만 보인다. 한 마리가 보일 만큼 머물게 하고, 깊이가 느려지는 몫은
+   아래 sweepCount 가 한 걸음에 여러 층을 쓸어 담아 메운다. */
+const FLOOR_MIN_TIME=0.28;  // 한 층이 화면에 머무는 최소 시간(초)
+const FLOOR_MAX_STEPS=40;   // 한 틱에 처리할 수 있는 최대 걸음 수
+
+/* ── 우주 계층 ────────────────────────────────
+   실제 천문학의 구조를 그대로 따른다.
+     항성계 → 성단 → 은하 → 은하군 → 은하단 → 초은하단 → 필라멘트 → 우주 거대구조
+   층 번호를 오도미터로 읽을 뿐이라 기존 계산과 세이브를 건드리지 않는다.
+   맨 윗 칸은 자릿수 제한이 없다 — 여기서 끝나지 않는다. */
+const COSMOS=[
+ {k:'floor', sp:'tier_floor',   per:1,   ko:'층',        en:"Floor",       eg:''},
+ {k:'planet', sp:'tier_planet',  per:100, ko:'행성',      en:"Planet",      eg:'지구'},
+ {k:'system', sp:'tier_system',  per:8,   ko:'항성계',    en:"Star System", eg:'태양계'},
+ {k:'cluster', sp:'tier_cluster', per:10,  ko:'성단',      en:"Star Cluster",eg:'플레이아데스'},
+ {k:'galaxy', sp:'tier_galaxy',  per:10,  ko:'은하',      en:"Galaxy",      eg:'우리 은하'},
+ {k:'group', sp:'tier_group',   per:10,  ko:'은하군',    en:"Galaxy Group",eg:'국부은하군'},
+ {k:'gcluster', sp:'tier_gcluster',per:10,  ko:'은하단',    en:"Galaxy Cluster",eg:'처녀자리 은하단'},
+ {k:'super', sp:'tier_super',   per:10,  ko:'초은하단',  en:"Supercluster",eg:'라니아케아'},
+ {k:'filament', sp:'tier_filament',per:10,  ko:'우주 필라멘트',en:"Filament", eg:'슬론 장성'},
+ {k:'web', sp:'tier_web',     per:10,  ko:'우주 거대구조',en:"Cosmic Web",eg:'우주 그물'},
+ {k:'observ', sp:'tier_observ',  per:10,  ko:'관측 가능한 우주',en:"Observable Universe",eg:''},
+ {k:'multi', sp:'tier_multi',   per:10,  ko:'다중우주',  en:"Multiverse",  eg:''},
+];
+/* 칸을 하나 넘길 때마다 전체 생산에 붙는 배율. 위로 갈수록 가파르다. */
+const COSMOS_SP=['sword','tower','offering','sparkle','spiral','star','crown16','gem','bolt','infinity','portal','soul'];
+const COSMOS_MUL=[1, 1.5, 4, 12, 40, 150, 600, 2500, 1.2e4, 6e4, 3e5, 2e6];
+
+function cosmos(f){
+  const o={}; let div=1;
+  for(let i=0;i<COSMOS.length;i++){
+    if(i) div*=COSMOS[i].per;
+    const cap = i+1<COSMOS.length ? COSMOS[i+1].per : Infinity;
+    o[COSMOS[i].k] = Math.floor((f-1)/div) % cap + 1;
+  }
+  return o;
+}
+/* 지금 어느 장(章)에 있는가 — 1 보다 큰 가장 높은 칸 */
+function chapterOf(f){
+  const c=cosmos(f);
+  let top=0;
+  for(let i=1;i<COSMOS.length;i++) if(c[COSMOS[i].k]>1) top=i;
+  if(top===0 && f<=100) return 0;          // 지구
+  return Math.max(1,top);
+}
+/* 가 본 곳 중 가장 높은 장 */
+const chapterSeen=()=>chapterOf(Math.max(1,S.deepest||1));
+function chapterName(i,reveal){
+  if(!reveal&&i>chapterSeen()) return '???';       // 못 뚫은 계층은 무엇인지 알 수 없다
+  if(i===0) return X('지구','Earth');
+  return X(COSMOS[i].ko, COSMOS[i].en);
+}
+function cosmosLabel(f){
+  const c=cosmos(f), ch=chapterOf(f);
+  if(ch===0) return X(`지구 · ${c.floor}층`, `Earth · F${c.floor}`);
+  const p=[];
+  for(let i=ch;i>=2;i--) p.push(X(`${COSMOS[i].ko} ${c[COSMOS[i].k]}`,`${COSMOS[i].en} ${c[COSMOS[i].k]}`));
+  p.push(X(`행성 ${c.planet}`,`Planet ${c.planet}`));
+  p.push(X(`${c.floor}층`,`F${c.floor}`));
+  return p.join(' · ');
+}
+function cosmosBonus(f){
+  const c=cosmos(f); let v=1;
+  for(let i=1;i<COSMOS.length;i++) v*=Math.pow(COSMOS_MUL[i], c[COSMOS[i].k]-1);
+  return isFinite(v)?Math.min(v,1e120):1e120;   // 이 위로 가면 생산이 1e308 을 넘어 ∞ 가 된다
+}
+
+/* 층마다 다른 적이 나온다 */
+/* 던전 몬스터 : 기본 6종 × 속성 6종 = 36종. 보스는 2종 × 6 = 12종.
+   그림은 tools/foes.py 가 같은 실루엣에 팔레트와 파츠(불꽃·독액·얼음·
+   그림자·바위·룬)를 갈아 끼워 굽는다. 여기에는 이름만 둔다. */
+/* 접두 속성 · 이름과 그림뿐 아니라 체력과 보상도 바꾼다 */
+const FOE_AFFIX=[
+ /* 속성마다 체력과 보상이 다르다. 돌은 단단하고 결정을 많이 주고,
+    그림자는 무르지만 마나를 많이 준다. */
+ ['fire',   '불타는',  "Burning",   {hp:1.15,loot:1.20,crystal:1.00,offer:1.00}],
+ ['venom',  '맹독의',  "Venomous",  {hp:0.90,loot:1.00,crystal:1.30,offer:1.00}],
+ ['frost',  '얼어붙은',"Frozen",    {hp:1.30,loot:1.00,crystal:1.00,offer:1.30}],
+ ['shadow', '그림자',  "Shadow",    {hp:0.85,loot:1.35,crystal:1.00,offer:1.00}],
+ ['stone',  '석화된',  "Petrified", {hp:1.60,loot:1.00,crystal:1.60,offer:1.00}],
+ ['arcane', '비전의',  "Arcane",    {hp:1.10,loot:1.10,crystal:1.10,offer:1.40}],
+ ['thunder','뇌전의',  "Thundering",{hp:1.00,loot:1.25,crystal:1.00,offer:1.15}],
+ ['blood',  '피의',    "Bloody",    {hp:1.45,loot:1.15,crystal:1.20,offer:1.00}],
+];
+const FOE_BASE=[
+ ['ooze',    '점액 덩어리',"Ooze"],        ['bat',     '심연 박쥐',  "Abyss Bat"],
+ ['beast',   '마수',       "Beast"],       ['wraith',  '망령',       "Wraith"],
+ ['serpent', '독니 뱀',    "Fanged Serpent"],['golem',  '골렘',       "Golem"],
+ ['spider',  '거미',       "Spider"],      ['imp',     '임프',       "Imp"],
+ ['mushroom','균사체',     "Fungus"],      ['eyeball', '부유안',     "Floating Eye"],
+ ['crab',    '갑각귀',     "Carapace"],    ['worm',    '굴벌레',     "Burrow Worm"],
+ ['skeleton','해골 병사',  "Skeleton"],    ['zombie',  '시귀',       "Ghoul"],
+ ['goblin',  '고블린',     "Goblin"],      ['rat',     '거대 쥐',    "Giant Rat"],
+ ['harpy',   '하피',       "Harpy"],       ['treant',  '나무 정령',  "Treant"],
+ ['gargoyle','가고일',     "Gargoyle"],    ['lich',    '리치',       "Lich"],
+ ['wisp',    '도깨비불',   "Wisp"],        ['scorpion','전갈',       "Scorpion"],
+ ['hound',   '쌍두견',     "Twin Hound"],  ['knight',  '망령 기사',  "Wraith Knight"],
+];
+const BOSS_BASE=[
+ ['skull',   '해골 군주',  "Bone Lord"],   ['demon',   '심연의 마왕',"Abyssal Demon"],
+ ['dragon',  '심연룡',     "Abyssal Dragon"],['titan', '거신',       "Titan"],
+ ['hydra',   '히드라',     "Hydra"],       ['behemoth','베히모스',   "Behemoth"],
+ ['archlich','대리치',     "Archlich"],    ['wyrm',    '심연의 뱀룡',"Abyssal Wyrm"],
+];
+const mkFoes = (bases, pre) => FOE_AFFIX.flatMap(([ak,ako,aen,af]) =>
+  bases.map(([bk,bko,ben]) => ({sp:`${pre}_${bk}_${ak}`, af,
+    nm:{ko:`${ako} ${bko}`, en:`${aen} ${ben}`}})));
+const COS_BASE=[
+ ['probe',    '탐사정',    "Probe"],        ['asteroid', '소행성체',  "Asteroid"],
+ ['nebula',   '성운체',    "Nebula Being"], ['stareater','항성 포식자',"Star Eater"],
+ ['satellite','위성 병기',  "War Satellite"],['gravity',  '중력체',    "Gravity Well"],
+ ['blackhole','블랙홀',    "Black Hole"],   ['guardian', '은하 수호자',"Guardian"],
+ ['rift',     '차원 균열',  "Rift"],         ['dyson',    '항성 기계',  "Dyson Engine"],
+ ['spore',    '성간 포자',  "Void Spore"],   ['sentinel', '감시자',    "Sentinel"],
+];
+const CBOSS_BASE=[
+ ['supernova','초신성',    "Supernova"],    ['quasar',  '퀘이사',     "Quasar"],
+ ['gcore',    '은하핵',    "Galactic Core"],['watcher', '우주의 눈',  "The Watcher"],
+];
+const FOES=mkFoes(FOE_BASE,'foe');
+const COSFOES=mkFoes(COS_BASE,'cos');
+const CBOSSES=mkFoes(CBOSS_BASE,'cboss');
+const DEEP_BASE=[
+ ['swarm',    '성간 군체',  "Swarm"],       ['tendril',  '은하 촉수',  "Tendril"],
+ ['legion',   '항성 군단',  "Star Legion"], ['darkmatter','암흑 물질체',"Dark Matter"],
+ ['lens',     '중력 렌즈',  "Gravity Lens"],['breaker',  '은하 파괴자',"Breaker"],
+ ['fracture', '시공 균열',  "Spacetime Fracture"],['primeval','원시 거인',"Primeval"],
+ ['ascendant','초월체',     "Ascendant"],   ['wall',     '우주 장벽',  "Great Wall"],
+ ['devourer', '차원 포식자',"Devourer"],    ['circuit',  '무한 회로',  "Infinite Circuit"],
+];
+const DBOSS_BASE=[
+ ['worldeater','세계를 먹는 것',"World Eater"], ['origin','근원의 것',"The Origin"],
+];
+const FAR_BASE=[
+ ['weaver',    '짜는 자',      "Weaver"],        ['knot',      '매듭',        "Knot"],
+ ['strand',    '가닥',         "Strand"],        ['lattice',   '격자',        "Lattice"],
+ ['spinner',   '그물 짜는 것',  "Spinner"],       ['greatvoid', '거대 공동',    "Great Void"],
+ ['pulse',     '맥동',         "Pulse"],         ['shroud',    '장막',        "Shroud"],
+ ['horizon',   '지평선',       "Horizon"],       ['cosmiclens','우주 렌즈',    "Cosmic Lens"],
+ ['firstecho', '태초의 메아리', "First Echo"],    ['edgeofall', '관측의 끝',    "Edge of All"],
+ ['mirroruni', '거울 우주',     "Mirror Cosmos"], ['branching', '갈라지는 것',  "Branching"],
+ ['uniswarm',  '우주 떼',      "Cosmic Swarm"],  ['theend',    '종말',        "The End"],
+];
+const FBOSS_BASE=[
+ ['loomgod','짜는 신',"The Loom"], ['allmind','전체의 마음',"All-Mind"],
+];
+
+/* 장(章)마다 나오는 무리가 다르다. 위로 갈수록 형체가 커진다.
+   속성이 아니라 생물 종류로 갈라야 계층마다 다르게 보인다. */
+const CH_POOL=[
+ [FOE_BASE.slice(0,12),  'foe',  BOSS_BASE.slice(0,2),  'boss'],   // 0 지구
+ [FOE_BASE.slice(12),    'foe',  BOSS_BASE.slice(2),    'boss'],   // 1 행성
+ [COS_BASE.slice(0,4),   'cos',  CBOSS_BASE.slice(0,1), 'cboss'],  // 2 항성계
+ [COS_BASE.slice(4,8),   'cos',  CBOSS_BASE.slice(1,2), 'cboss'],  // 3 성단
+ [COS_BASE.slice(8),     'cos',  CBOSS_BASE.slice(2,3), 'cboss'],  // 4 은하
+ [DEEP_BASE.slice(0,4),  'deep', CBOSS_BASE.slice(3),   'cboss'],  // 5 은하군
+ [DEEP_BASE.slice(4,8),  'deep', DBOSS_BASE.slice(0,1), 'dboss'],  // 6 은하단
+ [DEEP_BASE.slice(8),    'deep', DBOSS_BASE.slice(1),   'dboss'],  // 7 초은하단
+ [FAR_BASE.slice(0,4),   'far',  FBOSS_BASE.slice(0,1), 'fboss'],  // 8 필라멘트
+ [FAR_BASE.slice(4,8),   'far',  FBOSS_BASE.slice(1),   'fboss'],  // 9 우주 거대구조
+ [FAR_BASE.slice(8,12),  'far',  FBOSS_BASE,            'fboss'],  // 10 관측 가능한 우주
+ [FAR_BASE.slice(12),    'far',  FBOSS_BASE,            'fboss'],  // 11 다중우주
+];
+const _poolCache={};
+function poolsFor(ch){
+  ch=Math.max(0,Math.min(CH_POOL.length-1,ch));
+  if(!_poolCache[ch]){
+    const [fb,fp,bb,bp]=CH_POOL[ch];
+    _poolCache[ch]=[mkFoes(fb,fp), mkFoes(bb,bp)];
+  }
+  return _poolCache[ch];
+}
+const BOSSES=mkFoes(BOSS_BASE,'boss');
+const elemOf=f=>foeOf(f).af;
+/* 계층마다 다른 무리가 나온다. 지구의 짐승 → 천체와 기계 → 은하 규모의 것들 */
+/* mkFoes 는 [속성 바깥 · 기본형 안쪽] 으로 늘어놓는다. 그래서 그냥 f 로 훑으면
+   기본형만 바뀌고 속성이 열두 층 내리 같아서 — 속성이 색을 정하므로 — 화면이
+   열두 층 동안 한 가지 색으로 고인다. 배열 길이와 서로소인 13 씩 건너뛰면
+   기본형과 속성이 매 층 함께 바뀌고, 그래도 결국 전부 한 번씩 나온다. */
+const FOE_STRIDE=13, BOSS_STRIDE=5;
+function foeOf(f){
+  const [foes,bosses]=poolsFor(chapterOf(f));
+  return isBoss(f) ? bosses[((Math.floor(f/10)-1)*BOSS_STRIDE)%bosses.length]
+                   : foes[((f-1)*FOE_STRIDE)%foes.length];
+}
+function dungeonPowerLog(){
+  let ul=-Infinity;for(let i=0;i<PRODUCERS.length;i++)ul=logAdd(ul,cntLog(i));
+  return logAdd(0,0.45*ul)+M().dungeonLog+0.75*Math.max(0,manaRateLog());   // log10(1+u^0.45)
+}
+function dungeonPower(){ const l=dungeonPowerLog(); return l<300?Math.pow(10,l):Infinity; }
+/* 체력과 공격력을 그대로 곱하면 1e308 에서 ∞ 가 되고 ∞/∞ 가 NaN 이 된다.
+   둘 다 '자릿수'(밑 10 로그)로 다룬다. 로그는 층수에 비례해 선형이라 넘치지 않는다. */
+const L10=Math.log10;
+function safeLog(v){ return (typeof v==='number'&&v>0&&isFinite(v))?L10(v):(v>0?308:0); }
+/* 마나 계열은 0 이 진짜 0 이어야 한다 — safeLog 는 0 을 0(=10^0) 으로 돌려주므로 따로 쓴다. */
+function numLog(v){ return (typeof v==='number'&&v>0)?(isFinite(v)?L10(v):308):-Infinity; }
+/* 로그 공간 덧셈·뺄셈. a,b 는 각각 log10 값이다. */
+function logAdd(a,b){            // log10(10^a + 10^b)
+  if(isNaN(a)) return b; if(isNaN(b)) return a;
+  if(a===-Infinity) return b;
+  if(b===-Infinity) return a;
+  const hi=Math.max(a,b), lo=Math.min(a,b);
+  if(hi-lo>17) return hi;        // 차이가 크면 작은 쪽은 묻힌다
+  return hi+L10(1+Math.pow(10,lo-hi));
+}
+function logSub(a,b){            // log10(10^a - 10^b), a>=b
+  if(isNaN(a)||isNaN(b)) return isNaN(a)?-Infinity:a;
+  if(b===-Infinity) return a;
+  if(a<=b) return -Infinity;
+  if(a-b>17) return a;
+  return a+L10(1-Math.pow(10,b-a));
+}
+/* 등비합 log10((g^n-1)/(g-1)) — g^n 이 넘쳐도 자릿수는 멀쩡하다 */
+function geoSumLog(g,n){
+  if(!(n>0)) return -Infinity;
+  const lg=L10(g);
+  if(n*lg>15) return n*lg-L10(g-1);
+  return numLog((Math.pow(g,n)-1)/(g-1));
+}
+function floorHPLog(f){
+  const a=Math.min(f-1,200), b=Math.max(0,f-1-200);
+  return L10(40)+a*L10(1.35)+b*L10(1.09)+(isBoss(f)?L10(8):0)+safeLog(elemOf(f).hp);
+}
+function floorHP(f){ const l=floorHPLog(f); return l<300?Math.pow(10,l):Infinity; }
+/* 층 보상 마나도 자릿수로 — 1.40^f 는 2,600 층쯤에서 넘친다 */
+function floorLootManaLog(f){
+  const m=M(), bl=isBoss(f)?L10(10)+m.bossLog:0, e=elemOf(f);
+  return L10(80)+(f-1)*L10(1.40)+m.prodLog+m.floorLootLog+bl+numLog(e.loot);
+}
+function floorLoot(f){
+  const m=M(), b=isBoss(f)?10*m.boss:1, e=elemOf(f);
+  const ml=floorLootManaLog(f);
+  /* 결정·오퍼링도 자릿수를 함께 들고 다닌다. 평범한 수만 두면 1e308 위에서
+     화면에 ∞ 만 남는다 (보유량 자체를 로그로 옮기는 일은 아직 남아 있다). */
+  const bl=isBoss(f)?L10(10)+m.bossLog:0;
+  const cl=numLog(1+f*0.5)+m.crystalLog+m.floorLootLog+bl+numLog(e.crystal)-L10(8);
+  const ol=isBoss(f)?numLog(f*0.8)+m.offerLog+bl+numLog(e.offer)-L10(6):-Infinity;
+  return{
+    manaLog:ml, mana:ml<300?Math.pow(10,ml):Infinity,
+    crystalLog:cl, crystal:Math.max(1,Math.floor((1+f*0.5)*m.crystal*m.floorLoot*b*e.crystal/8)),
+    offeringLog:ol, offering:isBoss(f)?Math.max(1,Math.floor(f*0.8*m.offer*b*e.offer/6)):0,
+  };
+}
+let curChapter=-1;
+function syncChapter(force){
+  const ch=chapterOf(Math.max(1,S.deepest||1));
+  if(ch===curChapter&&!force) return;
+  const first=curChapter<0;
+  curChapter=ch;
+  document.documentElement.dataset.chapter=ch;
+  if(first) return;
+  const box=$('chapter'); if(!box) return;
+  box.querySelector('.k').textContent=X(`제 ${ch+1} 장`,`CHAPTER ${ch+1}`);
+  box.querySelector('.t').textContent=chapterName(ch,true);
+  box.classList.remove('on'); void box.offsetWidth; box.classList.add('on');
+  log(`${icHTML('star')}<b class="gold">${X(`제 ${ch+1} 장 · ${chapterName(ch,true)}`,`Chapter ${ch+1} · ${chapterName(ch,true)}`)}</b> ${X('에 들어섰다','reached')}`,true);
+}
+
+/* 압도적으로 셀 때는 한 걸음에 여러 층을 쓸어 담는다 — 보이는 속도는 그대로 두고
+   깊이만 빨리 나간다. 자릿수 차이가 클수록 한 번에 더 많이 쓸어 담는다. */
+function sweepCount(){
+  const gap=dungeonPowerLog()-floorHPLog(S.floor);
+  if(!(gap>1)) return 1;
+  return Math.max(1,Math.min(256,Math.round(Math.pow(gap,1.6))));
+}
+function clearFloor(show){
+  const f=S.floor,l=floorLoot(f);
+  addManaLog(l.manaLog);
+  S.crystal=safeAdd(S.crystal,l.crystal); S.crystalEver=safeAdd(S.crystalEver,l.crystal);
+  if(l.offering){S.offering=safeAdd(S.offering,l.offering); S.offerEver=safeAdd(S.offerEver,l.offering);}
+  const nw=f>S.deepest;
+  if(nw){ S.deepest=f; if(f>(S.deepestEver||0)) S.deepestEver=f; syncChapter(); }
+  const foe=foeOf(f);
+  if(show!==0)
+    log(`${icHTML(foe.sp)}${isBoss(f)?`<b class="bad">${X('보스','BOSS')}</b> `:''}<b>${NM(foe.nm)}</b> ${X('격파','defeated')}${show>1?` <span class="dim">${X(`외 ${show-1}층`,`and ${show-1} more`)}</span>`:''} <span class="dim">${cosmosLabel(f)}</span> · ${icHTML('mana')}${fmtLog(l.manaLog)} ${icHTML('crystal')}${fmtLog(l.crystalLog)}${l.offering?' '+icHTML('offering')+fmtLog(l.offeringLog):''}`, isBoss(f));
+  S.floor=f+1;
+  /* 쓸어 담는 중간에는 배율을 다시 재지 않는다. computeM 은 강화 백여든 개를
+     하나씩 따로 재므로 256 층을 쓸면 256 번 도는 셈이 된다. 마지막에 한 번만. */
+  if(show!==0) recalc();
+}
+
+/* ══════════════ 프레스티지 ══════════════ */
+const REBIRTH_REQ=1e6, ASCEND_REQ=1000;
+/* 회차 마나가 1e300 을 넘어도 획득량이 ∞ 로 튀지 않게 자릿수에서 계산한다 */
+function soulGain(){
+  if(!(S.manaRunL>=numLog(REBIRTH_REQ))) return 0;
+  const l=L10(3)+0.3*(S.manaRunL-numLog(REBIRTH_REQ))+M().soulLog;
+  return l<300?Math.floor(Math.pow(10,l)):Infinity;
+}
+function offerGain(){
+  if(!(S.manaRunL>=numLog(REBIRTH_REQ))) return 0;
+  const l=L10(2)+0.22*(S.manaRunL-numLog(REBIRTH_REQ))+M().offerLog;
+  return l<300?Math.floor(Math.pow(10,l)):Infinity;
+}
+function relicGain(){
+  if(S.soulAsc<ASCEND_REQ) return 0;
+  return Math.floor(2*Math.pow(S.soulAsc/ASCEND_REQ,0.35)*M().relic);
+}
+function softReset(){
+  const free=8*(S.relicUps.a5||0)+25*(S.starUps.t9||0)+500*((S.eterUps||{}).e13||0)+5000*((S.realUps||{}).r9||0)+1e5*((S.originUps||{}).o6||0);
+  S.manaL=Math.max(L10(25),startManaLog(S.soulUps.s7||0));
+  S.manaRunL=S.manaL;
+  S.bought=PRODUCERS.map(()=>0); S.genL=PRODUCERS.map(()=>-Infinity); syncGen();
+  for(let i=0;i<5;i++) S.bought[i]=free;
+  S.bought[0]=Math.max(1,free);
+  S.research={}; S.floor=1; S.prog=0; S.sinceRebirth=0;
+  recalc();
+}
+function doRebirth(silent){
+  const g=soulGain(), o=offerGain();
+  if(g<=0) return false;
+  S.soul=safeAdd(S.soul,g); S.soulAsc=safeAdd(S.soulAsc,g); S.soulEver=safeAdd(S.soulEver,g); S.lastSoulGain=g; S.rebirthEver=(S.rebirthEver||0)+1;
+  S.offering=safeAdd(S.offering,o); S.offerEver=safeAdd(S.offerEver,o);
+  S.rebirths++;
+  if(S.chal) exitChallenge(false);
+  softReset();
+  log(`${icHTML('soul')}<b>${X('환생','Rebirth')}</b> · ${X('영혼석','Soul Shards')} <b class="soul">+${fmt(g)}</b> · ${X('오퍼링','Offerings')} <b class="offer">+${fmt(o)}</b>`,true);
+  if(!silent) toast(icHTML('soul')+X(` 환생 · 영혼석 +${fmt(g)}`,` Rebirth · Soul Shards +${fmt(g)}`));
+  if(autoOK('chal')) autoEnterChallenge();
+  return true;
+}
+function doAscend(silent){
+  const g=relicGain();
+  if(g<=0) return false;
+  S.relic=safeAdd(S.relic,g); S.relicEver=safeAdd(S.relicEver,g); S.relicTrans=safeAdd(S.relicTrans,g); S.lastRelicGain=g; S.ascensions++; S.ascendEver=(S.ascendEver||0)+1;
+  S.soul=0; S.soulAsc=0; S.soulUps={}; S.runes={};
+  S.rebirths=0; S.deepest=0; S.offering=0; S.lastSoulGain=0; S.sinceAscend=0;
+  if(S.chal) exitChallenge(false);
+  softReset();
+  log(`${icHTML('relic')}<b>${X('승천','Ascension')}</b> · ${X('유물','Relics')} <b class="relic">+${fmt(g)}</b> · ${X('영혼석과 룬이 초기화되었다','soul shards and runes reset')}`,true);
+  if(!silent) toast(icHTML('relic')+X(` 승천 · 유물 +${fmt(g)}`,` Ascension · Relics +${fmt(g)}`));
+  return true;
+}
+
+/* ── 무한 계층 ────────────────────────────────
+   자바스크립트 수는 약 1.8e308 에서 Infinity 가 된다.
+   그 벽을 게임의 관문으로 쓴다 — 수가 넘칠 지경이 되면 한 칸 위로 올라가고,
+   아래는 전부 초기화된다. 칸은 얼마든지 이어 붙일 수 있다. */
+const INF_CAP=1e300;
+const INF_AUTO_CD=60;                  // 자동 돌파는 60초에 한 번까지
+const INF_LAYERS=[
+ {k:'inf',  ko:'무한',  en:"Infinity",  from:()=>S.manaEver, sp:'infinity', ups:()=>INF_UPS,   store:'infUps'},
+ {k:'eter', ko:'영원',  en:"Eternity",  from:()=>S.inf,      sp:'hourglass', ups:()=>ETER_UPS,  store:'eterUps'},
+ {k:'real', ko:'현실',  en:"Reality",   from:()=>S.eter,     sp:'portal',   ups:()=>REAL_UPS,  store:'realUps'},
+ {k:'void', ko:'공허',  en:"The Void",  from:()=>S.real,     sp:'abysseye', ups:()=>VOID_UPS,  store:'voidUps'},
+ {k:'origin',ko:'근원', en:"Origin",    from:()=>S.void,     sp:'star',     ups:()=>ORIGIN_UPS,store:'originUps'},
+];
+/* 무한만 마나가 넘칠 때 열린다. 그 위로는 아래 계층을 열 개 모아야 한 칸 오른다. */
+const INF_STACK=10;
+const infUnlocked=i=>i===0 ? S.manaEver>=INF_CAP/1e40 || S.inf>0
+                           : (S[INF_LAYERS[i-1].k+'Ever']||0)>=INF_STACK;
+/* 돌파 요구치는 돌파할수록 오른다 — 1e300 → 1e303 → 1e306 … (돌파 1회마다 1000배).
+   1e308 을 넘어가면 double 로는 못 적으므로 지수(로그) 로 다룬다. */
+function reqLog(i){ return 300+3*(S[INF_LAYERS[i].k+'Count']||0); }
+function reqFor(i){
+  if(i>0) return INF_STACK*Math.pow(3,S[INF_LAYERS[i].k+'Count']||0);   // 10 → 30 → 90 …
+  return Math.pow(10,reqLog(i));
+}
+function reqTxt(i){ const r=reqFor(i); return isFinite(r)?fmt(r):('1e'+reqLog(i)); }
+function infGain(i){
+  const v=INF_LAYERS[i].from();
+  if(i>0){                                    // 위 칸은 아래 계층을 세어 바꾼다
+    const r=reqFor(i);
+    if(!isFinite(v)) return 1;
+    return v<r ? 0 : Math.floor(v/r);
+  }
+  const rl=reqLog(i), vl=S.manaEverL;   // 마나는 자릿수가 진실이므로 1e300 위에서도 정확히 센다
+  if(isNaN(vl)||!(vl>=rl)) return 0;
+  return Math.max(1,1+Math.floor(vl-rl));
+}
+function doInfBreak(i){
+  const g=infGain(i);
+  if(g<=0) return false;
+  const L=INF_LAYERS[i];
+  S[L.k]=(S[L.k]||0)+g; S[L.k+'Ever']=(S[L.k+'Ever']||0)+g; S[L.k+'Count']=(S[L.k+'Count']||0)+1;
+  S.sinceInf=0;                        // 자동 돌파 쿨다운 시작 (수동 버튼은 즉시 가능)
+  /* 무한 돌파에서는 별가루와 별 강화가 남는다 — 초월 탭이 약속한 것이 그것이다.
+     그러나 영원 위로는 진짜 처음부터다. 별 강화까지 전부 접힌다. */
+  for(let j=i-1;j>=0;j--){ S[INF_LAYERS[j].k]=0; if(INF_LAYERS[j].store) S[INF_LAYERS[j].store]={}; }
+  if(i>0){ S.star=0; S.starUps={}; }
+
+  S.relic=0; S.relicTrans=0; S.relicUps={};
+  S.soul=0; S.soulAsc=0; S.soulUps={}; S.runes={}; S.gear={};
+  S.crystal=0; S.offering=0; S.manaEver=0; S.manaEverL=-Infinity;
+  S.rebirths=0; S.ascensions=0; S.transcends=0; S.deepest=0;
+  if(S.chal) exitChallenge(false);
+  softReset();
+  log(`${icHTML(L.sp)}<b class="gold">${X(L.ko,L.en)} ${X('돌파','Break')}</b> · <b>+${fmt(g)}</b> · ${i>0?X('모든 것이 처음으로 돌아갔다','everything returned to the beginning'):X('아래 계층이 접혔다 · 별 강화는 남았다','everything below folded away, star upgrades kept')}`,true);
+  toast(icHTML(L.sp)+X(` ${L.ko} 돌파 +${fmt(g)}`,` ${L.en} +${fmt(g)}`));
+  return true;
+}
+/* 무한 계층은 그 자체가 전체 배율이 된다 */
+function infBonus(){
+  let v=1;
+  // 배율이 너무 세면 돌파 직후 곧바로 되돌아와 초기화가 체감되지 않는다
+  for(let i=0;i<INF_LAYERS.length;i++) v*=Math.pow(1.6+i*0.9, S[INF_LAYERS[i].k+'Ever']||0);
+  return isFinite(v)?Math.min(v,1e120):1e120;   // 이 위로 가면 생산이 1e308 을 넘어 ∞ 가 된다
+}
+
+const TRANS_REQ=500;
+function starGain(){
+  if(S.relicTrans<TRANS_REQ) return 0;
+  return Math.floor(2*Math.pow(S.relicTrans/TRANS_REQ,0.4));
+}
+function doTranscend(silent){
+  const g=starGain();
+  if(g<=0) return false;
+  S.star=safeAdd(S.star,g); S.starEver=safeAdd(S.starEver,g); S.lastStarGain=g; S.transcends++; S.transEver=(S.transEver||0)+1;
+  S.relic=0; S.relicTrans=0; S.relicUps={};
+  S.soul=0; S.soulAsc=0; S.soulUps={}; S.runes={}; S.gear={};
+  S.crystal=0; S.offering=0;
+  S.rebirths=0; S.ascensions=0; S.deepest=0;
+  S.lastSoulGain=0; S.lastRelicGain=0; S.sinceAscend=0; S.sinceTrans=0;
+  if(S.chal) exitChallenge(false);
+  softReset();
+  log(`${icHTML('star')}<b>${X('초월','Transcendence')}</b> · ${X('별가루','Stardust')} <b class="gold">+${fmt(g)}</b> · ${X('유물과 승천까지 초기화되었다','relics and ascensions reset')}`,true);
+  if(!silent) toast(icHTML('star')+X(` 초월 · 별가루 +${fmt(g)}`,` Transcend · Stardust +${fmt(g)}`));
+  return true;
+}
+const transUnlocked=()=>S.ascensions>=5||S.starEver>0;
+
+
+const _ac={mx:0,dx:0,rx:0,ax:0,tx:0,ix:0};
+/* 업적도 바닥나지 않는다. 마나·최심층·환생·승천·초월 이정표를 이어 붙인다.
+   업적 하나당 마나 생산 +2% 이므로 이 자체가 끝없는 사다리가 된다. */
+for(let e=25;e<=300;e+=3){
+  const v=Math.pow(10,e);
+  ACHS.push({id:'mx'+e, nm:achName('mx',_ac.mx++),
+    d:()=>X(`누적 마나 1e${e}`,`1e${e} total mana`), f:()=>S.manaPeakL>=e});
+}
+for(let f=100;f<=3000;f+=50){
+  ACHS.push({id:'dx'+f, nm:achName('dx',_ac.dx++),
+    d:()=>X(`던전 ${f}층`,`Dungeon floor ${f}`), f:()=>(S.deepestEver||S.deepest)>=f});
+}
+for(let n=50;n<=3000;n+=50){
+  ACHS.push({id:'rx'+n, nm:achName('rx',_ac.rx++),
+    d:()=>X(`환생 ${n}회`,`Rebirth ${n} times`), f:()=>(S.rebirthEver||S.rebirths)>=n});
+}
+for(let n=5;n<=500;n+=5){
+  ACHS.push({id:'ax'+n, nm:achName('ax',_ac.ax++),
+    d:()=>X(`승천 ${n}회`,`Ascend ${n} times`), f:()=>(S.ascendEver||S.ascensions)>=n});
+}
+/* 우주 계층과 무한 계층을 밟을 때마다 */
+for(let i=1;i<COSMOS.length;i++){
+  ACHS.push({id:'cx'+i, sp:COSMOS[i].sp, nm:{ko:`${COSMOS[i].ko}에 닿다`,en:`Reach the ${COSMOS[i].en}`},
+    d:()=>X(`탐사에서 ${COSMOS[i].ko} 계층 돌파`,`Break into the ${COSMOS[i].en}`),
+    f:()=>chapterOf(Math.max(1,S.deepest||1))>=i});
+}
+for(let i=0;i<INF_LAYERS.length;i++){
+  for(const n of [1,5,25,100]){
+    ACHS.push({id:'ix'+i+'_'+n, sp:INF_LAYERS[i].sp, nm:{ko:`${INF_LAYERS[i].ko}의 ${ACH_NOUN[_ac.ix%ACH_NOUN.length][0]}`,en:`${ACH_NOUN[_ac.ix%ACH_NOUN.length][1]} of ${INF_LAYERS[i].en}`}, _n:_ac.ix++,
+      d:()=>X(`${INF_LAYERS[i].ko} 돌파 ${n}회`,`Break ${INF_LAYERS[i].en} ${n} times`),
+      f:()=>(S[INF_LAYERS[i].k+'Count']||0)>=n});
+  }
+}
+for(let n=1;n<=200;n+=1){
+  ACHS.push({id:'tx'+n, nm:achName('tx',_ac.tx++),
+    d:()=>X(`초월 ${n}회`,`Transcend ${n} times`), f:()=>(S.transEver||S.transcends)>=n});
+}
+
+/* 그림이 지정되지 않은 업적에 배지를 하나씩 떼어 준다. 앞에서부터 순서대로 주면
+   문양이 매번, 색이 열두 개마다, 테두리가 아흔여섯 개마다 바뀐다. */
+let _bi=0;
+for(const a of ACHS) if(!a.sp) a.sp=BADGES[_bi++%BADGES.length];
+
+/* ══════════════ 도전 ══════════════ */
+const chalUnlocked=()=>S.ascensions>=1||chalTotal()>0;
+function enterChallenge(id){
+  const ch=CHALLENGES.find(c=>c.id===id);
+  if(!ch||!chalUnlocked()) return;
+  if((S.chalDone[id]||0)>=ch.max) return;
+  S.chal=id; S.chalTime=0; softReset();
+  log(`${icHTML('chain')}<b>${NM(ch.nm)}</b> ${X('시작 · 목표','started · goal')} ${icHTML('mana')}${fmt(chalGoal(ch,S.chalDone[id]||0))}`,true);
+  toast(icHTML('chain')+' '+NM(ch.nm)+X(' 시작',' started'));
+}
+const CHAL_CD=300;   // 너무 잦으면 회차가 초기화돼 던전 진행이 망가진다                     // 시련을 나온 뒤 자동 재진입까지 최소 대기(초)
+function exitChallenge(reset=true){
+  S.chal=null; S.chalTime=0; S.chalCd=CHAL_CD;   // 곧바로 다시 들어가면 던전이 영영 1층에 묶인다
+  if(reset) softReset();
+  recalc();
+}
+function checkChallenge(){
+  const ch=curChal(); if(!ch) return;
+  const c=S.chalDone[ch.id]||0;
+  if(S.manaRunL>=numLog(chalGoal(ch,c))){
+    S.chalDone[ch.id]=c+1;
+    log(`${icHTML('medal')}<b class="gold">${NM(ch.nm)} ${X(`${c+1}단계 돌파!`,`stage ${c+1} cleared!`)}</b> · ${ch.rw(c+1)}`,true);
+    achToast(NM(ch.nm)+X(' 돌파',' cleared'), ch.rw(c+1),'medal');
+    exitChallenge(true);
+    if(autoOK('chal')) autoEnterChallenge();
+  }
+}
+/* 도달 가능성 판정 · 최고 회차 기록 대비 목표가 현실적인 시련만 고른다 */
+function chalReachable(ch){
+  const n=S.chalDone[ch.id]||0;
+  if(n>=ch.max) return false;
+  const penalty=(ch.rule.drain||1)*(ch.rule.noResearch?4:1)*(ch.rule.noAuto?3:1)*(ch.rule.maxTier!==undefined?3:1);
+  return chalGoal(ch,n)*penalty <= S.bestRun*0.6;
+}
+function autoEnterChallenge(){
+  if(!chalUnlocked()||S.chal) return;
+  if((S.chalCd||0)>0) return;          // 쿨다운 중에는 자동 진입 금지 (수동 진입은 언제든 가능)
+  const avail=CHALLENGES.filter(chalReachable);
+  if(!avail.length) return;
+  avail.sort((a,b)=>(S.chalDone[a.id]||0)-(S.chalDone[b.id]||0)||a.base-b.base);
+  enterChallenge(avail[0].id);
+}
+
+/* ══════════════ 자동화 ══════════════
+   자동화는 기본값이 아니라 진행으로 얻는 보상이다.
+   초반에는 채집·건설·연구·던전을 직접 해야 한다. */
+const AUTO_DEFS=[
+ {k:'gather', sp:'mana', g:{ko:"한 회차 안",en:"Within a run"}, nm:{ko:'마나 채집',en:"Mana Gathering"},     d:()=>X('채집 버튼을 대신 눌러 준다',"Presses the gather button for you"),                unlock:()=>S.manaEver>=1e3,                  req:()=>X('누적 마나 1,000',"1,000 total mana")},
+ {k:'build', sp:'workshop',  nm:{ko:'시설 건설',en:"Construction"},     d:()=>X('여유 마나로 가장 비싼 시설부터 사들인다',"Buys the priciest affordable building"),   unlock:()=>S.manaEver>=2e4,                  req:()=>X('누적 마나 2만',"20,000 total mana")},
+ {k:'research', sp:'flask',nm:{ko:'연구 구매',en:"Research Buying"},    d:()=>X('조건을 만족한 연구를 순서대로 사들인다',"Buys available researches in order"),     unlock:()=>(S.rebirthEver||S.rebirths)>=5||(S.ascendEver||S.ascensions)>0,    req:()=>X('환생 5회',"5 rebirths")},
+ {k:'dungeon', sp:'sword',nm:{ko:'던전 연속 탐험',en:"Continuous Delving"},d:()=>X('층을 깬 뒤 멈추지 않고 계속 내려간다',"Keeps descending after each floor"),       unlock:()=>S.deepest>=20,                    req:()=>X('던전 20층 돌파',"Reach dungeon floor 20")},
+ {k:'rebirth', sp:'spiral', g:{ko:"환생",en:"Rebirth"},nm:{ko:'자동 환생',en:"Auto Rebirth"},     d:()=>X('직전 회차보다 1.5배 이상 벌릴 때 환생한다',"Rebirths when the run beats the last by 1.5x"),  unlock:()=>(S.rebirthEver||S.rebirths)>=20||(S.ascendEver||S.ascensions)>0,   req:()=>X('환생 20회',"20 rebirths")},
+ {k:'soulup', sp:'soul', nm:{ko:'영혼 강화 구매',en:"Soul Upgrade Buying"},d:()=>X('영혼석으로 가장 싼 강화를 사들인다',"Buys the cheapest soul upgrade"),         unlock:()=>(S.rebirthEver||S.rebirths)>=10||(S.ascendEver||S.ascensions)>0,   req:()=>X('환생 10회',"10 rebirths")},
+ {k:'chal', sp:'chain',   nm:{ko:'자동 시련',en:"Auto Trials"},     d:()=>X('환생할 때마다 감당 가능한 시련에 들어간다',"Enters a reachable trial on each rebirth"),  unlock:()=>chalTotal()>=3,                   req:()=>X('시련 3단계 완료',"Clear 3 trial stages")},
+ {k:'ascend', sp:'reliquary', g:{ko:"승천",en:"Ascension"}, nm:{ko:'자동 승천',en:"Auto Ascension"},     d:()=>X('유물이 충분히 쌓이면 승천한다',"Ascends once relics pile up"),              unlock:()=>(S.ascendEver||S.ascensions)>=3,                  req:()=>X('승천 3회',"3 ascensions")},
+ {k:'relicup', sp:'relic',nm:{ko:'유물 강화 구매',en:"Relic Upgrade Buying"},d:()=>X('유물로 가장 싼 강화를 사들인다',"Buys the cheapest relic upgrade"),             unlock:()=>(S.ascendEver||S.ascensions)>=2,                  req:()=>X('승천 2회',"2 ascensions")},
+ {k:'rune', sp:'runering',   nm:{ko:'룬 강화',en:"Rune Upgrading"},       d:()=>X('오퍼링으로 가장 싼 룬부터 새긴다',"Engraves the cheapest rune first"),           unlock:()=>(S.ascendEver||S.ascensions)>=1,                  req:()=>X('승천 1회',"1 ascension")},
+ {k:'gear', sp:'anvil',   nm:{ko:'장비 제작',en:"Gear Crafting"},     d:()=>X('결정으로 가장 싼 장비부터 벼린다',"Forges the cheapest gear first"),           unlock:()=>(S.ascendEver||S.ascensions)>=1,                  req:()=>X('승천 1회',"1 ascension")},
+ {k:'trans', sp:'starcrown', g:{ko:"초월",en:"Transcendence"},  nm:{ko:'자동 초월',en:"Auto Transcend"}, d:()=>X('직전 주기보다 1.5배 이상 벌릴 때 초월한다',"Transcends when the cycle beats the last by 1.5x"), unlock:()=>(S.transEver||S.transcends)>=1||S.starEver>0, req:()=>X('초월 1회',"1 transcendence")},
+ {k:'starup', sp:'starsigil', nm:{ko:'별 강화 구매',en:"Star Upgrade Buying"}, d:()=>X('별가루로 가장 싼 강화를 사들인다',"Buys the cheapest star upgrade"), unlock:()=>(S.transEver||S.transcends)>=1||S.starEver>0, req:()=>X('초월 1회',"1 transcendence")},
+ {k:'inf', sp:'infinity', g:{ko:"무한 너머",en:"Beyond Infinity"},    nm:{ko:'자동 무한 돌파',en:"Auto Infinity"}, d:()=>X('수가 넘칠 지경이 되면 알아서 한 칸 올라간다',"Breaks a rung as soon as a number is ready to overflow"), unlock:()=>(S.infEver||0)>0, req:()=>X('무한 돌파 1회',"1 infinity break")},
+ {k:'upinf', sp:'inf_core',  nm:{ko:'무한 강화 구매',en:"Infinity Upgrade Buying"}, d:()=>X('무한으로 가장 싼 강화를 사들인다',"Buys the cheapest infinity upgrade"), unlock:()=>(S.infEver||0)>0, req:()=>X('무한 돌파 1회',"1 infinity break")},
+ {k:'brketer', sp:'etercrown',  nm:{ko:'자동 영원 돌파',en:"Auto Eternity"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.eterCount||0)>=1, req:()=>X('영원 돌파 1회',"1 eternity break")},
+ {k:'upeter', sp:'etersigil', nm:{ko:'영원 강화 구매',en:"Eternity Upgrade Buying"}, d:()=>X('영원으로 가장 싼 강화를 사들인다',"Buys the cheapest eternity upgrade"), unlock:()=>(S.eterEver||0)>0, req:()=>X('영원 돌파 1회',"1 eternity break")},
+ {k:'brkreal', sp:'real_gate',  nm:{ko:'자동 현실 돌파',en:"Auto Reality"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.realCount||0)>=1, req:()=>X('현실 돌파 1회',"1 reality break")},
+ {k:'upreal', sp:'real_shard', nm:{ko:'현실 강화 구매',en:"Reality Upgrade Buying"}, d:()=>X('현실로 가장 싼 강화를 사들인다',"Buys the cheapest reality upgrade"), unlock:()=>(S.realEver||0)>0, req:()=>X('현실 돌파 1회',"1 reality break")},
+ {k:'brkvoid', sp:'void_gate',  nm:{ko:'자동 공허 돌파',en:"Auto Void"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.voidCount||0)>=1, req:()=>X('공허 돌파 1회',"1 void break")},
+ {k:'upvoid', sp:'void_star', nm:{ko:'공허 강화 구매',en:"Void Upgrade Buying"}, d:()=>X('공허로 가장 싼 강화를 사들인다',"Buys the cheapest void upgrade"), unlock:()=>(S.voidEver||0)>0, req:()=>X('공허 돌파 1회',"1 void break")},
+ {k:'brkorigin', sp:'orig_crown',nm:{ko:'자동 근원 돌파',en:"Auto Origin"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.originCount||0)>=1, req:()=>X('근원 돌파 1회',"1 origin break")},
+ {k:'uporigin', sp:'orig_seed',nm:{ko:'근원 강화 구매',en:"Origin Upgrade Buying"}, d:()=>X('근원으로 가장 싼 강화를 사들인다',"Buys the cheapest origin upgrade"), unlock:()=>(S.originEver||0)>0, req:()=>X('근원 돌파 1회',"1 origin break")},
+];
+const AUTO_DEF=k=>AUTO_DEFS.find(a=>a.k===k);
+/* 승천·초월로 최심층이 초기화되면 자동 탐험이 다시 잠기던 문제.
+   한 번 조건을 만족한 자동화는 계속 열려 있다. */
+function autoUnlocked(k){
+  const d=AUTO_DEF(k); if(!d) return false;
+  if(S.autoUnlocked&&S.autoUnlocked[k]) return true;
+  if(d.unlock()){
+    (S.autoUnlocked=S.autoUnlocked||{})[k]=1;
+    if(S.auto[k]===undefined||S.auto[k]===0) S.auto[k]=1;   // 열리는 순간 켠다
+    return true;
+  }
+  return false;
+}
+/* 전부 열렸는가 — 그때부터는 손댈 것이 없다 */
+const allAuto=()=>AUTO_DEFS.every(d=>autoUnlocked(d.k));
+const autoOK=k=>autoUnlocked(k)&&!!S.auto[k];
+/* 강화 나무는 여덟인데 자동 구매는 영혼·유물 둘뿐이었다.
+   나머지도 같은 규칙으로 — 가장 싼 것부터, 살 수 있는 만큼. */
+function autoBuyTree(defs,store,curKey){
+  let bought=0;
+  for(let round=0;round<8;round++){
+    let best=null,bc=Infinity;
+    const st=S[store]||{};
+    for(const u of defs){
+      const l=st[u.id]||0; if(l>=u.max) continue;
+      const c=u.c(l); if(isFinite(c)&&c<bc){ bc=c; best=u; }
+    }
+    if(!best||(S[curKey]||0)<bc) break;
+    S[curKey]-=bc;
+    (S[store]=S[store]||{})[best.id]=((S[store]||{})[best.id]||0)+1;
+    bought++;
+  }
+  if(bought) recalc();
+  return bought;
+}   // 해금 판정을 먼저. 그래야 열리는 순간 켜진다.
+const AUTO_INTERVAL={gather:0.2,build:0.25,research:0.8,rune:1.2,gear:1.5};
+function runAutomation(dt){
+  const m=M(), ch=curChal();
+  if(ch&&ch.rule.noAuto) return;
+  const t=S.timers;
+  for(const k in AUTO_INTERVAL) t[k]=(t[k]||0)+dt;
+  const iv=k=>AUTO_INTERVAL[k]*m.autoSpeed;
+
+  if(autoOK('gather')&&t.gather>=iv('gather')){t.gather=0;gather()}
+  if(autoOK('build')&&t.build>=iv('build')){
+    t.build=0;
+    /* 하나 사고 멈추면 마나가 넉넉할 때 늘 위 단계에서 끊겨 아래 단계가 방치된다.
+       위에서 아래로 훑되 예산(남은 마나의 일부) 이 허락하는 단계는 모두 산다. */
+    for(let i=PRODUCERS.length-1;i>=0;i--){
+      if(tierLocked(i)) continue;
+      if(m.autoMax){
+        const n=maxAfford(i), cn=n>0?costLogOf(i,n):Infinity;
+        if(n>0&&cn<=S.manaL+L10(0.5)){S.manaL=logSub(S.manaL,cn);S.bought[i]+=n;recalc();continue}
+      }
+      const c=costLogOf(i,1);
+      if(c<=S.manaL+L10(0.25)){S.manaL=logSub(S.manaL,c);S.bought[i]++;recalc()}
+    }
+  }
+  if(autoOK('research')&&t.research>=iv('research')){
+    t.research=0;
+    if(!(ch&&ch.rule.noResearch))
+      for(const r of RESEARCH){
+        if(S.research[r.id]||(r.req&&!S.research[r.req])) continue;
+        const rl=numLog(r.cost);
+        if(S.manaL>=rl){S.manaL=logSub(S.manaL,rl);S.research[r.id]=1;recalc();break}
+      }
+  }
+  if(autoOK('rune')&&t.rune>=iv('rune')){
+    t.rune=0;
+    const cap=Math.floor(m.runeCap);
+    let best=null,bc=Infinity;
+    for(const r of RUNES){const l=S.runes[r.id]||0;if(l>=cap)continue;const c=runeCost(l);if(c<bc){bc=c;best=r}}
+    if(best&&S.offering>=bc){S.offering-=bc;S.runes[best.id]=(S.runes[best.id]||0)+1;recalc()}
+  }
+  if(autoOK('gear')&&t.gear>=iv('gear')){
+    t.gear=0;
+    let best=null,bc=Infinity;
+    for(const g of GEAR){const l=S.gear[g.id]||0;const c=gearCost(l);if(c<bc){bc=c;best=g}}
+    if(best&&S.crystal>=bc){S.crystal-=bc;S.gear[best.id]=(S.gear[best.id]||0)+1;recalc()}
+  }
+  // 영혼 / 유물 강화 자동 (가장 싼 것부터)
+  if(autoOK('soulup')){
+    let best=null,bc=Infinity;
+    for(const u of SOUL_UPS){const l=S.soulUps[u.id]||0;if(l>=u.max)continue;const c=u.c(l);if(c<bc){bc=c;best=u}}
+    if(best&&S.soul>=bc){S.soul-=bc;S.soulUps[best.id]=(S.soulUps[best.id]||0)+1;recalc()}
+  }
+  if(autoOK('relicup')){
+    let best=null,bc=Infinity;
+    for(const u of RELIC_UPS){const l=S.relicUps[u.id]||0;if(l>=u.max)continue;const c=u.c(l);if(c<bc){bc=c;best=u}}
+    if(best&&S.relic>=bc){S.relic-=bc;S.relicUps[best.id]=(S.relicUps[best.id]||0)+1;recalc()}
+  }
+  // 환생 / 승천 · 직전 회차보다 확실히 나아졌을 때만
+  if(autoOK('rebirth')&&S.sinceRebirth>90){   // 회차가 너무 짧으면 연구·룬이 쌓일 틈이 없다
+    const g=soulGain();
+    if(g>=10&&g>=1.5*(S.lastSoulGain||0)) doRebirth(true);
+  }
+  if(autoOK('ascend')&&S.sinceAscend>120){
+    const g=relicGain();
+    if(g>=3&&g>=1.5*(S.lastRelicGain||0)) doAscend(true);
+  }
+  /* 첫 돌파는 손으로 해야 한다 — 아래 계층을 통째로 갈아 넣는 결정이기 때문이다.
+     한 번 해 본 뒤로는 그 계층을 자동으로 뚫는다. 위 계층부터 살핀다. */
+  if(S.sinceInf>=INF_AUTO_CD){
+    for(let i=INF_LAYERS.length-1;i>=0;i--){
+      const L=INF_LAYERS[i];
+      const key = i===0 ? 'inf' : 'brk'+L.k;
+      if(!autoOK(key)) continue;
+      if(i>0 && (S[L.k+'Count']||0)<1) continue;   // 아직 손으로 한 번도 안 뚫었다
+      if(!infUnlocked(i)||infGain(i)<=0) continue;
+      doInfBreak(i); break;
+    }
+  }
+  if(autoOK('starup')) autoBuyTree(STAR_UPS,'starUps','star');
+  for(const L of INF_LAYERS){
+    if(!L.ups) continue;
+    if(autoOK('up'+L.k)) autoBuyTree(L.ups(), L.store, L.k);
+  }
+  /* 자동 시련이 환생 직후에만 걸려 있었다. 자동 환생을 끄면 영영 발동하지 않는다.
+     자동화 고리에서도 직접 걸되, 들어가기 전에 회차를 정산해 손해가 없게 한다. */
+  if(autoOK('chal')&&!S.chal&&(S.chalCd||0)<=0){
+    if(soulGain()>0) doRebirth(true);      // doRebirth 안에서 시련 진입을 시도한다
+    if(!S.chal) autoEnterChallenge();
+  }
+  if(autoOK('trans')&&S.sinceTrans>300){
+    const g=starGain();
+    if(g>=2&&g>=1.5*(S.lastStarGain||0)) doTranscend(true);
+  }
+}
+
+/* ══════════════ 진행 ══════════════ */
+function tick(dt){
+  const m=M(), d=dt*m.speed, ch=curChal();
+  /* 생성도 로그로 — 곱하는 순간 넘치던 자리가 여기서 풀린다 */
+  for(let i=PRODUCERS.length-1;i>=1;i--)
+    S.genL[i-1]=logAdd(S.genL[i-1], cntLog(i)+numLog(PRODUCERS[i].rate)+m.tUpLog+numLog(d));
+  syncGen();
+  addManaLog(manaRateLog()+numLog(d));
+  if(S.exploring&&!(ch&&ch.rule.noDungeon)){
+    /* 진행도를 절대 피해량으로 쌓으면 깊은 층에서 ∞ 가 된다.
+       공격력과 체력의 자릿수 차이만 보고 0~1 비율로 채운다. */
+    let rem=d, steps=0;
+    while(rem>0&&steps<FLOOR_MAX_STEPS){
+      const gap=dungeonPowerLog()-floorHPLog(S.floor);
+      const per=gap>=8?1e8:(gap<=-300?0:Math.pow(10,gap));   // 초당 채우는 비율
+      const cd=Math.min(rem,S.floorCd||0);
+      if(cd>0){ rem-=cd; S.floorCd=(S.floorCd||0)-cd; S.prog=Math.min(1,S.prog+per*cd); }
+      if((S.floorCd||0)>0) break;
+      const need=Math.max(0,1-S.prog);
+      const t=need<=0?0:(per>0?need/per:Infinity);
+      if(!(t<=rem)){ S.prog=Math.min(1,S.prog+per*rem); rem=0; break; }
+      rem-=t; S.prog=0; S.floorCd=FLOOR_MIN_TIME; steps++;
+      const n=sweepCount();
+      for(let k=0;k<n;k++) clearFloor(k===n-1?n:0);   // 기록에는 마지막 한 줄만
+      if(!autoOK('dungeon')){ S.exploring=false; break; }
+    }
+    S.prog=Math.max(0,Math.min(1,S.prog||0));
+  }
+
+  runAutomation(dt);
+  if(ch){
+    S.chalTime+=dt;
+    // 15분 안에 못 깨면 승산이 없다고 보고 물러난다
+    if(S.chalTime>900){
+      log(`${icHTML('chain')}<b>${NM(ch.nm)}</b> ${X('철수','withdrawn')} · 아직 감당할 수 없다`,true);
+      exitChallenge(true);
+    }
+  }else{
+    S.chalTime=0;
+    if(S.manaRun>S.bestRun) S.bestRun=S.manaRun;   // 파생값 기준 — 시련 도달 판정용
+  }
+  checkChallenge();
+  S.chalCd=Math.max(0,(S.chalCd||0)-dt);
+  S.playtime+=dt; S.sinceRebirth+=dt; S.sinceAscend+=dt; S.sinceTrans+=dt; S.sinceInf+=dt;
+  checkAchs();
+  recalc();
+}
+function checkAchs(){
+  for(const a of ACHS) if(!S.achs[a.id]&&a.f()){
+    S.achs[a.id]=1;
+    const tier=ACHS.indexOf(a);
+    achToast(NM(a.nm),DS(a)+X(' · 마나 생산 +2%',' · Mana output +2%'),tier<10?'medal_b':tier<20?'medal_s':'medal');
+    log(`${icHTML('medal')}${X('업적','Feat')} <b class="gold">${NM(a.nm)}</b> ${X('달성 · 마나 생산 +2%','unlocked · Mana output +2%')}`,true);
+    flagTab('ach');
+  }
+}
+/* 층을 초당 스무 번 깨면 로그도 그만큼 쌓인다. 그때마다 패널을 통째로 다시 그리면
+   저사양 기기에서 눈에 띄게 무거워진다. 쌓아 두었다가 한 번에 그린다. */
+let logDirty=false;
+function flushLog(){
+  if(!logDirty) return;
+  logDirty=false;
+  const el=document.getElementById('dlog');
+  if(el) el.innerHTML=LOG.map(l=>`<div class="${l.hl?'hl':''}">${l.html}</div>`).join('');
+}
+function log(html,hl){
+  LOG.unshift({html,hl}); if(LOG.length>80) LOG.pop();
+  logDirty=true;
+}
+
+/* ══════════════ DOM 헬퍼 ══════════════ */
+const $=id=>document.getElementById(id);
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
+function btn(cls,html,onClick){
+  const b=document.createElement('button');
+  b.type='button'; b.className='btn '+(cls||''); if(html!=null)b.innerHTML=html;
+  if(onClick) b.addEventListener('click',e=>{e.preventDefault();onClick();refresh()});
+  return b;
+}
+function toast(html){
+  const box=$('toast'), t=el('div',null,html);
+  box.appendChild(t); while(box.children.length>4) box.firstChild.remove();
+  setTimeout(()=>t.remove(),2600);
+}
+/* 업적 배너 (큰 알림) */
+let achQueue=[],achBusy=false;
+function achToast(title,desc,sprite){
+  achQueue.push({title,desc,sprite}); if(!achBusy) nextAch();
+}
+function nextAch(){
+  if(!achQueue.length){achBusy=false;return}
+  achBusy=true;
+  const a=achQueue.shift();
+  const w=el('div','achpop');
+  w.innerHTML=`<img class="px" src="${spriteURL(a.sprite||'medal')}" width="32" height="32" alt="">
+    <div><div class="ttl">${X('업적 달성','FEAT UNLOCKED')}</div><div class="nm">${a.title}</div><div class="ds">${a.desc}</div></div>`;
+  document.body.appendChild(w);
+  setTimeout(()=>w.classList.add('out'),2400);
+  setTimeout(()=>{w.remove();nextAch()},2900);
+}
+let modalCb=null;
+function modal(title,body,onOk){
+  $('modalTitle').innerHTML=title; $('modalBody').innerHTML=body;
+  $('modalOk').textContent=X('확인','OK'); $('modalNo').textContent=X('취소','Cancel');
+  $('modalWrap').classList.add('on');
+  $('modalNo').style.display=onOk?'':'none';
+  modalCb=onOk||null;
+}
+$('modalOk').addEventListener('click',()=>{
+  $('modalWrap').classList.remove('on');
+  const f=modalCb; modalCb=null; if(f){f();render()}
+});
+$('modalNo').addEventListener('click',()=>{$('modalWrap').classList.remove('on');modalCb=null});
+$('modalWrap').addEventListener('click',e=>{if(e.target.id==='modalWrap'){$('modalWrap').classList.remove('on');modalCb=null}});
+
+/* ══════════════ 탭 ══════════════ */
+const TABS=[
+ {id:'tower',   sp:'tower',    nm:{ko:'마탑',en:"Mage Tower"},      open:()=>true},
+ {id:'research',sp:'flask',    nm:{ko:'연구',en:"Research"},      open:()=>S.manaEver>=100},
+ {id:'dungeon', sp:'sword',    nm:{ko:'던전',en:"Dungeon"},      open:()=>S.manaEver>=5e3},
+ {id:'relics',  sp:'rune_wealth',nm:{ko:'룬 석판',en:"Rune Tablets"},open:()=>S.offerEver>0},
+ {id:'rebirth', sp:'soul',     nm:{ko:'환생',en:"Rebirth"},      open:()=>S.manaEver>=REBIRTH_REQ/20||S.rebirths>0||S.soulEver>0},
+ {id:'ascend',  sp:'relic',    nm:{ko:'승천',en:"Ascension"},      open:()=>S.soulEver>=ASCEND_REQ/10||S.ascensions>0||S.relicEver>0},
+ {id:'trans',   sp:'star',     nm:{ko:'초월',en:"Transcend"},   open:()=>transUnlocked()},
+ {id:'inf',     sp:'infinity', nm:{ko:'무한',en:"Infinity"},   open:()=>infUnlocked(0)},
+ {id:'chal',    sp:'chain',    nm:{ko:'도전',en:"Trials"},      open:()=>chalUnlocked()},
+ {id:'ach',     sp:'medal',    nm:{ko:'업적',en:"Feats"},      open:()=>true},
+ {id:'auto',    sp:'cog',      nm:{ko:'자동화',en:"Automation"},    open:()=>true},
+ {id:'settings',sp:'anvil',    nm:{ko:'설정',en:"Settings"},      open:()=>true},
+];
+let curTab='tower', updaters=[], alerts={}, pointerDown=false, needRebuild=false;
+document.addEventListener('pointerdown',()=>{pointerDown=true});
+document.addEventListener('pointerup',()=>{pointerDown=false;if(needRebuild){needRebuild=false;render()}});
+function flagTab(id){if(curTab!==id){alerts[id]=1;buildTabs()}}
+function buildTabs(){
+  const box=$('tabs'); box.innerHTML='';
+  /* 잠긴 탭도 흐리게 보여 준다. 아예 숨기면 그런 것이 있는 줄도 모른다.
+     다만 무엇인지는 알 수 없게 ??? 로 둔다. */
+  let shownLocked=0;
+  TABS.forEach((t,i)=>{
+    const open=t.open();
+    if(!open){
+      if(shownLocked>=2) return;      // 바로 다음 둘까지만 보여 준다
+      shownLocked++;
+    }
+    const b=el('button','tab'+(open?(t.id===curTab?' on':''):' locked')+(alerts[t.id]?' alert':''));
+    b.type='button';
+    b.appendChild(ic(open?t.sp:'unknown',16));
+    b.appendChild(el('span',null,open?NM(t.nm):'???'));
+    b.appendChild(el('span','n',open?(i===9?'0':String(i+1)):''));
+    b.appendChild(el('span','dot'));
+    if(open) b.addEventListener('click',()=>switchTab(t.id));
+    box.appendChild(b);
+  });
+}
+function switchTab(id){
+  const t=TABS.find(x=>x.id===id);
+  if(!t||!t.open()) return;
+  curTab=id; delete alerts[id]; render();
+}
+
+/* ══════════════ 공용 위젯 ══════════════ */
+/* 0.1 초마다 갱신 함수가 전부 돈다. 그때마다 querySelector 로 노드를 다시 찾고
+   값이 그대로여도 innerHTML 을 다시 써서 브라우저에 HTML 파싱을 시키고 있었다.
+   노드는 만들 때 한 번만 찾고, 값이 달라졌을 때만 쓴다. */
+function memo(node){
+  return {
+    set html(v){ if(node._h!==v){ node._h=v; node.innerHTML=v; } },
+    set text(v){ if(node._h!==v){ node._h=v; node.textContent=v; } },
+    node,
+  };
+}
+function card(title,hint){
+  const c=el('div','card');
+  if(title){const h=el('h2');h.appendChild(ic(title[1],16));h.appendChild(el('span',null,title[0]));c.appendChild(h)}
+  if(hint) c.appendChild(el('div','hint',hint));
+  return c;
+}
+/* 레벨식 업그레이드 격자 (영혼/유물 공용) */
+function levelGrid(defs,lvOf,curOf,pay,curSp){
+  const g=el('div','grid wide');
+  defs.forEach(u=>{
+    const b=document.createElement('button');
+    b.type='button'; b.className='up';
+    b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
+    b.querySelector('.ic').appendChild(ic(u.sp,32));
+    const _t=memo(b.querySelector('.t')),_d=memo(b.querySelector('.d')),_c=memo(b.querySelector('.c'));
+    const _goal=b.querySelector('.goal')&&memo(b.querySelector('.goal'));
+    b.addEventListener('click',e=>{
+      e.preventDefault();
+      const l=lvOf(u.id);
+      if(l>=u.max) return;
+      /* 한 번에 여러 단계. 비용 곡선이 등비가 아니어도 되게 하나씩 더해 본다. */
+      let n=0,spent=0,want=(S.buyAmt==='max')?1e9:S.buyAmt;
+      while(n<want&&l+n<u.max){
+        const c=u.c(l+n);
+        if(!isFinite(c)||spent+c>curOf()) break;
+        spent+=c; n++;
+        if(n>=1000) break;
+      }
+      if(n<=0) return;
+      pay(spent,u.id,n); recalc(); refresh();
+      toast(icHTML(u.sp)+' '+NM(u.nm)+' Lv.'+fmt(l+n));
+    });
+    g.appendChild(b);
+    updaters.push(()=>{
+      const l=lvOf(u.id),maxed=l>=u.max,c=u.c(l),afford=!maxed&&curOf()>=c;
+      _t.html=`${NM(u.nm)} <span class="lv">Lv.${fmt(l)}${u.max!==Infinity?' / '+u.max:''}</span>`;
+      _d.text=u.d(l);
+      let bn=0,bs=0,bw=(S.buyAmt==='max')?1e9:S.buyAmt;
+      while(bn<bw&&l+bn<u.max&&bn<1000){ const cc=u.c(l+bn); if(!isFinite(cc)||bs+cc>curOf())break; bs+=cc; bn++; }
+      _c.html=maxed?`<span class="good">${X('최대치 도달','Maxed')}</span>`
+        :`${icHTML(curSp)} ${fmt(bn>0?bs:c)}${bn>1?` <span class="dim">×${bn}</span>`:''}`;
+      b.classList.toggle('done',maxed); b.classList.toggle('afford',afford); b.disabled=maxed;
+    });
+  });
+  return g;
+}
+function toggleRow(def){
+  const r=el('div','row');
+  r.style.cssText='justify-content:space-between;padding:7px 2px;gap:12px';
+  const left=el('div'); left.style.cssText='min-width:0;display:flex;align-items:center;gap:9px';
+  const icb=el('div'); icb.style.cssText='flex:0 0 auto;line-height:0';
+  icb.appendChild(ic(def.sp||'cog',24));            // 줄마다 제 그림이 있어야 눈으로 갈린다
+  const txt=el('div'); txt.style.minWidth='0';
+  const nm=el('div'); nm.style.cssText='font-family:var(--serif);font-size:14px';
+  const ds=el('div','hint'); ds.style.margin='0';
+  txt.append(nm,ds); left.append(icb,txt);
+  const b=btn('sm','',()=>{ S.auto[def.k]=S.auto[def.k]?0:1; });   // 잠김과 무관하게 토글
+  r.append(left,b);
+  const _nm=memo(nm), _ds=memo(ds), _b=memo(b);
+  let _cls='';
+  updaters.push(()=>{
+    const un=autoUnlocked(def.k), on=!!S.auto[def.k];   // 잠겨 있어도 미리 켜 둘 수 있다
+    _nm.html=NM(def.nm)+(un?'':' <span class="lv">🔒</span>');
+    _ds.html=un?DS(def):`<span class="dim">${X('해금 조건','Unlocks at')}: <b>${DSF(def.req)}</b></span>`;
+    b.disabled=false;
+    const cls='btn sm '+(on?'on':'off');
+    if(_cls!==cls){ _cls=cls; b.className=cls; }
+    const lab=on?(un?X('자동 ON','AUTO'):X('대기 중','ARMED')):X('수동 OFF','MANUAL');
+    _b.html=`<img class="px sw" src="art/ui/sw_${on?'on':'off'}.png" width="22" height="12" alt="">${lab}`;
+  });
+  return r;
+}
+
+/* ══════════════ 패널 ══════════════ */
+function buildTower(p){
+  const c=card([X('마탑 운영',"Tower Management"),'tower'],X('윗 단계 시설이 아랫 단계를 스스로 지어 올린다. 마나를 직접 뽑아내는 것은 견습 마법사뿐이다.',"Each tier builds the tier below it on its own. Only Apprentice Mages draw mana directly."));
+  const ctrl=el('div','row');
+  ctrl.appendChild(el('span','dim',X('구매 수량','Buy amount')));
+  [1,10,100,'max'].forEach(v=>{
+    const b=btn('sm',v==='max'?X('최대','Max'):'×'+v,()=>{S.buyAmt=v});
+    updaters.push(()=>b.className='btn sm '+(S.buyAmt===v?'on':''));
+    ctrl.appendChild(b);
+  });
+  const gb=btn('gold','',()=>gather());
+  gb.style.marginLeft='auto';
+  ctrl.appendChild(gb);
+  c.appendChild(ctrl);
+  updaters.push(()=>{gb.innerHTML=`${icHTML('mana',16)} ${X('마나 채집','Gather Mana')} <span class="c">+${fmtLog(gatherAmountLog())}</span>`});
+  p.appendChild(c);
+
+  const list=el('div','card');
+  PRODUCERS.forEach((pr,i)=>{
+    const row=el('div','unit');
+    const icb=el('div','ico'); icb.appendChild(ic(pr.sp,32)); row.appendChild(icb);
+    const mid=el('div');
+    mid.appendChild(el('div','nm',NM(pr.nm)));
+    const dt=el('div','dt'), own=el('div','own');
+    mid.append(dt,own); row.appendChild(mid);
+    const b=btn('buy','',()=>buyProducer(i));
+    row.appendChild(b);
+    list.appendChild(row);
+    updaters.push(()=>{
+      const m=M(), lock=tierLocked(i);
+      const n=S.buyAmt==='max'?Math.max(1,maxAfford(i)):S.buyAmt;
+      const cl=costLogOf(i,n);
+      const perL=i===0?manaRateLog():cntLog(i)+numLog(pr.rate)+m.tUpLog;
+      dt.innerHTML=`${NM(pr.makes)} <b>+${fmtLog(perL)}</b> ${X('/초','/s')}`;
+      own.textContent=X('보유 ','Own ')+fmtLog(cntLog(i))+X(' · 구매 ',' · bought ')+fmt(S.bought[i])+X(' · 생성 ',' · made ')+fmtLog(S.genL[i]);
+      b.innerHTML=lock?`<span class="c">${X('시련으로 봉인됨','Sealed by trial')}</span>`:`×${fmt(n)} ${X('고용','Hire')}<span class="c">${icHTML('mana')} ${fmtLog(cl)}</span>`;
+      const can=!lock&&S.manaL>=cl&&n>0;
+      b.disabled=!can; b.classList.toggle('can',can); b.classList.toggle('gold',can);
+      row.classList.toggle('can',can);
+    });
+  });
+  p.appendChild(list);
+}
+
+function buildResearch(p){
+  const c=card([X('마법 연구',"Arcane Research"),'flask'],X('마나로 사들이는 일회성 강화. <b>환생하면 전부 사라진다.</b> 매 회차 다시 사들이게 된다.',"One-off upgrades bought with mana. <b>All of them vanish on rebirth</b>, so every run buys them again."));
+  const g=el('div','grid');
+  RESEARCH.forEach(r=>{
+    const b=document.createElement('button');
+    b.type='button'; b.className='up';
+    b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
+    b.querySelector('.ic').appendChild(ic(r.sp,32));
+    const _t=memo(b.querySelector('.t')),_d=memo(b.querySelector('.d')),_c=memo(b.querySelector('.c'));
+    const _goal=b.querySelector('.goal')&&memo(b.querySelector('.goal'));
+    b.addEventListener('click',e=>{
+      e.preventDefault();
+      if(S.research[r.id]||!(S.manaL>=numLog(r.cost))) return;
+      if(r.req&&!S.research[r.req]) return;
+      const ch=curChal(); if(ch&&ch.rule.noResearch) return;
+      S.manaL=logSub(S.manaL,numLog(r.cost)); S.research[r.id]=1; recalc(); refresh();
+      toast(icHTML(r.sp)+' '+NM(r.nm)+X(' 완료',' done'));
+    });
+    g.appendChild(b);
+    updaters.push(()=>{
+      const done=!!S.research[r.id], lock=r.req&&!S.research[r.req];
+      const ch=curChal(), banned=ch&&ch.rule.noResearch;
+      const afford=!done&&!lock&&!banned&&S.manaL>=numLog(r.cost);
+      _t.text=NM(r.nm);
+      _d.text=DS(r);
+      _c.html=done?`<span class="good">${X('연구 완료','Researched')}</span>`
+        :banned?`<span class="bad">${X('시련으로 봉인됨','Sealed by trial')}</span>`
+        :lock?`<span class="dim">${X('선행','Needs')}: ${NM(RESEARCH.find(x=>x.id===r.req).nm)}</span>`
+        :`${icHTML('mana')} ${fmt(r.cost)}`;
+      b.classList.toggle('done',done); b.classList.toggle('lock',!!lock||!!banned);
+      b.classList.toggle('afford',afford); b.disabled=done||!!lock||!!banned;
+    });
+  });
+  c.appendChild(g); p.appendChild(c);
+}
+
+function buildDungeon(p){
+  const c=card([X('심연의 던전',"The Abyssal Dungeon"),'sword'],X('원정대의 공격력은 보유한 시설 총합에서 나온다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다.',"Your party power comes from every building you own. A <b class='bad'>boss</b> waits every 10th floor, and depth permanently raises your mana multiplier."));
+  const ar=el('div','arena');
+  const foe=el('div','foe'); const foeIco=ic(FOES[0].sp,64); foe.appendChild(foeIco);
+  const right=el('div');
+  const ftitle=el('div'); ftitle.style.cssText='font-family:var(--serif);font-size:16px;margin-bottom:5px';
+  const hp=el('div','hpbar','<i></i><span></span>');
+  const stat=el('div','row'); stat.style.marginTop='7px';
+  right.append(ftitle,hp,stat);
+  ar.append(foe,right); c.appendChild(ar);
+
+  const ctl=el('div','row'); ctl.style.marginTop='10px';
+  const bDown=btn('sm',X('◀ 이전 층','◀ Prev'),()=>{if(S.floor>1){S.floor--;S.prog=0}});
+  const bUp=btn('sm',X('다음 층 ▶','Next ▶'),()=>{if(S.floor<=S.deepest){S.floor++;S.prog=0}});
+  const go=btn('','',()=>{S.exploring=!S.exploring;if(!S.exploring)S.prog=0});
+  const auto=btn('sm','',()=>{S.auto.dungeon=S.auto.dungeon?0:1});
+  ctl.append(bDown,bUp,go,auto); c.appendChild(ctl);
+  p.appendChild(c);
+
+  /* 탐사 계층표 — 못 뚫은 칸은 무엇인지 알 수 없다 */
+  const tc=card([X('탐사 계층',"The Ladder"),'map'],X('층을 100개 뚫으면 행성 하나를 넘어선다. 그 위로도 계속 이어진다.',"A hundred floors make a planet. It keeps going above that."));
+  const tg=el('div','grid');
+  const tiers=COSMOS.map((lv,i)=>{
+    if(i===0) return null;
+    const row=el('div','up'); row.style.cursor='default';
+    row.innerHTML='<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>';
+    tg.appendChild(row);
+    const icb=row.querySelector('.ic'); const img=ic('unknown',32); icb.appendChild(img);
+    return {i,row,img,t:memo(row.querySelector('.t')),d:memo(row.querySelector('.d')),c:memo(row.querySelector('.c')),cls:''};
+  }).filter(Boolean);
+  tc.appendChild(tg); p.appendChild(tc);
+  updaters.push(()=>{
+    const seen=chapterSeen(), cur=cosmos(Math.max(1,S.deepest||1));
+    tiers.forEach(t=>{
+      const open=t.i<=seen, next=t.i===seen+1;
+      const want=spriteURL(open?COSMOS_SP[t.i]:'unknown');   // 매 프레임 img 를 새로 만들 이유가 없다
+      if(t.img.getAttribute('src')!==want) t.img.setAttribute('src',want);
+      t.t.text = open ? X(COSMOS[t.i].ko,COSMOS[t.i].en) : '???';
+      t.d.text = open
+        ? (COSMOS[t.i].eg?X(`예: ${COSMOS[t.i].eg}`,COSMOS[t.i].eg):'')
+        : (next?X('한 칸만 더 올라가면 열린다',"One rung above you"):X('아직 알 수 없다',"Unknown"));
+      t.c.text = open
+        ? X(`${COSMOS[t.i].ko} ${fmt(cur[COSMOS[t.i].k])} · 전체 ×${powTxt(COSMOS_MUL[t.i],cur[COSMOS[t.i].k]-1)}`,
+            `${COSMOS[t.i].en} ${fmt(cur[COSMOS[t.i].k])} · ×${powTxt(COSMOS_MUL[t.i],cur[COSMOS[t.i].k]-1)}`)
+        : '';
+      const cls='up'+(open?(t.i===seen?' afford':' done'):' lock');
+      if(t.cls!==cls){ t.cls=cls; t.row.className=cls; }
+    });
+  });
+
+  const lc=card([X('탐험 기록',"Delve Log"),'scroll']);
+  const lg=el('div','log'); lg.id='dlog';
+  lg.innerHTML=LOG.map(l=>`<div class="${l.hl?'hl':''}">${l.html}</div>`).join('');
+  lc.appendChild(lg); p.appendChild(lc);
+
+  updaters.push(()=>{
+    const f=S.floor,hl=floorHPLog(f),pl=dungeonPowerLog(),l=floorLoot(f),boss=isBoss(f);
+    foe.classList.toggle('boss',boss);
+    const fo=foeOf(f), want=spriteURL(fo.sp);
+    if(foeIco.src!==want) foeIco.src=want;
+    ftitle.innerHTML=`<b class="gold">${NM(fo.nm)}</b> ${boss?'<span class="tag bad" style="vertical-align:2px">보스</span> ':''}<span class="dim" style="font-size:12.5px">${f}층 · 최심층 ${S.deepest}층</span>`;
+    const r=Math.max(0,Math.min(1,S.prog||0));
+    const gap=pl-hl, per=gap>=8?1e8:(gap<=-300?0:Math.pow(10,gap));
+    hp.querySelector('i').style.width=(r*100).toFixed(1)+'%';
+    hp.querySelector('span').textContent=`${pctTxt(r*100)}%`;
+    stat.innerHTML=`<span class="tag">${X('공격력','Power')} <b>${fmtLog(pl)}</b>${X('/초','/s')}</span>
+      <span class="tag">${X('체력','HP')} <b>${fmtLog(hl)}</b></span>
+      <span class="tag">${X('소요','ETA')} <b>${per>0?fmtTime((1-r)/per):'—'}</b></span>
+      <span class="tag">${icHTML('mana')}<b>${fmtLog(l.manaLog)}</b></span>
+      <span class="tag">${icHTML('crystal')}<b>${fmtLog(l.crystalLog)}</b></span>
+      ${l.offering?`<span class="tag">${icHTML('offering')}<b>${fmtLog(l.offeringLog)}</b></span>`:''}`;
+    bDown.disabled=S.floor<=1; bUp.disabled=S.floor>S.deepest;
+    go.textContent=S.exploring?X('탐험 중단','Stop Delving'):X('탐험 시작','Start Delving');
+    go.className='btn '+(S.exploring?'':'gold');
+    const ud=AUTO_DEF('dungeon').unlock();
+    auto.disabled=!ud;
+    auto.className='btn sm '+(!ud?'off':(S.auto.dungeon?'on':'off'));
+    auto.textContent=!ud?X('연속 탐험 잠김 (20층 돌파)','Auto-delve locked (floor 20)'):(S.auto.dungeon?X('연속 탐험 ON','Auto-delve ON'):X('연속 탐험 OFF','Auto-delve OFF'));
+  });
+  buildGear(p);            // 결정을 캐는 곳에서 바로 벼린다
+}
+
+/* 장비는 던전에서 캐낸 결정으로 벼린다 — 재료가 나오는 곳에 두는 편이 찾기 쉽다 */
+function buildGear(p){
+  const c2=card([X('장비',"Gear"),'staff'],X('던전에서 캐낸 <b class="crystal">결정</b>으로 벼려낸다. 승천해도 사라지지 않는 영구 강화.',"Forged from <b class='crystal'>crystals</b> mined in the dungeon. Kept forever, even through ascension."));
+  const info2=el('div','row'); info2.style.marginBottom='9px'; c2.appendChild(info2);
+  const g2=el('div','grid wide');
+  GEAR.forEach(gr=>{
+    const b=document.createElement('button'); b.type='button'; b.className='up';
+    b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
+    b.querySelector('.ic').appendChild(ic(gr.sp,32));
+    const _t=memo(b.querySelector('.t')),_d=memo(b.querySelector('.d')),_c=memo(b.querySelector('.c'));
+    const _goal=b.querySelector('.goal')&&memo(b.querySelector('.goal'));
+    b.addEventListener('click',e=>{
+      e.preventDefault();
+      const l=S.gear[gr.id]||0;
+      const n=buyAmtFor(gearCost,l,S.crystal,1.6);
+      if(n<=0) return;
+      S.crystal-=bulkCost(gearCost,l,n,1.6); S.gear[gr.id]=l+n; recalc(); refresh();
+    });
+    g2.appendChild(b);
+    updaters.push(()=>{
+      const l=S.gear[gr.id]||0, pw=M().gearPow;
+      const n=Math.max(1,buyAmtFor(gearCost,l,S.crystal,1.6));
+      const cost=bulkCost(gearCost,l,n,1.6);
+      _t.html=`${NM(gr.nm)} <span class="lv">Lv.${fmt(l)}</span>`;
+      _d.text=gr.d(l,pw);
+      _c.html=`${icHTML('crystal')} ${fmt(cost)}${n>1?` <span class="dim">×${n}</span>`:''}`;
+      b.classList.toggle('afford',S.crystal>=cost);
+    });
+  });
+  c2.appendChild(g2); p.appendChild(c2);
+  updaters.push(()=>{info2.innerHTML=`<span class="tag">${icHTML('crystal')} ${X('보유','Held')} <b>${fmt(S.crystal)}</b></span>
+    <span class="tag">${X('합계 레벨',"Total level")} <b>${gearTotal()}</b></span>
+    <span class="tag">${X('효과 지수',"Effect exponent")} <b>×${fmt(M().gearPow)}</b></span>`});
+
+}
+
+function buildRelics(p){
+  const c=card([X('룬 석판',"Rune Tablets"),'rune_wealth'],X('환생에서 얻는 <b class="offer">오퍼링</b>으로 새긴다. 승천하면 사라진다.',"Engraved with <b class='offer'>offerings</b> earned on rebirth. Lost on ascension."));
+  const info=el('div','row'); info.style.marginBottom='9px'; c.appendChild(info);
+  const g=el('div','grid wide');
+  RUNES.forEach(r=>{
+    const b=document.createElement('button'); b.type='button'; b.className='up';
+    b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
+    b.querySelector('.ic').appendChild(ic(r.sp,32));
+    const _t=memo(b.querySelector('.t')),_d=memo(b.querySelector('.d')),_c=memo(b.querySelector('.c'));
+    const _goal=b.querySelector('.goal')&&memo(b.querySelector('.goal'));
+    b.addEventListener('click',e=>{
+      e.preventDefault();
+      const l=S.runes[r.id]||0, cap=Math.floor(M().runeCap);
+      if(l>=cap) return;
+      let n=buyAmtFor(runeCost,l,S.offering,1.30);
+      n=Math.min(n,cap-l);
+      if(n<=0) return;
+      S.offering-=bulkCost(runeCost,l,n,1.30); S.runes[r.id]=l+n; recalc(); refresh();
+    });
+    g.appendChild(b);
+    updaters.push(()=>{
+      const l=S.runes[r.id]||0, cap=Math.floor(M().runeCap), maxed=l>=cap;
+      const n=Math.max(1,Math.min(buyAmtFor(runeCost,l,S.offering,1.30),Math.max(0,cap-l)));
+      const cost=bulkCost(runeCost,l,n,1.30);
+      _t.html=`${NM(r.nm)} <span class="lv">Lv.${l} / ${cap}</span>`;
+      _d.text=r.d(l);
+      _c.html=maxed?`<span class="good">${X('최대 레벨','Max level')}</span>`
+        :`${icHTML('offering')} ${fmt(cost)}${n>1?` <span class="dim">×${n}</span>`:''}`;
+      b.classList.toggle('done',maxed); b.classList.toggle('afford',!maxed&&S.offering>=cost); b.disabled=maxed;
+    });
+  });
+  c.appendChild(g); p.appendChild(c);
+  updaters.push(()=>{info.innerHTML=`<span class="tag">${icHTML('offering')} ${X('보유','Held')} <b>${fmt(S.offering)}</b></span>
+    <span class="tag">${X('합계 레벨',"Total level")} <b>${runeTotal()}</b></span>
+    <span class="tag">${X('최대 레벨',"Level cap")} <b>${Math.floor(M().runeCap)}</b></span>`});
+
+}
+
+function buildRebirth(p){
+  const c=card([X('환생',"Rebirth"),'soul'],X(`마나·시설·연구를 모두 버리고 <b class="soul">영혼석</b>과 <b class="offer">오퍼링</b>을 얻는다. 영혼 강화는 승천 전까지 남는다.<br>필요 조건: 이번 회차 누적 마나 ${fmt(REBIRTH_REQ)}`,`Throw away mana, buildings and research for <b class="soul">soul shards</b> and <b class="offer">offerings</b>. Soul upgrades last until you ascend.<br>Requires ${fmt(REBIRTH_REQ)} total mana this run.`));
+  const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
+  const b=btn('gold big','',()=>{
+    if(soulGain()<=0) return;
+    modal(X('환생하시겠습니까?','Rebirth?'),X(`영혼석 <b class="soul">${fmt(soulGain())}</b> · 오퍼링 <b class="offer">${fmt(offerGain())}</b>을 얻고<br>마나 · 시설 · 연구가 초기화됩니다.`,`You gain <b class="soul">${fmt(soulGain())}</b> soul shards and <b class="offer">${fmt(offerGain())}</b> offerings.<br>Mana, buildings and research reset.`),()=>doRebirth());
+  });
+  c.appendChild(b); p.appendChild(c);
+  const uc=card([X('영혼 강화',"Soul Upgrades"),'gem'],X('환생해도 유지된다. 승천할 때만 초기화된다.',"Kept through rebirths. Only ascension resets them."));
+  uc.appendChild(levelGrid(SOUL_UPS,id=>S.soulUps[id]||0,()=>S.soul,(c2,id,n)=>{S.soul-=c2;S.soulUps[id]=(S.soulUps[id]||0)+(n||1)},'soul'));
+  p.appendChild(uc);
+  updaters.push(()=>{
+    const g=soulGain();
+    info.innerHTML=`<span class="tag">${X('회차 누적',"Run total")} ${icHTML('mana')}<b>${fmtLog(S.manaRunL)}</b></span>
+      <span class="tag">${X('획득 예정',"You gain")} ${icHTML('soul')}<b class="soul">${fmt(g)}</b></span>
+      <span class="tag">${icHTML('offering')}<b class="offer">${fmt(offerGain())}</b></span>
+      <span class="tag">${X('영혼석 배율',"Shard multiplier")} <b>×${fmtLog(M().soulLog)}</b></span>
+      <span class="tag">${X(`환생 <b>${S.rebirths}</b>회 · 생산 +${5*S.rebirths}%`,`<b>${S.rebirths}</b> rebirths · output +${5*S.rebirths}%`)}</span>`;
+    b.disabled=g<=0;
+    b.innerHTML=icHTML('soul',24)+' '+(g>0?X(`환생하여 영혼석 ${fmt(g)} 획득`,`Rebirth for ${fmt(g)} soul shards`)
+      :X(`누적 마나 ${fmt(REBIRTH_REQ)} 필요`,`Needs ${fmt(REBIRTH_REQ)} total mana`));
+  });
+}
+
+function buildMilestones(p){
+  if(S.rebirths<1 && !S.ascensions) return;
+  const c=card([X('환생 마일스톤',"Rebirth Milestones"),'milestone'],
+    X('환생 횟수만으로 열리는 영구 보너스. 승천하면 다시 처음부터 쌓는다.',
+      "Permanent bonuses that unlock from rebirth count alone. Ascension starts the count over."));
+  const g=el('div','grid');
+  MILESTONES.forEach(ms=>{
+    const d=el('div','ach');
+    d.appendChild(ic('milestone',32));
+    const t=el('div');
+    d.appendChild(t); g.appendChild(d);
+    updaters.push(()=>{
+      const got=S.rebirths>=ms.n;
+      d.classList.toggle('got',got);
+      t.innerHTML=`<div class="t">${X('환생 '+ms.n+'회','Rebirth ×'+ms.n)}</div><div class="d">${ms.d()}</div>`;
+    });
+  });
+  c.appendChild(g); p.appendChild(c);
+}
+function buildAscend(p){
+  const c=card([X('승천',"Ascension"),'relic'],X(`영혼석·영혼 강화·룬·최심층까지 전부 버리고 <b class="relic">유물</b>을 얻는다. 유물 강화는 <b>영원히</b> 남는다.<br>필요 조건: 이번 주기 누적 영혼석 ${fmt(ASCEND_REQ)}`,`Give up soul shards, soul upgrades, runes and depth for <b class="relic">relics</b>. Relic upgrades last <b>forever</b>.<br>Requires ${fmt(ASCEND_REQ)} soul shards this cycle.`));
+  const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
+  const b=btn('gold big','',()=>{
+    if(relicGain()<=0) return;
+    modal(X('승천하시겠습니까?','Ascend?'),X(`유물 <b class="relic">${fmt(relicGain())}</b>을 얻고<br>영혼석 · 영혼 강화 · 룬 · 최심층이 초기화됩니다.`,`You gain <b class="relic">${fmt(relicGain())}</b> relics.<br>Soul shards, soul upgrades, runes and depth reset.`),()=>doAscend());
+  });
+  c.appendChild(b); p.appendChild(c);
+  const uc=card([X('유물 강화',"Relic Upgrades"),'relic'],X('무엇을 해도 사라지지 않는 영구 강화.',"Permanent upgrades that nothing ever takes away."));
+  uc.appendChild(levelGrid(RELIC_UPS,id=>S.relicUps[id]||0,()=>S.relic,(c2,id,n)=>{S.relic-=c2;S.relicUps[id]=(S.relicUps[id]||0)+(n||1)},'relic'));
+  p.appendChild(uc);
+  updaters.push(()=>{
+    const g=relicGain();
+    info.innerHTML=`<span class="tag">${X('주기 누적',"Cycle total")} ${icHTML('soul')}<b>${fmt(S.soulAsc)}</b></span>
+      <span class="tag">${X('획득 예정',"You gain")} ${icHTML('relic')}<b class="relic">${fmt(g)}</b></span>
+      <span class="tag">${X(`승천 <b>${S.ascensions}</b>회`,`<b>${S.ascensions}</b> ascensions`)}</span>`;
+    b.disabled=g<=0;
+    b.innerHTML=icHTML('relic',24)+' '+(g>0?X(`승천하여 유물 ${fmt(g)} 획득`,`Ascend for ${fmt(g)} relics`)
+      :X(`누적 영혼석 ${fmt(ASCEND_REQ)} 필요`,`Needs ${fmt(ASCEND_REQ)} soul shards`));
+  });
+}
+
+function buildTrans(p){
+  const c=card([X('초월',"Transcendence"),'star'],X(`유물·유물 강화·승천 횟수까지 전부 버리고 <b class="gold">별가루</b>를 얻는다. 별 강화는 <b>무엇을 해도</b> 사라지지 않는다.<br>필요 조건: 이번 주기 누적 유물 ${fmt(TRANS_REQ)}`,`Give up relics, relic upgrades and ascensions for <b class="gold">stardust</b>. Star upgrades survive <b>everything</b>.<br>Requires ${fmt(TRANS_REQ)} relics this cycle.`));
+  const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
+  const b=btn('gold big','',()=>{
+    if(starGain()<=0) return;
+    modal(X('초월하시겠습니까?','Transcend?'),X(`별가루 <b class="gold">${fmt(starGain())}</b>를 얻고<br>유물 · 유물 강화 · 승천 · 영혼석 · 룬 · 장비가 초기화됩니다.`,`You gain <b class="gold">${fmt(starGain())}</b> stardust.<br>Relics, relic upgrades, ascensions, soul shards, runes and gear reset.`),()=>doTranscend());
+  });
+  c.appendChild(b); p.appendChild(c);
+  const uc=card([X('별 강화',"Star Upgrades"),'sparkle'],X('가장 깊은 층의 강화. 초월해도 남는다.',"The deepest layer. Even transcending cannot take these away."));
+  uc.appendChild(levelGrid(STAR_UPS,id=>S.starUps[id]||0,()=>S.star,(c2,id,n)=>{S.star-=c2;S.starUps[id]=(S.starUps[id]||0)+(n||1)},'star'));
+  p.appendChild(uc);
+  updaters.push(()=>{
+    const g=starGain();
+    info.innerHTML=`<span class="tag">${X('주기 누적',"Cycle total")} ${icHTML('relic')}<b class="relic">${fmt(S.relicTrans)}</b></span>
+      <span class="tag">${X('획득 예정',"You gain")} ${icHTML('star')}<b class="gold">${fmt(g)}</b></span>
+      <span class="tag">${X(`초월 <b>${S.transcends}</b>회`,`<b>${S.transcends}</b> transcends`)}</span>`;
+    b.disabled=g<=0;
+    b.innerHTML=icHTML('star',16)+' '+(g>0?X(`초월하여 별가루 ${fmt(g)} 획득`,`Transcend for ${fmt(g)} stardust`)
+      :X(`누적 유물 ${fmt(TRANS_REQ)} 필요`,`Needs ${fmt(TRANS_REQ)} relics`));
+  });
+}
+
+function buildInf(p){
+  const c=card([X('무한',"Infinity"),'infinity'],X(`수가 <b>1e300</b> 을 넘길 지경이 되면 그 자체가 관문이 된다. 한 칸 위로 올라가고 아래가 접힌다. <b class="gold">별가루와 별 강화는 남는다.</b> 칸을 넘길 때마다 모든 생산에 큰 배율이 영구히 붙는다.<br>칸은 <b>${INF_LAYERS.length}</b> 개가 준비돼 있고, 더 이어 붙일 수 있다.`,`When a number is about to overflow past <b>1e300</b>, that ceiling becomes a door. You rise one rung and everything below folds away — <b class="gold">stardust and star upgrades stay</b> — leaving a permanent multiplier.`));
+  p.appendChild(c);
+  INF_LAYERS.forEach((L,i)=>{
+    const lc=card([X(L.ko,L.en),L.sp]);
+    const info=el('div','row'); info.style.margin='4px 0 9px'; lc.appendChild(info);
+    const b=btn('gold big','',()=>{
+      if(infGain(i)<=0) return;
+      modal(X(`${L.ko} 돌파`,`${L.en} Break`),
+        X(`<b class="gold">${L.ko} +${fmt(infGain(i))}</b> 을 얻고<br>그 아래 계층이 초기화됩니다.<br><span class="gold">별가루와 별 강화는 남습니다.</span>`,
+          `Gain <b class="gold">+${fmt(infGain(i))} ${L.en}</b>.<br>Everything below resets — stardust and star upgrades stay.`),
+        ()=>doInfBreak(i));
+    });
+    lc.appendChild(b);
+    if(L.ups){
+      lc.appendChild(el('div','hint',X(`${L.ko}으로만 살 수 있다. 아래 계층을 통째로 갈아 넣고 얻는 것이라 효과가 크다.`,
+                                       `Bought with ${L.en} alone. You fed whole layers into this, so it hits hard.`)));
+      const eu=el('div'); eu.style.marginTop='8px';
+      eu.appendChild(levelGrid(L.ups(),id=>(S[L.store]||{})[id]||0,()=>S[L.k]||0,
+        (c2,id,n)=>{S[L.k]-=c2;(S[L.store]=S[L.store]||{})[id]=((S[L.store]||{})[id]||0)+(n||1)},L.sp));
+      lc.appendChild(eu);
+    }
+    p.appendChild(lc);
+    updaters.push(()=>{
+      const open=infUnlocked(i), g=infGain(i), v=L.from();
+      lc.style.display=open?'':'none';
+      if(!open) return;
+      info.innerHTML=`<span class="tag">${X('현재',"Now")} <b>${i===0?fmtLog(S.manaEverL):fmt(v)}</b></span>
+        <span class="tag">${X('필요',"Needs")} <b>${reqTxt(i)}</b></span>
+        <span class="tag">${X('보유',"Held")} <b class="gold">${fmt(S[L.k]||0)}</b></span>
+        <span class="tag">${X('전체 배율',"Total")} ×<b>${powTxt(4+i*4,S[L.k+'Ever']||0)}</b></span>`;
+      b.disabled=g<=0;
+      b.innerHTML=icHTML(L.sp,16)+' '+(g>0?X(`${L.ko} 돌파 · +${fmt(g)}`,`${L.en} Break · +${fmt(g)}`)
+        :X(`${reqTxt(i)} 필요`,`Needs ${reqTxt(i)}`));
+    });
+  });
+}
+
+function buildChal(p){
+  const c=card([X('시련',"Trials"),'chain'],X('제약을 받아들이고 목표 마나에 도달하면 <b>영구 보상</b>을 얻는다. 시련에 들어가거나 나오면 회차가 초기화된다.',"Accept a handicap, reach the goal mana, keep a <b>permanent reward</b>. Entering or leaving a trial resets the run."));
+  const info=el('div','row'); info.style.marginBottom='9px'; c.appendChild(info);
+  const g=el('div','grid wide');
+  CHALLENGES.forEach(ch=>{
+    const b=document.createElement('button'); b.type='button'; b.className='up chal';
+    b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="goal"></span><span class="c"></span></span>`;
+    b.querySelector('.ic').appendChild(ic(ch.sp,32));
+    const _t=memo(b.querySelector('.t')),_d=memo(b.querySelector('.d')),_c=memo(b.querySelector('.c'));
+    const _goal=b.querySelector('.goal')&&memo(b.querySelector('.goal'));
+    b.addEventListener('click',e=>{
+      e.preventDefault();
+      if(S.chal===ch.id){exitChallenge(true);toast(X('시련 포기',"Trial abandoned"));refresh();return}
+      if((S.chalDone[ch.id]||0)>=ch.max) return;
+      enterChallenge(ch.id); refresh();
+    });
+    g.appendChild(b);
+    updaters.push(()=>{
+      const n=S.chalDone[ch.id]||0, maxed=n>=ch.max, active=S.chal===ch.id;
+      _t.html=`${NM(ch.nm)} <span class="lv">${X(`${n} / ${ch.max} 단계`,`stage ${n} / ${ch.max}`)}</span>`;
+      _d.text=DSF(ch.desc);
+      _goal.html=maxed?'':`${X('목표',"Goal")} ${icHTML('mana')} ${fmt(chalGoal(ch,n))}`;
+      _c.html=maxed?`<span class="good">${X('완주',"Complete")} · ${ch.rw(n)}</span>`
+        :active?`<span class="bad">진행 중 · 눌러서 포기</span>`
+        :`${X('현재 보상','Current reward')} ${n?ch.rw(n):X('없음','none')}`;
+      b.classList.toggle('done',maxed); b.classList.toggle('active',active); b.disabled=maxed;
+    });
+  });
+  c.appendChild(g); p.appendChild(c);
+  updaters.push(()=>{
+    const ch=curChal();
+    info.innerHTML=`<span class="tag">${X('완료',"Cleared")} <b>${chalTotal()}</b> / ${CHALLENGES.reduce((a,c2)=>a+c2.max,0)}</span>
+      <span class="tag">${X('보상 지수',"Reward exponent")} <b>×${fmtLog(M().chalPowLog)}</b></span>
+      ${ch?`<span class="tag bad">${X('진행 중','In trial')}: <b>${NM(ch.nm)}</b> · ${icHTML('mana')}${fmtLog(S.manaRunL)} / ${fmt(chalGoal(ch,S.chalDone[ch.id]||0))}</span>`:''}`;
+  });
+}
+
+function buildAch(p){
+  const c=card([X('업적',"Feats"),'medal']);
+  const sub=el('div','hint'); c.appendChild(sub);
+  const g=el('div','grid');
+  /* 다 보여 주면 목표가 안 된다. 달성한 것과 바로 다음 몇 개만 드러내고
+     그 너머는 무엇인지 알 수 없게 둔다. */
+  const AHEAD=6;
+  const rows=ACHS.map((a,i)=>{
+    const d=el('div','ach');
+    const icb=el('span'); const img=ic('unknown',32); icb.appendChild(img);
+    d.appendChild(icb);
+    const t=el('div'); d.appendChild(t); g.appendChild(d);
+    return {a,i,d,img,t,key:-1};
+  });
+  /* 오백일흔두 줄을 0.1 초마다 통째로 다시 그리고 있었다 — 매번 이미지 노드를
+     새로 만들어 붙이기까지 했다. 초당 오천 개다. 줄의 상태가 바뀌었을 때만 손댄다. */
+  updaters.push(()=>{
+    let shown=0;
+    for(const r of rows){
+      const got=!!S.achs[r.a.id];
+      const reveal=got||shown<AHEAD;
+      if(!got&&reveal) shown++;
+      const key=(got?2:0)|(reveal?1:0);
+      if(r.key===key) continue;
+      r.key=key;
+      r.d.classList.toggle('got',got);
+      const want=spriteURL(reveal?(r.a.sp||'medal'):'unknown');
+      if(r.img.getAttribute('src')!==want) r.img.setAttribute('src',want);
+      r.t.innerHTML = reveal
+        ? `<div class="t">${NM(r.a.nm)}</div><div class="d">${DS(r.a)}</div>`
+        : `<div class="t">???</div><div class="d">${X('아직 알 수 없다',"Unknown")}</div>`;
+    }
+  });
+  c.appendChild(g); p.appendChild(c);
+  updaters.push(()=>{sub.innerHTML=X(`달성 <b class="gold">${achCount()}</b> / ${ACHS.length} · 하나당 마나 생산 <b>+2%</b> (현재 +${2*achCount()}%)`,`<b class="gold">${achCount()}</b> / ${ACHS.length} unlocked · <b>+2%</b> mana output each (now +${2*achCount()}%)`)});
+}
+
+function buildAuto(p){
+  const c=card([X('자동화',"Automation"),'cog'],X('자동화는 <b>진행으로 얻어내는 보상</b>이다. 처음에는 채집·건설·연구·던전을 직접 해야 하고, 조건을 만족할 때마다 하나씩 열린다.',"Automation is a <b>reward you earn</b>. At first you gather, build, research and delve by hand; each one unlocks as you progress."));
+  const bar=el('div','row'); bar.style.marginBottom='8px';
+  const onAll=btn('sm',X('모두 켜기','All on'),()=>{AUTO_DEFS.forEach(d=>{S.auto[d.k]=1});refresh()});
+  const offAll=btn('sm',X('모두 끄기','All off'),()=>{AUTO_DEFS.forEach(d=>S.auto[d.k]=0);refresh()});
+  const note=el('span','tag');
+  bar.append(onAll,offAll,note); c.appendChild(bar);
+  updaters.push(()=>{
+    const n=AUTO_DEFS.filter(d=>autoUnlocked(d.k)).length;
+    note.innerHTML = allAuto()
+      ? X('<b class="gold">전부 열렸다</b> · 이제부터는 손댈 것이 없다',"<b class='gold'>All unlocked</b> · nothing left to do by hand")
+      : X(`해금 <b>${n}</b> / ${AUTO_DEFS.length}`,`<b>${n}</b> / ${AUTO_DEFS.length} unlocked`);
+  });
+  /* 진행 순서대로 묶어서 보여 준다 — 스물세 줄이 한 덩어리로 있으면 뭐가 뭔지 모른다 */
+  AUTO_DEFS.forEach((def,i)=>{
+    if(def.g){
+      const h=el('div','hint');
+      h.style.cssText='margin:12px 0 2px;font-family:var(--serif);font-size:12px;letter-spacing:.06em;color:var(--gold);opacity:.85';
+      h.textContent=NM(def.g).toUpperCase();
+      c.appendChild(h);
+    } else if(i>0) c.appendChild(el('div','divider'));
+    c.appendChild(toggleRow(def));
+  });
+  p.appendChild(c);
+  const s=card([X('자동화 상태',"Automation Status"),'fastfwd']);
+  const st=el('div','row'); s.appendChild(st); p.appendChild(s);
+  updaters.push(()=>{
+    const m=M();
+    st.innerHTML=`<span class="tag">${X('자동화 주기',"Automation interval")} <b>×${m.autoSpeed.toFixed(2)}</b></span>
+      <span class="tag">${X('마지막 환생 이후',"Since last rebirth")} <b>${fmtTime(S.sinceRebirth)}</b></span>
+      <span class="tag">${X('마지막 승천 이후',"Since last ascension")} <b>${fmtTime(S.sinceAscend)}</b></span>
+      <span class="tag">${X('직전 환생 보상',"Last rebirth gain")} <b>${fmt(S.lastSoulGain)}</b></span>`;
+  });
+}
+
+function buildSettings(p){
+  const c=card([X('세이브',"Save Data"),'anvil'],X('15초마다, 그리고 창을 닫을 때 자동 저장된다.',"Saves every 15 seconds and whenever you close the tab."));
+  const row=el('div','row');
+  row.append(
+    btn('sm',X('지금 저장','Save now'),()=>save()),
+    btn('sm',X('파일로 내보내기','Export file'),()=>exportSave()),
+    btn('sm',X('파일에서 불러오기','Import file'),()=>$('fileIn').click()),
+    btn('sm',X('처음부터 다시','Hard reset'),()=>modal(X('정말 초기화할까요?','Reset everything?'),X('유물까지 <b>전부</b> 사라지며 되돌릴 수 없습니다.<br>먼저 내보내기로 백업해 두세요.','<b>Everything</b> goes, relics included. This cannot be undone.<br>Export a backup first.'),hardReset))
+  );
+  c.appendChild(row); p.appendChild(c);
+  const sc=card([X('기록',"Records"),'scroll']);
+  const st=el('div','hint'); st.style.cssText='margin:0;line-height:2'; sc.appendChild(st); p.appendChild(sc);
+  const hc=card([X('단축키',"Hotkeys"),'book']);
+  hc.appendChild(el('div','hint',X('<b>1~9, 0</b> 탭 이동 · <b>스페이스</b> 마나 채집 · <b>B</b> 구매 수량 · <b>E</b> 탐험 토글 · <b>S</b> 저장',
+    '<b>1~9, 0</b> switch tabs · <b>Space</b> gather · <b>B</b> buy amount · <b>E</b> toggle delving · <b>S</b> save')));
+  p.appendChild(hc);
+  updaters.push(()=>{
+    const m=M();
+    const tot=`${icHTML('mana')}<b>${fmtLog(S.manaEverL)}</b> · ${icHTML('offering')}<b>${fmt(S.offerEver)}</b> · ${icHTML('crystal')}<b>${fmt(S.crystalEver)}</b> · ${icHTML('soul')}<b>${fmt(S.soulEver)}</b> · ${icHTML('relic')}<b>${fmt(S.relicEver)}</b>`;
+    st.innerHTML=X(
+      `플레이 시간 <b>${fmtTime(S.playtime)}</b> · 채집 <b>${fmt(S.clicks)}</b>회<br>
+       누적 ${tot}<br>
+       환생 <b>${S.rebirths}</b>회 · 승천 <b>${S.ascensions}</b>회 · 최심층 <b class="gold">${S.deepest}층</b> · 시련 <b>${chalTotal()}</b>단계<br>
+       마나 배율 <b class="gold">×${fmtLog(m.prodLog)}</b> · 게임 속도 <b>×${m.speed.toFixed(2)}</b> · 던전 배율 <b>×${fmtLog(m.dungeonLog)}</b><br>
+       오프라인 상한 <b>${m.offline}시간</b> · 버전 <b>v${VERSION}</b>`,
+      `Playtime <b>${fmtTime(S.playtime)}</b> · <b>${fmt(S.clicks)}</b> gathers<br>
+       Lifetime ${tot}<br>
+       <b>${S.rebirths}</b> rebirths · <b>${S.ascensions}</b> ascensions · deepest <b class="gold">F${S.deepest}</b> · <b>${chalTotal()}</b> trial stages<br>
+       Mana <b class="gold">×${fmtLog(m.prodLog)}</b> · speed <b>×${m.speed.toFixed(2)}</b> · dungeon <b>×${fmtLog(m.dungeonLog)}</b><br>
+       Offline cap <b>${m.offline}h</b> · version <b>v${VERSION}</b>`);
+  });
+}
+
+const BUILDERS={tower:buildTower,research:buildResearch,dungeon:buildDungeon,relics:buildRelics,
+  rebirth:buildRebirth,ascend:buildAscend,trans:buildTrans,inf:buildInf,chal:buildChal,ach:buildAch,auto:buildAuto,settings:buildSettings};
+
+/* ══════════════ 자원 바 ══════════════ */
+const RES=[
+ {id:'mana',   sp:'mana',   nm:{ko:'마나',en:"Mana"},   cls:'mana',   show:()=>true,
+  val:()=>fmtLog(S.manaL), sub:()=>'+'+fmtLog(manaRateLog())+X(' /초',' /s')},
+ {id:'offer',  sp:'offering',nm:{ko:'오퍼링',en:"Offerings"},cls:'offer',  show:()=>S.offerEver>0,
+  val:()=>fmt(S.offering), sub:()=>X('룬 합계 Lv.','Runes Lv.')+runeTotal()},
+ {id:'crystal',sp:'crystal',nm:{ko:'결정',en:"Crystals"},   cls:'crystal',show:()=>S.crystalEver>0,
+  val:()=>fmt(S.crystal), sub:()=>X('장비 합계 Lv.','Gear Lv.')+gearTotal()},
+ {id:'soul',   sp:'soul',   nm:{ko:'영혼석',en:"Soul Shards"}, cls:'soul',   show:()=>S.soulEver>0||S.rebirths>0,
+  val:()=>fmt(S.soul), sub:()=>X('환생 ','Rebirths ')+S.rebirths+X(' · 주기 ',' · cycle ')+fmt(S.soulAsc)},
+ {id:'relic',  sp:'relic',  nm:{ko:'유물',en:"Relics"},   cls:'relic',  show:()=>S.relicEver>0||S.ascensions>0,
+  val:()=>fmt(S.relic), sub:()=>X('승천 ','Ascensions ')+S.ascensions},
+ {id:'star',   sp:'star',   nm:{ko:'별가루',en:"Stardust"}, cls:'gold',   show:()=>S.starEver>0||transUnlocked(),
+  val:()=>fmt(S.star), sub:()=>X('초월 ','Transcends ')+S.transcends},
+ ...INF_LAYERS.map((L,i)=>({id:L.k, sp:L.sp, nm:{ko:L.ko,en:L.en}, cls:'gold',
+   show:()=>(S[L.k+'Ever']||0)>0||infUnlocked(i),
+   val:()=>fmt(S[L.k]||0), sub:()=>X(`돌파 ${S[L.k+'Count']||0}회`,`${S[L.k+'Count']||0} breaks`)})),
+ {id:'floor',  sp:'sword',  nm:{ko:'탐사 깊이',en:"Depth"}, cls:'floor',  show:()=>S.manaEver>=5e3,
+  val:()=>fmt(S.deepest), sub:()=>cosmosLabel(S.deepest||1)},
+];
+let resNodes={};
+function buildRes(){
+  const box=$('res'); box.innerHTML=''; resNodes={};
+  RES.forEach(r=>{
+    const d=el('div','res '+r.cls);
+    d.appendChild(ic(r.sp,32));   // 16px 원본을 2배로 (정수배라 도트가 안 뭉갠다)
+    const t=el('div','txt');
+    t.innerHTML=`<div class="lab">${NM(r.nm)}</div><div class="val"></div><div class="sub"></div>`;
+    d.appendChild(t); box.appendChild(d);
+    resNodes[r.id]={box:d,lab:t.querySelector('.lab'),val:t.querySelector('.val'),sub:t.querySelector('.sub')};
+  });
+}
+function updateSide(){
+  const box=$('sidestat'); if(!box) return;
+  const m=M(), f=S.floor, hp=floorHP(f), fo=foeOf(f);
+  const pr=Math.max(0,Math.min(1,S.prog||0));
+  const nextAuto=AUTO_DEFS.find(d=>!d.unlock());
+  const ch=curChal();
+  box.innerHTML=`
+    <div class="k">${X('마나 생산',"Mana output")}</div><div class="v">${fmtLog(manaRateLog())}${X(' /초',' /s')}</div>
+    <hr>
+    <div class="k">${S.exploring?X('교전 중','In combat'):X('대기 중','Idle')} · ${X(f+'층','F'+f)}</div>
+    <div class="v" style="display:flex;align-items:center;gap:5px">${icHTML(fo.sp)}${NM(fo.nm)}</div>
+    <div class="mini"><i style="width:${pctTxt(pr*100)}%"></i></div>
+    <div class="k">${X('전체 배율',"Total multiplier")}</div><div class="v">×${fmtLog(m.prodLog)}</div>
+    <hr>
+    ${ch?`<div class="k">${X('진행 중인 시련',"Active trial")}</div><div class="v bad">${NM(ch.nm)}</div>`
+        :`<div class="k">${X('다음 해금',"Next unlock")}</div><div class="v">${nextAuto?NM(nextAuto.nm):X('전부 해금','All unlocked')}</div>
+          <div class="k">${nextAuto?DSF(nextAuto.req):''}</div>`}`;
+}
+function updateRes(){
+  RES.forEach(r=>{
+    const n=resNodes[r.id]; if(!n) return;
+    const sh=r.show();
+    n.box.style.display=sh?'':'none';
+    if(sh){n.lab.textContent=NM(r.nm);n.val.textContent=r.val();n.sub.textContent=r.sub()}
+  });
+}
+
+/* ══════════════ 렌더 ══════════════ */
+let tabSig='';
+function render(){
+  const lb=$('langBtn'); if(lb) lb.textContent = LANG==='ko' ? 'EN' : '한국어';
+  const bt=$('brandLogo');
+  if(bt){                                   // 제목도 언어를 따라간다
+    bt.alt=X('무한의 탑','Tower of Infinity');
+    bt.src=X('art/ui/logo.png','art/ui/logo_en.png');
+    bt.width =X(129,201); bt.height=X(43,33);
+  }
+  const sb=document.querySelector('#brand .sub'); if(sb) sb.style.display='none';
+  const t=TABS.find(x=>x.id===curTab);
+  if(!t||!t.open()) curTab='tower';
+  updaters=[]; buildTabs();
+  const main=$('main'); main.innerHTML='';
+  const p=el('div','panel on'); p.id='p-'+curTab;
+  BUILDERS[curTab](p); main.appendChild(p);
+  refresh();
+}
+function refresh(){
+  flushLog();
+  recalc(); updateRes(); updateSide();
+  for(const u of updaters){try{u()}catch(e){console.error(e)}}
+  const sig=TABS.map(t=>t.open()?1:0).join('');   // 잠금 상태가 바뀌면 탭을 다시 그린다
+  if(sig!==tabSig){tabSig=sig;buildTabs()}
+}
+
+/* ══════════════ 세이브 ══════════════ */
+const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+const dec=s=>JSON.parse(decodeURIComponent(escape(atob(s.trim()))));
+function save(quiet){
+  S.lastTick=Date.now();
+  try{localStorage.setItem(SAVE_KEY,enc(S)); if(!quiet)toast(X('저장했습니다',"Saved")); return true}
+  catch(e){toast(X('저장 실패: ','Save failed: ')+e.message); return false}
+}
+function load(){
+  const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false;
+  try{
+    S=mergeState(dec(raw)); return true;
+  }catch(e){console.error(e);toast(X('세이브를 읽지 못했습니다',"Could not read the save"));return false}
+}
+function mergeState(o){
+  const base=newState(), s=Object.assign(base,o);
+  for(const k of ['bought','gen']){        // 단계가 늘어난 세이브도 진행을 잃지 않게 길이만 맞춘다
+    if(!Array.isArray(s[k])) s[k]=[];
+    while(s[k].length<PRODUCERS.length) s[k].push(0);
+    s[k].length=PRODUCERS.length;
+    for(let i=0;i<s[k].length;i++) if(typeof s[k][i]!=='number'||isNaN(s[k][i])) s[k][i]=0;
+  }
+  /* 시설 수도 자릿수 필드가 진실이다. 유한한 자릿수가 실려 있을 때만 그것을 믿고,
+     없거나 망가졌으면(옛 세이브, JSON 이 null 로 적은 -Infinity) 평범한 수에서 다시 만든다. */
+  if(!Array.isArray(s.genL)) s.genL=[];
+  s.genL.length=PRODUCERS.length;
+  for(let i=0;i<PRODUCERS.length;i++){
+    const v=s.genL[i];
+    s.genL[i]=(typeof v==='number'&&isFinite(v))?v:numLog(s.gen[i]);
+  }
+  s.rebirthEver=Math.max(s.rebirthEver||0, s.rebirths||0);   // 옛 세이브 보정
+  s.ascendEver =Math.max(s.ascendEver ||0, s.ascensions||0);
+  s.transEver  =Math.max(s.transEver  ||0, s.transcends||0);
+  s.deepestEver=Math.max(s.deepestEver||0, s.deepest||0);
+  /* manaPeakL 은 -Infinity 가 기본값인데 JSON 은 그것을 null 로 적는다 */
+  const pk=(typeof s.manaPeakL==='number'&&!isNaN(s.manaPeakL))?s.manaPeakL:-Infinity;
+  const ev=(typeof s.manaEverL==='number'&&!isNaN(s.manaEverL))?s.manaEverL:-Infinity;
+  s.manaPeakL=Math.max(pk,ev);
+  for(const k of ['research','runes','gear','soulUps','relicUps','starUps','infUps','eterUps','realUps','voidUps','originUps','achs','chalDone','autoUnlocked'])
+    if(!s[k]||typeof s[k]!=='object') s[k]={};
+  for(const k of ['mana','manaRun','manaEver','offering','offerEver','crystal','crystalEver',
+                  'soul','soulAsc','soulEver','relic','relicEver','relicTrans','star','starEver',
+                  'chalCd','chalTime','floorCd','sinceInf'])
+    if(typeof s[k]!=='number'||isNaN(s[k])) s[k]=0;   // 망가진 값만 되돌린다. 무한대는 돌파 조건이므로 살려 둔다.
+  /* 마나는 자릿수 필드가 진실이다. 로그 필드가 있으면 그것을 쓰고, 없는 옛 세이브는 평범한 수에서 만든다.
+     -Infinity 는 JSON 에서 null 이 되므로 되돌아올 때 여기서 다시 세운다. */
+  for(const k of ['mana','manaRun','manaEver']){
+    const lk=k+'L'; const v=s[lk];
+    /* 유한한 자릿수가 실려 있을 때만 그것을 믿는다.
+       옛 세이브에는 아예 없고(=newState 의 -Infinity 가 남는다), JSON 은 -Infinity 를 null 로 적는다. */
+    s[lk]=(typeof v==='number'&&isFinite(v))?v:numLog(o?o[k]:0);
+  }
+  for(let i=0;i<PRODUCERS.length;i++) s.gen[i]=genNum(s.genL[i]);   // 파생값을 자릿수에 맞춘다
+  s.auto=Object.assign(newState().auto,o.auto||{});
+  s.timers=Object.assign({build:0,research:0,rune:0,gear:0,gather:0},o.timers||{});
+  return s;
+}
+function offlineCatchUp(){
+  recalc();
+  const cap=M().offline*3600;
+  const dt=Math.min(cap,Math.max(0,(Date.now()-(S.lastTick||Date.now()))/1000));
+  if(dt<60) return;
+  const b={manaL:S.manaL,soul:S.soulEver,deep:S.deepest,reb:S.rebirths,cry:S.crystalEver};
+  const steps=140;
+  for(let i=0;i<steps;i++) tick(dt/steps);
+  modal(`${icHTML('moon',16)} ${X('자리를 비운 사이','While you were away')}`,`
+    ${X('경과','Away')} <b>${fmtTime(dt)}</b> <span class="dim">(${X('상한','cap')} ${fmtTime(cap)})</span><br>
+    ${icHTML('mana')} ${X('마나','Mana')} <b class="mana">+${fmtLog(logSub(S.manaL,b.manaL))}</b><br>
+    ${icHTML('crystal')} ${X('결정','Crystals')} <b class="crystal">+${fmt(S.crystalEver-b.cry)}</b><br>
+    ${icHTML('soul')} ${X('영혼석','Soul Shards')} <b class="soul">+${fmt(S.soulEver-b.soul)}</b> <span class="dim">(${X(`환생 ${S.rebirths-b.reb}회`,`${S.rebirths-b.reb} rebirths`)})</span><br>
+    ${S.deepest>b.deep?`${icHTML('sword')} ${X('최심층','Deepest')} <b class="gold">${X(b.deep+'층 → '+S.deepest+'층','F'+b.deep+' → F'+S.deepest)}</b>`:''}
+  `);
+}
+function exportSave(){
+  const blob=new Blob([enc(S)],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  const t=new Date(),p=n=>String(n).padStart(2,'0');
+  a.download=`마탑-세이브-${t.getFullYear()}${p(t.getMonth()+1)}${p(t.getDate())}-${p(t.getHours())}${p(t.getMinutes())}.txt`;
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast(X('세이브를 내보냈습니다',"Save exported"));
+}
+function importSave(txt){
+  try{
+    const o=dec(txt);
+    if(typeof o!=='object'||!('mana' in o)) throw new Error('형식이 다릅니다');
+    S=mergeState(o); save(true); render();
+    modal(X('불러오기 완료','Import complete'),X('세이브를 성공적으로 불러왔습니다.','The save was loaded successfully.'));
+  }catch(e){modal(X('불러오기 실패','Import failed'),X('올바른 마탑 세이브 파일이 아닙니다.<br>','This is not a valid Tower of the Abyss save.<br>')+'<span class="dim">'+e.message+'</span>')}
+}
+function hardReset(){
+  localStorage.removeItem(SAVE_KEY); S=newState(); LOG=[]; recalc(); render();
+  toast(X('처음부터 다시 시작합니다',"Starting over"));
+}
+
+/* ══════════════ 루프 & 입력 ══════════════ */
+let lastFrame=Date.now();
+setInterval(()=>{
+  const now=Date.now();
+  let dt=(now-lastFrame)/1000; lastFrame=now;
+  if(dt<0) dt=0;
+  /* 탭이 묻히거나 기기가 잠들면 타이머가 아예 멈춘다. 깨어났을 때 그 간격을
+     2 초로 잘라 버리면 그동안의 진행이 통째로 사라진다 — 자리를 비운 것으로
+     치고 오프라인과 같은 상한 안에서 나눠 따라잡는다. */
+  if(dt>10){
+    const left=Math.min(dt, M().offline*3600);
+    const steps=Math.min(140,Math.max(2,Math.ceil(left/60)));
+    for(let i=0;i<steps;i++) tick(left/steps);
+    S.lastTick=now;
+    return;
+  }
+  if(dt>2) dt=2;
+  tick(dt);
+},50);
+setInterval(refresh,100);
+setInterval(()=>save(true),15000);
+window.addEventListener('beforeunload',()=>save(true));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)save(true)});
+
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  if(e.target.tagName==='INPUT') return;
+  if(/^[0-9]$/.test(e.key)){
+    const i=e.key==='0'?9:(+e.key-1);
+    if(TABS[i]) switchTab(TABS[i].id);
+    return;
+  }
+  const k=e.key.toLowerCase();
+  if(e.key===' '){e.preventDefault();gather();refresh();return}
+  if(k==='b'){const o=[1,10,100,'max'];S.buyAmt=o[(o.indexOf(S.buyAmt)+1)%o.length];refresh()}
+  if(k==='e'){S.exploring=!S.exploring;if(!S.exploring)S.prog=0;refresh()}
+  if(k==='s'){save()}
+});
+$('fileIn').addEventListener('change',ev=>{
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>importSave(String(r.result));
+  r.readAsText(f); ev.target.value='';
+});
+
+/* ══════════════ 시작 ══════════════ */
+$('verTag').textContent='v'+VERSION;
+$('langBtn').addEventListener('click',()=>setLang(LANG==='ko'?'en':'ko'));
+document.documentElement.lang=LANG;
+document.title=X('무한의 탑','Tower of Infinity');
+
+{ // 파비콘도 직접 찍은 도트로
+  const fav=document.querySelector('link[rel="icon"]')||document.createElement('link');
+  fav.rel='icon'; fav.type='image/png'; fav.href=spriteURL('tower');
+  document.head.appendChild(fav);
+}
+recalc(); buildRes(); syncChapter(true);
+function syncTopH(){
+  document.documentElement.style.setProperty('--topH', $('top').offsetHeight+'px');
+}
+window.addEventListener('resize',syncTopH);
+setTimeout(syncTopH,0); setInterval(syncTopH,2000);
+const had=load();
+recalc();
+if(had) offlineCatchUp();
+else{
+  log(icHTML('tower')+X('심연 위에 마탑을 세운다. 견습 마법사부터 불러들이자.','You raise a tower above the abyss. Summon an Apprentice Mage first.'),true);
+  modal(`${icHTML('tower',16)} 무한의 탑`,`
+    <b>견습 마법사</b>가 마나를 뽑아내고, 그 위 시설들이 아래 시설을 스스로 지어 올립니다.<br><br>
+    처음에는 <b class="gold">직접</b> 해야 합니다. 마나를 채집하고, 시설을 올리고, 연구를 사고, 던전에 출격하고.<br>
+    진행할수록 <b>자동화</b>가 하나씩 열립니다. 무엇이 언제 열리는지는 자동화 탭에서 볼 수 있습니다.<br><br>
+    마나가 쌓이면 연구가 열리고, 던전 깊이가 곧 배율이 됩니다.
+    한계에 닿으면 <b class="soul">환생</b>, 그 위에 <b class="relic">승천</b>, 다시 그 위에 <b>시련</b>이 기다립니다.
+  `);
+}
+render();
+
+/* ══════════════ 개발용 손잡이 ══════════════
+   번들이 IIFE 라 안쪽 이름이 밖에서 안 보인다. 콘솔에서 상태를 들여다보거나
+   검증 하네스가 내부를 찔러 볼 수 있도록 하나만 창에 걸어 둔다. */
+(window as any).__game = {
+  get S(){ return S }, set S(v){ S = v },
+  get updaters(){ return updaters },
+  PRODUCERS, RESEARCH, RUNES, GEAR, SOUL_UPS, RELIC_UPS, STAR_UPS,
+  INF_UPS, ETER_UPS, REAL_UPS, VOID_UPS, ORIGIN_UPS,
+  CHALLENGES, ACHS, AUTO_DEFS, TABS, COSMOS, INF_LAYERS, FOES, BADGES,
+  M, computeM, recalc, tick, refresh, render, switchTab, buildTabs, save, load,
+  fmt, fmtLog, powTxt, cutTxt, pctTxt, NM, DS, DSF, X, ic, icHTML, spriteURL,
+  foeOf, sweepCount, floorLoot, floorHPLog, dungeonPowerLog, cnt, cntLog, syncGen,
+  autoBuyTree, runAutomation, autoOK, autoUnlocked, AUTO_DEF,
+  infGain, infUnlocked, doInfBreak, doRebirth, doAscend, doTranscend,
+  achCount, chapterSeen, chapterOf, cosmos, gatherAmountLog, manaRateLog,
+}

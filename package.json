@@ -1,0 +1,18 @@
+{
+  "name": "mana-tower",
+  "version": "1.0.0",
+  "description": "Tower of Infinity — an idle game that never ends",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "check": "tsc --noEmit",
+    "art": "python3 tools/build_sprites.py && python3 tools/build_ui.py"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "typescript": "^5.7.0"
+  }
+}
