@@ -1316,7 +1316,7 @@ function doTranscend(silent){
   if(!silent) toast(icHTML('star')+X(` 초월 · 별가루 +${fmt(g)}`,` Transcend · Stardust +${fmt(g)}`));
   return true;
 }
-const transUnlocked=()=>S.ascensions>=5||S.starEver>0;
+const transUnlocked=()=>(S.ascendEver||S.ascensions)>=5||S.starEver>0;
 
 
 const _ac={mx:0,dx:0,rx:0,ax:0,tx:0,ix:0};
@@ -1363,7 +1363,7 @@ let _bi=0;
 for(const a of ACHS) if(!a.sp) a.sp=BADGES[_bi++%BADGES.length];
 
 /* ══════════════ 도전 ══════════════ */
-const chalUnlocked=()=>S.ascensions>=1||chalTotal()>0;
+const chalUnlocked=()=>(S.ascendEver||S.ascensions)>=1||chalTotal()>0;
 function enterChallenge(id){
   const ch=CHALLENGES.find(c=>c.id===id);
   if(!ch||!chalUnlocked()) return;
@@ -1409,10 +1409,10 @@ function autoEnterChallenge(){
    자동화는 기본값이 아니라 진행으로 얻는 보상이다.
    초반에는 채집·건설·연구·던전을 직접 해야 한다. */
 const AUTO_DEFS=[
- {k:'gather', sp:'mana', g:{ko:"한 회차 안",en:"Within a run"}, nm:{ko:'마나 채집',en:"Mana Gathering"},     d:()=>X('채집 버튼을 대신 눌러 준다',"Presses the gather button for you"),                unlock:()=>S.manaEver>=1e3,                  req:()=>X('누적 마나 1,000',"1,000 total mana")},
- {k:'build', sp:'workshop',  nm:{ko:'시설 건설',en:"Construction"},     d:()=>X('여유 마나로 가장 비싼 시설부터 사들인다',"Buys the priciest affordable building"),   unlock:()=>S.manaEver>=2e4,                  req:()=>X('누적 마나 2만',"20,000 total mana")},
+ {k:'gather', sp:'mana', g:{ko:"한 회차 안",en:"Within a run"}, nm:{ko:'마나 채집',en:"Mana Gathering"},     d:()=>X('채집 버튼을 대신 눌러 준다',"Presses the gather button for you"),                unlock:()=>S.manaPeakL>=3,                  req:()=>X('누적 마나 1,000',"1,000 total mana")},
+ {k:'build', sp:'workshop',  nm:{ko:'시설 건설',en:"Construction"},     d:()=>X('여유 마나로 가장 비싼 시설부터 사들인다',"Buys the priciest affordable building"),   unlock:()=>S.manaPeakL>=numLog(2e4),                  req:()=>X('누적 마나 2만',"20,000 total mana")},
  {k:'research', sp:'flask',nm:{ko:'연구 구매',en:"Research Buying"},    d:()=>X('조건을 만족한 연구를 순서대로 사들인다',"Buys available researches in order"),     unlock:()=>(S.rebirthEver||S.rebirths)>=5||(S.ascendEver||S.ascensions)>0,    req:()=>X('환생 5회',"5 rebirths")},
- {k:'dungeon', sp:'sword',nm:{ko:'던전 연속 탐험',en:"Continuous Delving"},d:()=>X('층을 깬 뒤 멈추지 않고 계속 내려간다',"Keeps descending after each floor"),       unlock:()=>S.deepest>=20,                    req:()=>X('던전 20층 돌파',"Reach dungeon floor 20")},
+ {k:'dungeon', sp:'sword',nm:{ko:'던전 연속 탐험',en:"Continuous Delving"},d:()=>X('층을 깬 뒤 멈추지 않고 계속 내려간다',"Keeps descending after each floor"),       unlock:()=>(S.deepestEver||S.deepest)>=20,                    req:()=>X('던전 20층 돌파',"Reach dungeon floor 20")},
  {k:'rebirth', sp:'spiral', g:{ko:"환생",en:"Rebirth"},nm:{ko:'자동 환생',en:"Auto Rebirth"},     d:()=>X('직전 회차보다 1.5배 이상 벌릴 때 환생한다',"Rebirths when the run beats the last by 1.5x"),  unlock:()=>(S.rebirthEver||S.rebirths)>=20||(S.ascendEver||S.ascensions)>0,   req:()=>X('환생 20회',"20 rebirths")},
  {k:'soulup', sp:'soul', nm:{ko:'영혼 강화 구매',en:"Soul Upgrade Buying"},d:()=>X('영혼석으로 가장 싼 강화를 사들인다',"Buys the cheapest soul upgrade"),         unlock:()=>(S.rebirthEver||S.rebirths)>=10||(S.ascendEver||S.ascensions)>0,   req:()=>X('환생 10회',"10 rebirths")},
  {k:'chal', sp:'chain',   nm:{ko:'자동 시련',en:"Auto Trials"},     d:()=>X('환생할 때마다 감당 가능한 시련에 들어간다',"Enters a reachable trial on each rebirth"),  unlock:()=>chalTotal()>=3,                   req:()=>X('시련 3단계 완료',"Clear 3 trial stages")},
@@ -1680,11 +1680,11 @@ $('modalWrap').addEventListener('click',e=>{if(e.target.id==='modalWrap'){$('mod
 /* ══════════════ 탭 ══════════════ */
 const TABS=[
  {id:'tower',   sp:'tower',    nm:{ko:'마탑',en:"Mage Tower"},      open:()=>true},
- {id:'research',sp:'flask',    nm:{ko:'연구',en:"Research"},      open:()=>S.manaEver>=100},
- {id:'dungeon', sp:'sword',    nm:{ko:'던전',en:"Dungeon"},      open:()=>S.manaEver>=5e3},
+ {id:'research',sp:'flask',    nm:{ko:'연구',en:"Research"},      open:()=>S.manaPeakL>=2},
+ {id:'dungeon', sp:'sword',    nm:{ko:'던전',en:"Dungeon"},      open:()=>S.manaPeakL>=numLog(5e3)},
  {id:'relics',  sp:'rune_wealth',nm:{ko:'룬 석판',en:"Rune Tablets"},open:()=>S.offerEver>0},
- {id:'rebirth', sp:'soul',     nm:{ko:'환생',en:"Rebirth"},      open:()=>S.manaEver>=REBIRTH_REQ/20||S.rebirths>0||S.soulEver>0},
- {id:'ascend',  sp:'relic',    nm:{ko:'승천',en:"Ascension"},      open:()=>S.soulEver>=ASCEND_REQ/10||S.ascensions>0||S.relicEver>0},
+ {id:'rebirth', sp:'soul',     nm:{ko:'환생',en:"Rebirth"},      open:()=>S.manaPeakL>=numLog(REBIRTH_REQ/20)||(S.rebirthEver||S.rebirths)>0||S.soulEver>0},
+ {id:'ascend',  sp:'relic',    nm:{ko:'승천',en:"Ascension"},      open:()=>S.soulEver>=ASCEND_REQ/10||(S.ascendEver||S.ascensions)>0||S.relicEver>0},
  {id:'trans',   sp:'star',     nm:{ko:'초월',en:"Transcend"},   open:()=>transUnlocked()},
  {id:'inf',     sp:'infinity', nm:{ko:'무한',en:"Infinity"},   open:()=>infUnlocked(0)},
  {id:'chal',    sp:'chain',    nm:{ko:'도전',en:"Trials"},      open:()=>chalUnlocked()},
@@ -2321,16 +2321,16 @@ const RES=[
   val:()=>fmt(S.offering), sub:()=>X('룬 합계 Lv.','Runes Lv.')+runeTotal()},
  {id:'crystal',sp:'crystal',nm:{ko:'결정',en:"Crystals"},   cls:'crystal',show:()=>S.crystalEver>0,
   val:()=>fmt(S.crystal), sub:()=>X('장비 합계 Lv.','Gear Lv.')+gearTotal()},
- {id:'soul',   sp:'soul',   nm:{ko:'영혼석',en:"Soul Shards"}, cls:'soul',   show:()=>S.soulEver>0||S.rebirths>0,
+ {id:'soul',   sp:'soul',   nm:{ko:'영혼석',en:"Soul Shards"}, cls:'soul',   show:()=>S.soulEver>0||(S.rebirthEver||S.rebirths)>0,
   val:()=>fmt(S.soul), sub:()=>X('환생 ','Rebirths ')+S.rebirths+X(' · 주기 ',' · cycle ')+fmt(S.soulAsc)},
- {id:'relic',  sp:'relic',  nm:{ko:'유물',en:"Relics"},   cls:'relic',  show:()=>S.relicEver>0||S.ascensions>0,
+ {id:'relic',  sp:'relic',  nm:{ko:'유물',en:"Relics"},   cls:'relic',  show:()=>S.relicEver>0||(S.ascendEver||S.ascensions)>0,
   val:()=>fmt(S.relic), sub:()=>X('승천 ','Ascensions ')+S.ascensions},
  {id:'star',   sp:'star',   nm:{ko:'별가루',en:"Stardust"}, cls:'gold',   show:()=>S.starEver>0||transUnlocked(),
   val:()=>fmt(S.star), sub:()=>X('초월 ','Transcends ')+S.transcends},
  ...INF_LAYERS.map((L,i)=>({id:L.k, sp:L.sp, nm:{ko:L.ko,en:L.en}, cls:'gold',
    show:()=>(S[L.k+'Ever']||0)>0||infUnlocked(i),
    val:()=>fmt(S[L.k]||0), sub:()=>X(`돌파 ${S[L.k+'Count']||0}회`,`${S[L.k+'Count']||0} breaks`)})),
- {id:'floor',  sp:'sword',  nm:{ko:'탐사 깊이',en:"Depth"}, cls:'floor',  show:()=>S.manaEver>=5e3,
+ {id:'floor',  sp:'sword',  nm:{ko:'탐사 깊이',en:"Depth"}, cls:'floor',  show:()=>S.manaPeakL>=numLog(5e3),
   val:()=>fmt(S.deepest), sub:()=>cosmosLabel(S.deepest||1)},
 ];
 let resNodes={};
