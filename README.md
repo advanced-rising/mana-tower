@@ -1,7 +1,7 @@
 # 마탑: 심연의 왕국 (Tower of the Abyss)
 
 심연 위에 마탑을 세우고, 환생과 승천을 거듭하는 **판타지 방치형(인크리멘탈) 게임**.
-`index.html` 하나로 끝 — 빌드 도구도, 인터넷 연결도, 외부 라이브러리도 필요 없습니다.
+`index.html` 하나로 끝. 빌드 도구도, 인터넷 연결도, 외부 라이브러리도 필요 없습니다.
 
 플레이: <https://advanced-rising.github.io/mana-tower/>
 
@@ -12,7 +12,7 @@
    └ 🧙 견습 마법사 → ⚒️ 마법 공방 → 🗼 마탑 → 🏛️ 아카데미 → 👑 대현자 회의
         (윗 단계 시설이 아랫 단계를 스스로 지어 올린다. 마나를 직접 뽑는 건 견습 마법사뿐)
 
-⚗️ 연구 20종        마나로 사는 일회성 강화 — 환생하면 사라진다
+⚗️ 연구 20종        마나로 사는 일회성 강화 (환생하면 사라진다)
 ⚔️ 던전             시설 총합 = 공격력. 10층마다 보스. 깊이가 곧 영구 배율
                     보상: 마나 + 결정(장비 재료), 보스는 오퍼링까지
 
@@ -41,16 +41,39 @@
 
 ## 도트 이미지
 
-40여 개 스프라이트를 전부 직접 찍었습니다. 외부 이미지 파일은 하나도 없습니다 —
-`PAL`(팔레트) + `SPR16`/`SPR12`(문자 격자)로 정의하고, 실행 시 캔버스로 그려
-data URI로 캐시합니다. 광원은 좌상단 고정, 그림자는 푸른 쪽 / 하이라이트는 노란 쪽으로
-색상을 이동시키는 셀 셰이딩 방식입니다.
+47종을 전부 직접 찍었습니다. 외부 이미지 파일은 하나도 없습니다.
+`PAL`(34색 팔레트) + `SPR24`/`SPR16`(문자 격자)으로 정의하고, 실행할 때 캔버스로
+그려 data URI 로 캐시합니다. 광원은 좌상단 고정, 그림자는 푸른 쪽 / 하이라이트는
+노란 쪽으로 색을 이동시키는 셀 셰이딩입니다.
 
 ```js
-mana:['.......k','......kck', ...]   // 문자 하나 = 픽셀 하나, '.'은 투명
+mana:['.......0','......0s0', ...]   // 문자 하나 = 픽셀 하나, '.'은 투명
 ```
 
-새 아이콘을 넣으려면 `SPR12`에 격자를 한 줄 추가하고 `sp:'이름'`으로 참조하면 됩니다.
+### 그림 고치기 (Aseprite 필요 없음)
+
+`tools/sprite_tool.py` 가 PNG 와 게임 격자를 양방향으로 변환합니다.
+PNG 를 저장할 수 있는 에디터면 무엇이든 됩니다.
+**Pixelorama**(무료 오픈소스, `brew install --cask pixelorama`), Piskel, GIMP, Photoshop 등.
+
+```bash
+python3 tools/sprite_tool.py list                    # 47종 목록과 색 단계 수
+python3 tools/sprite_tool.py palette                 # art/mana-tower.gpl (에디터에 불러올 팔레트)
+python3 tools/sprite_tool.py export --scale 8        # 전부 PNG 로 (8배 확대해서 그리기 편하게)
+python3 tools/sprite_tool.py export tower --scale 8  # 하나만
+python3 tools/sprite_tool.py sheet                   # 한 장짜리 대조표
+
+# 에디터에서 고친 뒤 되돌려 넣기
+python3 tools/sprite_tool.py import art/tower.png tower          # 미리보기만
+python3 tools/sprite_tool.py import art/tower.png tower --apply  # index.html 에 반영
+```
+
+1배·4배·8배 어느 배율로 그려도 정수배로 정확히 축소해 받습니다.
+팔레트에 없는 색은 가장 가까운 팔레트 색으로 자동 대응되고, 투명은 그대로 유지됩니다.
+47종 × 3배율 = 141회 왕복 검사에서 **손실 0** 을 확인했습니다.
+
+새 아이콘을 추가하려면 `SPR16` 에 격자를 한 줄 넣고 콘텐츠 정의에서 `sp:'이름'` 으로
+참조하면 됩니다.
 
 ## 수치를 고치려면
 
@@ -59,11 +82,11 @@ mana:['.......k','......kck', ...]   // 문자 하나 = 픽셀 하나, '.'은 �
 
 | 블록 | 무엇 |
 |---|---|
-| `PRODUCERS` | 시설 5종 — 기본가 `base`, 가격 증가율 `g`, 생산속도 `rate` |
-| `RESEARCH` | 연구 20종 — 가격 `cost`, 선행 `req`, 효과 `apply` |
+| `PRODUCERS` | 시설 5종 · 기본가 `base`, 가격 증가율 `g`, 생산속도 `rate` |
+| `RESEARCH` | 연구 20종 · 가격 `cost`, 선행 `req`, 효과 `apply` |
 | `RUNES` / `GEAR` | 룬 5종 / 장비 3종 |
 | `SOUL_UPS` / `RELIC_UPS` | 영혼·유물 강화 각 10종 |
-| `CHALLENGES` | 시련 6종 — 제약 `rule`, 목표 `base`, 보상 `apply` |
+| `CHALLENGES` | 시련 6종 · 제약 `rule`, 목표 `base`, 보상 `apply` |
 | `ACHS` | 업적 30종 |
 | `computeM()` | 모든 배율이 합쳐지는 곳 |
 | `AUTO_DEFS` | 자동화 항목과 해금 조건 |

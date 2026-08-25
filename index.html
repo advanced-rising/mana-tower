@@ -7,12 +7,12 @@
 <meta name="description" content="심연의 마탑을 세우고, 환생과 승천을 거듭하는 방치형 판타지 게임">
 <meta name="theme-color" content="#0b0b0d">
 <meta property="og:title" content="마탑: 심연의 왕국">
-<meta property="og:description" content="단일 HTML 판타지 방치형 게임 — 도트 42종 직접 제작">
+<meta property="og:description" content="단일 HTML 판타지 방치형 게임, 도트 42종 직접 제작">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:,">
 <style>
 /* ═══════════════════════════════════════════════
-   마탑: 심연의 왕국 — 판타지 UI
+   마탑: 심연의 왕국 · 판타지 UI
    ═══════════════════════════════════════════════ */
 :root{
   --ink:#0b0b0d; --ink2:#111114;
@@ -23,7 +23,7 @@
   --mana:#9fc4d8; --soul:#a89bbd; --relic:#c96a52;
   --offer:#e0b95f; --crystal:#b8dbe8;
   --good:#8fae86; --bad:#b04a3a;
-  /* 전부 sans — 제목은 굵기·자간으로만 구분한다 */
+  /* 전부 sans. 제목은 굵기·자간으로만 구분한다 */
   --sans:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
   --serif:var(--sans);
 }
@@ -538,7 +538,7 @@ tower:[
 '....06666655544300',
 '...0666666555443300',
 '...0166666555443310',
-'...016600665544331 0',
+'...016600665544331.0',
 '...0166ss6655443310',
 '...0166ss6655443310',
 '...0166006655443310',
@@ -560,7 +560,7 @@ academy:[
 '....00000000000000',
 '...0zzzzzzzzzz6660',
 '..0zzzzzzzzzzz66660',
-'.0zzzzzzzzzzzzz666 0',
+'.0zzzzzzzzzzzzz666.0',
 '00000000000000000000',
 '0z00z00z00z00z00z660',
 '0z00z00z00z00z00z660',
@@ -571,7 +571,7 @@ academy:[
 '0z00z00z00z00z00z660',
 '00000000000000000000',
 '0zzzzzzzzzzzzzz66660',
-'0666666666666666 660',
+'0666666666666666.660',
 '00000000000000000000',
 ],
 council:[
@@ -639,7 +639,7 @@ const SPR16={
 flask:['.....000','.....0s0','.....0s0','....00s00','....0ssss0','...0stssss0','..0sttsssss0','..0ssssssrq0','..0qssssssq0','..0qrsssssq0','...0qrrrrq0','....000000'],
 feather:['..........00','.........0z70','........0zz70','.......0zzz70','......0zzz760','.....0zzz7660','....0zzz76600','...0zzz766000','..0zz7660','.0z7660','0b660','0ab0','000'],
 book:['0000000000000','0dccccccccccd0','0dz11111111zd0','0dzzzzzzzzzzd0','0dz11111111zd0','0dzzzzzzzzzzd0','0dz11111111zd0','0dzzzzzzzzzzd0','0dcccccccccccd0','0aaaaaaaaaaaa0','000000000000'],
-cog:['...00..00','..066006 60','..06600660','0000000000000','06666666666 0','0666000666 0','066000006660','066000006660','0666000666 0','06666666666 0','0000000000000','..06600660','..06600660','...00..00'],
+cog:['...00..00','..066006.60','..06600660','0000000000000','06666666666.0','0666000666.0','066000006660','066000006660','0666000666.0','06666666666.0','0000000000000','..06600660','..06600660','...00..00'],
 spiral:['...0000000','..0wxxxxxw0','.0wx00000xw0','0wx0vvvvv0x0','0wx0v000v0x0','0wx0v0y0v0x0','0wx0v000v0x0','0wx0vvvv00x0','.0wx000000x0','..0wxxxxxx0','...00000000'],
 lantern:['.....000','....0dd0','...0000000','..0ddddddd0','.0dbfffffbd0','0dbffefffbd0','0dbffefffbd0','0dbfffffffbd0','.0dbfffffbd0','..0ddddddd0','...0aaaaa0','....00000'],
 bolt:['......000','.....0ef0','....0edf0','...0eddf0','..0edddf00','.0eddddf0','0eeeddd0','000ddf0','...0df0','..0df0','.0df0','0f0','00'],
@@ -659,23 +659,23 @@ fastfwd:['.0.....0','.0d0...0d0','.0dd0..0dd0','.0ddd0.0ddd0','.0dddd0dddd0','.0
 compass:['....00000','..00777700','.07766667700','076666666670','07666n66670','0766n0n6670','07666n66670','076666666670','.0776666770','..00777700','....00000'],
 map:['00000000000000','0bzzzzzzzzzzb0','0bz0n0zzzzzzb0','0bzz0zzzzzzzb0','0bzzz0z0zzzzb0','0bzzzz0zzzzzb0','0bzzzzz0n0zzb0','0bzzzzzzzzzzb0','0baaaaaaaaaab0','00000000000000'],
 medal:['.0s0...0s0','.0s0...0s0','..0s000s0','..0000000','.0dddddd0','0dcfffcd0','0dcfefcd0','0dcfffcd0','.0dddddd0','..0000000'],
-anvil:['...00000000','..066666660','.06666666660','07766666666 0','.0554444440','...05444440','..0544444440','.05444444440','0444444444440','0333333333330','.00000000000'],
+anvil:['...00000000','..066666660','.06666666660','07766666666.0','.0554444440','...05444440','..0544444440','.05444444440','0444444444440','0333333333330','.00000000000'],
 staff:['....00','...0y0','..0yxw0','..0yxw0','...0wv0','....0b0','....0b0','....0b0','....0b0','....0b0','....0b0','....0b0','....0a0','....00'],
 amulet:['.0d0.....0d0','..0d0...0d0','...0d0.0d0','....0d0d0','.....0d0','....0ddd0','...0dfxxfd0','..0dfxyxfd0','...0dfxxfd0','....0ddd0','.....000'],
 grimoire:['.00000000000','0uvvvvvvvvu0','0uv0ddddd0vu0','0uv0d000d0vu0','0uv0d0y0d0vu0','0uv0d000d0vu0','0uv0ddddd0vu0','0uvvvvvvvvvu0','0uuuuuuuuuuu0','.00000000000'],
-chain:['....0000','...066660','..0660066 0','..0660.0660','.00000000000','.0dddddddd0','.0dd0000dd0','.0dd0..0dd0','.0dd0..0dd0','.0dddddddd0','.0cbbbbbbc0','.00000000000'],
+chain:['....0000','...066660','..0660066.0','..0660.0660','.00000000000','.0dddddddd0','.0dd0000dd0','.0dd0..0dd0','.0dd0..0dd0','.0dddddddd0','.0cbbbbbbc0','.00000000000'],
 shield:['0000000000000','0jkkkkkkkkkj0','0jkhhkkkhhkj0','0jkkkkkkkkkj0','0jkhhkkkhhkj0','.0jkkkkkkkj0','.0jkhhhhhkj0','..0jkkkkkj0','...0jkkkj0','....0jkj0','.....0j0','......0'],
 };
-/* 룬 석판 — 글리프만 다른 5종 */
+/* 룬 석판 · 글리프만 다른 5종 */
 {
  const GLY={speed:['..66','.66','6666','..66','.66'],wealth:['.666','6..6','6..6','6..6','.666'],
    wisdom:['66666','..6','..6','..6','66666'],guard:['66666','6...6','66666','.6.6','..6'],
    abyss:['66666','....6','.6666','.6','.6666']};
  const COL={speed:'s',wealth:'d',wisdom:'x',guard:'j',abyss:'n'};
  for(const k in GLY){
-   const rows=['00000000000','0777777777 0','0755555555 70'];
+   const rows=['00000000000','0777777777.0','0755555555.70'];
    for(let i=0;i<5;i++) rows.push('07554'+(GLY[k][i]||'').padEnd(5,'.').replace(/6/g,COL[k]).replace(/\./g,'4')+'4550');
-   rows.push('0755555555570','07777777777 0','00000000000');
+   rows.push('0755555555570','07777777777.0','00000000000');
    SPR16['rune_'+k]=rows;
  }
 }
@@ -741,7 +741,7 @@ const RESEARCH=[
  {id:'q20',sp:'infinity', nm:'무한의 계시', cost:1e19, d:'마나 생산 ×50', req:'q18',apply:m=>m.prod*=50},
 ];
 
-/* 룬 — 오퍼링으로 강화, 승천 시 초기화 */
+/* 룬 · 오퍼링으로 강화, 승천 시 초기화 */
 const RUNES=[
  {id:'speed', sp:'rune_speed', nm:'신속의 룬', d:l=>`게임 속도 +${(1.5*l).toFixed(1)}%`,        apply:(m,l)=>m.speed*=1+0.015*l},
  {id:'wealth',sp:'rune_wealth',nm:'풍요의 룬', d:l=>`마나 생산 ×${fmt(Math.pow(1.06,l))}`,      apply:(m,l)=>m.prod*=Math.pow(1.06,l)},
@@ -751,7 +751,7 @@ const RUNES=[
 ];
 const runeCost=l=>12*Math.pow(1.30,l);
 
-/* 장비 — 결정으로 강화, 영구 유지 */
+/* 장비 · 결정으로 강화, 영구 유지 */
 const GEAR=[
  {id:'grimoire',sp:'grimoire',nm:'마도서', d:(l,p)=>`마나 생산 ×${fmt(Math.pow(1.15,l*p))}`,    apply:(m,l)=>m.prod*=Math.pow(1.15,l*m.gearPow)},
  {id:'staff',   sp:'staff',   nm:'지팡이', d:(l,p)=>`던전 공격력 ×${fmt(Math.pow(1.25,l*p))}`,  apply:(m,l)=>m.dungeon*=Math.pow(1.25,l*m.gearPow)},
@@ -759,7 +759,7 @@ const GEAR=[
 ];
 const gearCost=l=>8*Math.pow(1.6,l);
 
-/* 영혼 강화 — 환생 통화, 승천 시 초기화 */
+/* 영혼 강화 · 환생 통화, 승천 시 초기화 */
 const SOUL_UPS=[
  {id:'s1', sp:'gem',      nm:'영혼 각인',  max:Infinity,c:l=>2*Math.pow(1.7,l),  d:l=>`마나 생산 ×${fmt(Math.pow(1.15,l))} → ×${fmt(Math.pow(1.15,l+1))}`, apply:(m,l)=>m.prod*=Math.pow(1.15,l)},
  {id:'s2', sp:'scroll',   nm:'값싼 주문서',max:12,      c:l=>6*Math.pow(2.1,l),  d:l=>`시설 비용 증가율 -${(1.2*l).toFixed(1)}%p → -${(1.2*(l+1)).toFixed(1)}%p`, apply:(m,l)=>m.costGrow-=0.012*l},
@@ -773,7 +773,7 @@ const SOUL_UPS=[
  {id:'s10',sp:'offering', nm:'봉헌의 축복',max:Infinity,c:l=>20*Math.pow(2.35,l),d:l=>`오퍼링 획득 ×${fmt(Math.pow(1.4,l))} → ×${fmt(Math.pow(1.4,l+1))}`, apply:(m,l)=>m.offer*=Math.pow(1.4,l)},
 ];
 
-/* 유물 강화 — 승천 통화, 영구 */
+/* 유물 강화 · 승천 통화, 영구 */
 const RELIC_UPS=[
  {id:'a1', sp:'relic',    nm:'고대 유물',  max:Infinity,c:l=>1*Math.pow(3,l),    d:l=>`마나 생산 ×${fmt(Math.pow(2,l))} → ×${fmt(Math.pow(2,l+1))}`, apply:(m,l)=>m.prod*=Math.pow(2,l)},
  {id:'a2', sp:'pickaxe',  nm:'영혼 광맥',  max:Infinity,c:l=>2*Math.pow(3.2,l),  d:l=>`영혼석 획득 ×${fmt(Math.pow(2.5,l))} → ×${fmt(Math.pow(2.5,l+1))}`, apply:(m,l)=>m.soul*=Math.pow(2.5,l)},
@@ -787,7 +787,7 @@ const RELIC_UPS=[
  {id:'a10',sp:'star',     nm:'초월의 씨앗',max:Infinity,c:l=>20*Math.pow(5,l),   d:l=>`모든 생산·획득 ×${fmt(Math.pow(1.35,l))} → ×${fmt(Math.pow(1.35,l+1))}`, apply:(m,l)=>{const v=Math.pow(1.35,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
 ];
 
-/* 도전 — 승천 1회 후 해금. 제약을 걸고 목표 마나 달성 시 영구 보상 */
+/* 도전 · 승천 1회 후 해금. 제약을 걸고 목표 마나 달성 시 영구 보상 */
 const CHALLENGES=[
  {id:'c1',sp:'book',   nm:'침묵의 시련', rule:{noResearch:1}, base:1e9,  max:5,
   desc:'연구를 사용할 수 없다',            rw:c=>`마나 생산 ×${fmt(Math.pow(1.8,c))}`, apply:(m,c)=>m.prod*=Math.pow(1.8,c)},
@@ -957,7 +957,7 @@ function clearFloor(){
   if(l.offering){S.offering+=l.offering;S.offerEver+=l.offering}
   const nw=f>S.deepest;
   if(nw) S.deepest=f;
-  log(`${icHTML('sword')}${isBoss(f)?'<b class="bad">보스</b> ':''}<b>${f}층</b> 격파 — ${icHTML('mana')}${fmt(l.mana)} ${icHTML('crystal')}${fmt(l.crystal)}${l.offering?' '+icHTML('offering')+fmt(l.offering):''}`, isBoss(f));
+  log(`${icHTML('sword')}${isBoss(f)?'<b class="bad">보스</b> ':''}<b>${f}층</b> 격파 · ${icHTML('mana')}${fmt(l.mana)} ${icHTML('crystal')}${fmt(l.crystal)}${l.offering?' '+icHTML('offering')+fmt(l.offering):''}`, isBoss(f));
   S.floor=f+1; recalc();
 }
 
@@ -993,7 +993,7 @@ function doRebirth(silent){
   S.rebirths++;
   if(S.chal) exitChallenge(false);
   softReset();
-  log(`${icHTML('soul')}<b>환생</b> — 영혼석 <b class="soul">+${fmt(g)}</b> · 오퍼링 <b class="offer">+${fmt(o)}</b>`,true);
+  log(`${icHTML('soul')}<b>환생</b> · 영혼석 <b class="soul">+${fmt(g)}</b> · 오퍼링 <b class="offer">+${fmt(o)}</b>`,true);
   if(!silent) toast(icHTML('soul')+` 환생 · 영혼석 +${fmt(g)}`);
   if(autoOK('chal')) autoEnterChallenge();
   return true;
@@ -1006,7 +1006,7 @@ function doAscend(silent){
   S.rebirths=0; S.deepest=0; S.offering=0; S.lastSoulGain=0; S.sinceAscend=0;
   if(S.chal) exitChallenge(false);
   softReset();
-  log(`${icHTML('relic')}<b>승천</b> — 유물 <b class="relic">+${fmt(g)}</b> · 영혼석과 룬이 초기화되었다`,true);
+  log(`${icHTML('relic')}<b>승천</b> · 유물 <b class="relic">+${fmt(g)}</b> · 영혼석과 룬이 초기화되었다`,true);
   if(!silent) toast(icHTML('relic')+` 승천 · 유물 +${fmt(g)}`);
   return true;
 }
@@ -1018,7 +1018,7 @@ function enterChallenge(id){
   if(!ch||!chalUnlocked()) return;
   if((S.chalDone[id]||0)>=ch.max) return;
   S.chal=id; S.chalTime=0; softReset();
-  log(`${icHTML('chain')}<b>${ch.nm}</b> 시작 — 목표 ${icHTML('mana')}${fmt(chalGoal(ch,S.chalDone[id]||0))}`,true);
+  log(`${icHTML('chain')}<b>${ch.nm}</b> 시작 · 목표 ${icHTML('mana')}${fmt(chalGoal(ch,S.chalDone[id]||0))}`,true);
   toast(icHTML('chain')+' '+ch.nm+' 시작');
 }
 function exitChallenge(reset=true){
@@ -1031,13 +1031,13 @@ function checkChallenge(){
   const c=S.chalDone[ch.id]||0;
   if(S.manaRun>=chalGoal(ch,c)){
     S.chalDone[ch.id]=c+1;
-    log(`${icHTML('medal')}<b class="gold">${ch.nm} ${c+1}단계 돌파!</b> — ${ch.rw(c+1)}`,true);
+    log(`${icHTML('medal')}<b class="gold">${ch.nm} ${c+1}단계 돌파!</b> · ${ch.rw(c+1)}`,true);
     achToast(ch.nm+' 돌파', ch.rw(c+1),'medal');
     exitChallenge(true);
     if(autoOK('chal')) autoEnterChallenge();
   }
 }
-/* 도달 가능성 판정 — 최고 회차 기록 대비 목표가 현실적인 시련만 고른다 */
+/* 도달 가능성 판정 · 최고 회차 기록 대비 목표가 현실적인 시련만 고른다 */
 function chalReachable(ch){
   const n=S.chalDone[ch.id]||0;
   if(n>=ch.max) return false;
@@ -1123,7 +1123,7 @@ function runAutomation(dt){
     for(const u of RELIC_UPS){const l=S.relicUps[u.id]||0;if(l>=u.max)continue;const c=u.c(l);if(c<bc){bc=c;best=u}}
     if(best&&S.relic>=bc){S.relic-=bc;S.relicUps[best.id]=(S.relicUps[best.id]||0)+1;recalc()}
   }
-  // 환생 / 승천 — 직전 회차보다 확실히 나아졌을 때만
+  // 환생 / 승천 · 직전 회차보다 확실히 나아졌을 때만
   if(autoOK('rebirth')&&S.sinceRebirth>20){
     const g=soulGain();
     if(g>=10&&g>=1.5*(S.lastSoulGain||0)) doRebirth(true);
@@ -1152,7 +1152,7 @@ function tick(dt){
     S.chalTime+=dt;
     // 15분 안에 못 깨면 승산이 없다고 보고 물러난다
     if(S.chalTime>900){
-      log(`${icHTML('chain')}<b>${ch.nm}</b> 철수 — 아직 감당할 수 없다`,true);
+      log(`${icHTML('chain')}<b>${ch.nm}</b> 철수 · 아직 감당할 수 없다`,true);
       exitChallenge(true);
     }
   }else{
@@ -1168,7 +1168,7 @@ function checkAchs(){
   for(const a of ACHS) if(!S.achs[a.id]&&a.f()){
     S.achs[a.id]=1;
     achToast(a.nm,a.d+' · 마나 생산 +2%','medal');
-    log(`${icHTML('medal')}업적 <b class="gold">${a.nm}</b> 달성 — 마나 생산 +2%`,true);
+    log(`${icHTML('medal')}업적 <b class="gold">${a.nm}</b> 달성 · 마나 생산 +2%`,true);
     flagTab('ach');
   }
 }
@@ -1359,7 +1359,7 @@ function buildTower(p){
 }
 
 function buildResearch(p){
-  const c=card(['마법 연구','flask'],'마나로 사들이는 일회성 강화. <b>환생하면 전부 사라진다</b> — 매 회차 다시 사들이게 된다.');
+  const c=card(['마법 연구','flask'],'마나로 사들이는 일회성 강화. <b>환생하면 전부 사라진다.</b> 매 회차 다시 사들이게 된다.');
   const g=el('div','grid');
   RESEARCH.forEach(r=>{
     const b=document.createElement('button');
@@ -1559,7 +1559,7 @@ function buildChal(p){
       b.querySelector('.d').textContent=ch.desc;
       b.querySelector('.goal').innerHTML=maxed?'':`목표 ${icHTML('mana')} ${fmt(chalGoal(ch,n))}`;
       b.querySelector('.c').innerHTML=maxed?`<span class="good">완주 · ${ch.rw(n)}</span>`
-        :active?`<span class="bad">진행 중 — 눌러서 포기</span>`
+        :active?`<span class="bad">진행 중 · 눌러서 포기</span>`
         :`현재 보상 ${n?ch.rw(n):'없음'}`;
       b.classList.toggle('done',maxed); b.classList.toggle('active',active); b.disabled=maxed;
     });
@@ -1569,7 +1569,7 @@ function buildChal(p){
     const ch=curChal();
     info.innerHTML=`<span class="tag">완료 <b>${chalTotal()}</b> / ${CHALLENGES.reduce((a,c2)=>a+c2.max,0)}</span>
       <span class="tag">보상 지수 <b>×${fmt(M().chalPow)}</b></span>
-      ${ch?`<span class="tag bad">진행 중: <b>${ch.nm}</b> — ${icHTML('mana')}${fmt(S.manaRun)} / ${fmt(chalGoal(ch,S.chalDone[ch.id]||0))}</span>`:''}`;
+      ${ch?`<span class="tag bad">진행 중: <b>${ch.nm}</b> · ${icHTML('mana')}${fmt(S.manaRun)} / ${fmt(chalGoal(ch,S.chalDone[ch.id]||0))}</span>`:''}`;
   });
 }
 
@@ -1585,7 +1585,7 @@ function buildAch(p){
     updaters.push(()=>d.classList.toggle('got',!!S.achs[a.id]));
   });
   c.appendChild(g); p.appendChild(c);
-  updaters.push(()=>{sub.innerHTML=`달성 <b class="gold">${achCount()}</b> / ${ACHS.length} — 하나당 마나 생산 <b>+2%</b> (현재 +${2*achCount()}%)`});
+  updaters.push(()=>{sub.innerHTML=`달성 <b class="gold">${achCount()}</b> / ${ACHS.length} · 하나당 마나 생산 <b>+2%</b> (현재 +${2*achCount()}%)`});
 }
 
 function buildAuto(p){
@@ -1799,7 +1799,7 @@ else{
   log(`${icHTML('tower')}심연 위에 마탑을 세운다. 견습 마법사부터 불러들이자.`,true);
   modal(`${icHTML('tower',24)} 마탑: 심연의 왕국`,`
     <b>견습 마법사</b>가 마나를 뽑아내고, 그 위 시설들이 아래 시설을 스스로 지어 올립니다.<br><br>
-    처음에는 <b class="gold">직접</b> 해야 합니다 — 마나를 채집하고, 시설을 올리고, 연구를 사고, 던전에 출격하고.<br>
+    처음에는 <b class="gold">직접</b> 해야 합니다. 마나를 채집하고, 시설을 올리고, 연구를 사고, 던전에 출격하고.<br>
     진행할수록 <b>자동화</b>가 하나씩 열립니다. 무엇이 언제 열리는지는 자동화 탭에서 볼 수 있습니다.<br><br>
     마나가 쌓이면 연구가 열리고, 던전 깊이가 곧 배율이 됩니다.
     한계에 닿으면 <b class="soul">환생</b>, 그 위에 <b class="relic">승천</b>, 다시 그 위에 <b>시련</b>이 기다립니다.
