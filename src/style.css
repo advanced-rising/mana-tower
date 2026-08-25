@@ -1,3 +1,6 @@
+/* 이 파일은 src/ 안에 있으므로 그림 경로는 한 칸 위를 가리켜야 한다.
+   index.html 안에 박혀 있을 때의 'art/...' 를 그대로 옮겨 오면
+   src/art/... 을 찾다가 전부 404 가 나고, 테두리가 기본 선으로 떨어진다. */
 /* ═══════════════════════════════════════════════
    무한의 탑 · 도트 UI
    ═══════════════════════════════════════════════ */
@@ -310,46 +313,46 @@ main{min-width:0}
   image-rendering:pixelated;image-rendering:crisp-edges;
 }
 .card,.arena,#sidestat{
-  border:8px solid transparent;border-image:url('art/ui/panel.png') 8 stretch;
+  border:8px solid transparent;border-image:url('../art/ui/panel.png') 8 stretch;
 }
 .card{padding:6px 8px 8px}
 .arena{padding:5px}
 #sidestat{padding:4px 5px}
 .card::before,.card::after{display:none}
 
-#modal{border:8px solid transparent;border-image:url('art/ui/modal.png') 8 stretch;padding:13px 15px}
+#modal{border:8px solid transparent;border-image:url('../art/ui/modal.png') 8 stretch;padding:13px 15px}
 
-.res{border:6px solid transparent;border-image:url('art/ui/plate.png') 6 stretch;padding:2px 5px}
+.res{border:6px solid transparent;border-image:url('../art/ui/plate.png') 6 stretch;padding:2px 5px}
 
-.btn{border:6px solid transparent;border-image:url('art/ui/btn.png') 6 stretch;padding:3px 9px;
+.btn{border:6px solid transparent;border-image:url('../art/ui/btn.png') 6 stretch;padding:3px 9px;
      box-shadow:none}
-.btn:hover:not(:disabled){border-image:url('art/ui/btn_hover.png') 6 stretch;background:linear-gradient(180deg,#35333c,#1e1e24)}
-.btn:active:not(:disabled){border-image:url('art/ui/btn_active.png') 6 stretch;transform:none;box-shadow:none}
-.btn.gold,.btn.on{border-image:url('art/ui/btn_gold.png') 6 stretch;box-shadow:0 0 15px rgba(212,169,74,.14)}
-.btn.gold:hover:not(:disabled),.btn.on:hover:not(:disabled){border-image:url('art/ui/btn_gold_hover.png') 6 stretch}
+.btn:hover:not(:disabled){border-image:url('../art/ui/btn_hover.png') 6 stretch;background:linear-gradient(180deg,#35333c,#1e1e24)}
+.btn:active:not(:disabled){border-image:url('../art/ui/btn_active.png') 6 stretch;transform:none;box-shadow:none}
+.btn.gold,.btn.on{border-image:url('../art/ui/btn_gold.png') 6 stretch;box-shadow:0 0 15px rgba(212,169,74,.14)}
+.btn.gold:hover:not(:disabled),.btn.on:hover:not(:disabled){border-image:url('../art/ui/btn_gold_hover.png') 6 stretch}
 .btn.sm{min-height:30px;padding:1px 6px}
 .btn.big{min-height:52px}
 
-.tab{border:6px solid transparent;border-image:url('art/ui/tab.png') 6 stretch;padding:3px 6px}
-.tab.on{border-image:url('art/ui/tab_on.png') 6 stretch;box-shadow:none}
+.tab{border:6px solid transparent;border-image:url('../art/ui/tab.png') 6 stretch;padding:3px 6px}
+.tab.on{border-image:url('../art/ui/tab_on.png') 6 stretch;box-shadow:none}
 .tab.on::after{display:none}
-.tab:hover:not(.on){border-image:url('art/ui/btn.png') 6 stretch}
+.tab:hover:not(.on){border-image:url('../art/ui/btn.png') 6 stretch}
 
-.unit{border:6px solid transparent;border-image:url('art/ui/unit.png') 6 stretch;padding:4px 7px}
-.unit.can{border-image:url('art/ui/up_afford.png') 6 stretch;box-shadow:none}
+.unit{border:6px solid transparent;border-image:url('../art/ui/unit.png') 6 stretch;padding:4px 7px}
+.unit.can{border-image:url('../art/ui/up_afford.png') 6 stretch;box-shadow:none}
 
-.up{border:6px solid transparent;border-image:url('art/ui/up.png') 6 stretch;padding:5px 6px;box-shadow:none}
-.up.afford{border-image:url('art/ui/up_afford.png') 6 stretch;box-shadow:0 0 13px rgba(212,169,74,.10)}
-.up.done{border-image:url('art/ui/up_done.png') 6 stretch}
-.up:hover:not(:disabled){border-image:url('art/ui/btn_hover.png') 6 stretch}
-.up.afford:hover:not(:disabled),.up.done:hover:not(:disabled){border-image:url('art/ui/up_afford.png') 6 stretch}
+.up{border:6px solid transparent;border-image:url('../art/ui/up.png') 6 stretch;padding:5px 6px;box-shadow:none}
+.up.afford{border-image:url('../art/ui/up_afford.png') 6 stretch;box-shadow:0 0 13px rgba(212,169,74,.10)}
+.up.done{border-image:url('../art/ui/up_done.png') 6 stretch}
+.up:hover:not(:disabled){border-image:url('../art/ui/btn_hover.png') 6 stretch}
+.up.afford:hover:not(:disabled),.up.done:hover:not(:disabled){border-image:url('../art/ui/up_afford.png') 6 stretch}
 
-.ach{border:6px solid transparent;border-image:url('art/ui/unit.png') 6 stretch;padding:3px 5px}
-.ach.got{border-image:url('art/ui/up_afford.png') 6 stretch}
+.ach{border:6px solid transparent;border-image:url('../art/ui/unit.png') 6 stretch;padding:3px 5px}
+.ach.got{border-image:url('../art/ui/up_afford.png') 6 stretch}
 
-.achpop{border:6px solid transparent;border-image:url('art/ui/btn_gold.png') 6 stretch;
+.achpop{border:6px solid transparent;border-image:url('../art/ui/btn_gold.png') 6 stretch;
         padding:6px 15px 6px 10px;box-shadow:0 0 34px rgba(212,169,74,.26),0 12px 34px rgba(0,0,0,.6)}
-#toast div{border:6px solid transparent;border-image:url('art/ui/btn.png') 6 stretch;padding:2px 8px}
+#toast div{border:6px solid transparent;border-image:url('../art/ui/btn.png') 6 stretch;padding:2px 8px}
 
 .unit .ico,.up .ic,.arena .foe{border-radius:0;border:2px solid #3a372f;
   box-shadow:inset 0 0 0 1px #0b0b0d}
@@ -381,55 +384,55 @@ main{min-width:0}
 html{image-rendering:pixelated}
 body{
   background:
-    url('art/ui/bg_glow.png') repeat-x top,
-    url('art/ui/bg.png') repeat,
+    url('../art/ui/bg_glow.png') repeat-x top,
+    url('../art/ui/bg.png') repeat,
     #0e0e11;
   background-attachment:fixed;
 }
 
 #top{
-  background:url('art/ui/bg.png') repeat, #0b0b0e;
+  background:url('../art/ui/bg.png') repeat, #0b0b0e;
   border-bottom:0; box-shadow:none; backdrop-filter:none; position:sticky;
 }
 #top::after{content:'';position:absolute;left:0;right:0;bottom:-4px;height:4px;
-  background:url('art/ui/topedge.png') repeat-x;pointer-events:none}
+  background:url('../art/ui/topedge.png') repeat-x;pointer-events:none}
 
 /* 진행 막대 */
 .hpbar{height:20px;padding:0;overflow:hidden;background:#0c0c0e;box-shadow:none;
-  border:4px solid transparent;border-image:url('art/ui/bar.png') 4 stretch}
-.hpbar>i{background:url('art/ui/fill_hp.png') repeat-x;box-shadow:none}
+  border:4px solid transparent;border-image:url('../art/ui/bar.png') 4 stretch}
+.hpbar>i{background:url('../art/ui/fill_hp.png') repeat-x;box-shadow:none}
 #sidestat .mini{height:10px;margin:3px 0 7px;background:#0c0c0e;overflow:hidden;
-  border:2px solid transparent;border-image:url('art/ui/bar_sm.png') 2 stretch;border-radius:0}
-#sidestat .mini>i{background:url('art/ui/fill_hp_sm.png') repeat-x}
+  border:2px solid transparent;border-image:url('../art/ui/bar_sm.png') 2 stretch;border-radius:0}
+#sidestat .mini>i{background:url('../art/ui/fill_hp_sm.png') repeat-x}
 
 /* 아이콘 우물 */
 .unit .ico,.up .ic,.arena .foe{
   background:#141419;box-shadow:none;border-radius:0;
-  border:5px solid transparent;border-image:url('art/ui/well.png') 5 stretch}
+  border:5px solid transparent;border-image:url('../art/ui/well.png') 5 stretch}
 .unit .ico{width:42px;height:42px}
 .up .ic{width:42px;height:42px}
 .arena .foe{width:74px;height:74px}
-.arena .foe.boss{border-image:url('art/ui/up_afford.png') 5 stretch}
+.arena .foe.boss{border-image:url('../art/ui/up_afford.png') 5 stretch}
 
 /* 구분선 */
 .divider{height:9px;margin:9px 0;position:relative;border:0;
-  background:url('art/ui/rule.png') repeat-x center}
+  background:url('../art/ui/rule.png') repeat-x center}
 .divider::after{content:'';position:absolute;left:50%;top:0;margin-left:-5px;
-  width:11px;height:9px;background:url('art/ui/rule_mid.png') no-repeat}
-.card > h2::after{height:5px;background:url('art/ui/rule.png') repeat-x center}
+  width:11px;height:9px;background:url('../art/ui/rule_mid.png') no-repeat}
+.card > h2::after{height:5px;background:url('../art/ui/rule.png') repeat-x center}
 
 /* 태그 · 로그 */
 .tag{padding:1px 7px;border-radius:0;background:rgba(0,0,0,.3);
-  border:3px solid transparent;border-image:url('art/ui/tag.png') 3 stretch}
+  border:3px solid transparent;border-image:url('../art/ui/tag.png') 3 stretch}
 .log{padding:4px 7px;border-radius:0;background:#0c0c0e;
-  border:5px solid transparent;border-image:url('art/ui/inset.png') 5 stretch}
+  border:5px solid transparent;border-image:url('../art/ui/inset.png') 5 stretch}
 
 /* 탭 알림 점 */
 .tab .dot{width:7px;height:7px;border-radius:0;box-shadow:none;
-  background:url('art/ui/dot.png') no-repeat}
+  background:url('../art/ui/dot.png') no-repeat}
 
 /* 모달 뒷막 : 흐림 대신 도트 디더 */
-#modalWrap{background:url('art/ui/dither.png') repeat;backdrop-filter:none}
+#modalWrap{background:url('../art/ui/dither.png') repeat;backdrop-filter:none}
 
 /* 자동화 스위치 */
 .sw{vertical-align:-2px;margin-right:5px}
@@ -447,18 +450,18 @@ body{
 /* ══ 장(章) ═════════════════════════════════════
    우주 계층을 한 칸 올라갈 때마다 바탕과 강조색이 바뀐다.
    무늬는 그대로라 "같은 게임의 다음 장"으로 읽힌다. */
-html[data-chapter] body{background:url('art/ui/glow_ch0.png') repeat-x top,url('art/ui/bg_ch0.png') repeat,#0e0e11}
-html[data-chapter="1"] body{background:url('art/ui/glow_ch1.png') repeat-x top,url('art/ui/bg_ch1.png') repeat,#0b1113}
-html[data-chapter="2"] body{background:url('art/ui/glow_ch2.png') repeat-x top,url('art/ui/bg_ch2.png') repeat,#130f0b}
-html[data-chapter="3"] body{background:url('art/ui/glow_ch3.png') repeat-x top,url('art/ui/bg_ch3.png') repeat,#110b13}
-html[data-chapter="4"] body{background:url('art/ui/glow_ch4.png') repeat-x top,url('art/ui/bg_ch4.png') repeat,#0b0d15}
-html[data-chapter="5"] body{background:url('art/ui/glow_ch5.png') repeat-x top,url('art/ui/bg_ch5.png') repeat,#130b11}
-html[data-chapter="6"] body{background:url('art/ui/glow_ch6.png') repeat-x top,url('art/ui/bg_ch6.png') repeat,#0b1215}
-html[data-chapter="7"] body{background:url('art/ui/glow_ch7.png') repeat-x top,url('art/ui/bg_ch7.png') repeat,#141109}
-html[data-chapter="8"] body{background:url('art/ui/glow_ch8.png') repeat-x top,url('art/ui/bg_ch8.png') repeat,#150a0d}
-html[data-chapter="9"] body{background:url('art/ui/glow_ch9.png') repeat-x top,url('art/ui/bg_ch9.png') repeat,#0b1410}
-html[data-chapter="10"] body{background:url('art/ui/glow_ch10.png') repeat-x top,url('art/ui/bg_ch10.png') repeat,#111318}
-html[data-chapter="11"] body{background:url('art/ui/glow_ch11.png') repeat-x top,url('art/ui/bg_ch11.png') repeat,#120b16}
+html[data-chapter] body{background:url('../art/ui/glow_ch0.png') repeat-x top,url('../art/ui/bg_ch0.png') repeat,#0e0e11}
+html[data-chapter="1"] body{background:url('../art/ui/glow_ch1.png') repeat-x top,url('../art/ui/bg_ch1.png') repeat,#0b1113}
+html[data-chapter="2"] body{background:url('../art/ui/glow_ch2.png') repeat-x top,url('../art/ui/bg_ch2.png') repeat,#130f0b}
+html[data-chapter="3"] body{background:url('../art/ui/glow_ch3.png') repeat-x top,url('../art/ui/bg_ch3.png') repeat,#110b13}
+html[data-chapter="4"] body{background:url('../art/ui/glow_ch4.png') repeat-x top,url('../art/ui/bg_ch4.png') repeat,#0b0d15}
+html[data-chapter="5"] body{background:url('../art/ui/glow_ch5.png') repeat-x top,url('../art/ui/bg_ch5.png') repeat,#130b11}
+html[data-chapter="6"] body{background:url('../art/ui/glow_ch6.png') repeat-x top,url('../art/ui/bg_ch6.png') repeat,#0b1215}
+html[data-chapter="7"] body{background:url('../art/ui/glow_ch7.png') repeat-x top,url('../art/ui/bg_ch7.png') repeat,#141109}
+html[data-chapter="8"] body{background:url('../art/ui/glow_ch8.png') repeat-x top,url('../art/ui/bg_ch8.png') repeat,#150a0d}
+html[data-chapter="9"] body{background:url('../art/ui/glow_ch9.png') repeat-x top,url('../art/ui/bg_ch9.png') repeat,#0b1410}
+html[data-chapter="10"] body{background:url('../art/ui/glow_ch10.png') repeat-x top,url('../art/ui/bg_ch10.png') repeat,#111318}
+html[data-chapter="11"] body{background:url('../art/ui/glow_ch11.png') repeat-x top,url('../art/ui/bg_ch11.png') repeat,#120b16}
 html[data-chapter="1"]{--gold:#4ad4c2;--gold2:#8aecdf;--goldDk:#287a6e}
 html[data-chapter="2"]{--gold:#e08a3c;--gold2:#f6c489;--goldDk:#8a4f1c}
 html[data-chapter="3"]{--gold:#a97ae0;--gold2:#d0b6f6;--goldDk:#5e3f8a}
@@ -476,7 +479,7 @@ html[data-chapter="11"]{--gold:#c07ae0;--gold2:#e6b6f6;--goldDk:#703f8a}
   display:flex;align-items:center;justify-content:center;height:100vh;opacity:0}
 #chapter.on{animation:chIn 3.2s ease-out forwards}
 #chapter .box{padding:14px 26px;background:rgba(8,8,12,.88);
-  border:6px solid transparent;border-image:url('art/ui/btn_gold.png') 6 stretch;text-align:center}
+  border:6px solid transparent;border-image:url('../art/ui/btn_gold.png') 6 stretch;text-align:center}
 #chapter .k{font-size:11px;letter-spacing:.34em;color:var(--gold)}
 #chapter .t{font-size:24px;font-weight:700;color:var(--gold2);letter-spacing:.06em;margin-top:2px}
 @keyframes chIn{0%{opacity:0;transform:scale(.96)}12%{opacity:1;transform:none}
