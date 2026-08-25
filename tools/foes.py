@@ -317,6 +317,135 @@ def wyrm(c,t,o):
 BOSS={'skull':skull,'demon':demon,'dragon':dragon,'titan':titan,
       'hydra':hydra,'behemoth':behemoth,'archlich':archlich,'wyrm':wyrm}
 
+
+# ══ 우주 계층 생물 ══════════════════════════════
+# 항성계 위로는 지구의 짐승이 나오면 어색하다. 기계·천체·현상으로 바꾼다.
+def probe(c,t,o):
+    m=sm(m_ellipse(8,8,3.4,3), m_rect(2,7,13,9))
+    m|=m_rect(0,5,2,11)|m_rect(13,5,15,11)|m_rect(7,11,8,14)
+    put(c,m,t,o)
+    c.rect(1,6,1,10,o); c.rect(14,6,14,10,o)
+    return m,[(8,8)],1.1
+
+def asteroid(c,t,o):
+    m=sm(m_poly([(2,7),(5,3),(11,2),(14,6),(13,12),(8,14),(3,12)]))
+    put(c,m,t,o)
+    for cx,cy in ((5,6),(10,9),(7,11)):
+        for p in m_ellipse(cx,cy,1.4,1.1): c.px(*p,o)
+    return m,[(9,5),(12,8)],0.8
+
+def nebula(c,t,o):
+    m=sm(m_ellipse(7,7,5,4), m_ellipse(11,10,4,3.4), m_ellipse(5,11,3.4,2.6))
+    bands(c,m,t,n=3,mode='glow',cx=7,cy=7,r=11); edge(c,m,o)
+    for p in ((1,3),(14,5),(2,14),(13,14)): c.px(*p,t[2])
+    return m,[(6,7),(10,9)],1.0
+
+def stareater(c,t,o):
+    m=sm(m_ellipse(8,9,6,5.4))
+    for a in range(6):
+        ang=3.6+a*0.42
+        m|=m_line(8,9,int(8+9*math.cos(ang)),int(9+8*math.sin(ang)),1)
+    put(c,m,t,o)
+    c.rect(5,10,11,12,o)
+    for x in (5,7,9,11): c.px(x,10,'z')
+    return m,[(6,7),(10,7)],1.0
+
+def satellite(c,t,o):
+    m=sm(m_ellipse(8,8,2.6,3.4))
+    m|=m_rect(0,6,4,10)|m_rect(11,6,15,10)|m_line(4,8,11,8,1)
+    put(c,m,t,o)
+    for x in (1,3,12,14): c.rect(x,6,x,10,o)
+    return m,[(8,7)],1.1
+
+def gravity(c,t,o):
+    m=set()
+    for r in (7,5,3):
+        m|=m_ellipse(8,8,r,r*0.55)-m_ellipse(8,8,r-1.2,(r-1.2)*0.55)
+    m|=m_ellipse(8,8,2,2)
+    bands(c,m,t,n=3,mode='glow',cx=8,cy=8,r=8); edge(c,m,o)
+    return m,[(8,8)],1.0
+
+def blackhole(c,t,o):
+    ring=m_ellipse(8,8,7,7)-m_ellipse(8,8,4,4)
+    disc=m_ellipse(8,8,7.6,2)-m_ellipse(8,8,3.4,1)
+    m=sm(ring|disc)
+    bands(c,m,t,n=3,mode='glow',cx=8,cy=8,r=9); edge(c,m,o)
+    for p in m_ellipse(8,8,3.4,3.4): c.px(*p,'0')
+    return m,[],1.0
+
+def guardian(c,t,o):
+    m=sm(m_poly([(8,0),(13,5),(13,11),(8,16),(3,11),(3,5)]))
+    put(c,m,t,o)
+    inner=m_poly([(8,3),(11,6),(11,10),(8,13),(5,10),(5,6)])
+    bands(c,inner,t,n=3)
+    return m,[(8,8)],1.6
+
+def rift(c,t,o):
+    m=sm(m_poly([(7,0),(10,5),(8,8),(11,11),(6,16),(5,10),(7,8),(4,4)]))
+    bands(c,m,t,n=3,mode='glow',cx=8,cy=8,r=9); edge(c,m,o)
+    for p in ((2,3),(13,6),(3,13),(12,12)): c.px(*p,t[2])
+    return m,[(7,4),(8,11)],0.8
+
+def dyson(c,t,o):
+    m=sm(m_ellipse(8,8,7,7)-m_ellipse(8,8,4.4,4.4))
+    for a in range(4): 
+        ang=a*0.79
+        m|=m_line(int(8-7*math.cos(ang)),int(8-7*math.sin(ang)),int(8+7*math.cos(ang)),int(8+7*math.sin(ang)),1)
+    put(c,m,t,o)
+    core=m_ellipse(8,8,2.6,2.6)
+    bands(c,core,['d','e','f'],n=3,mode='glow',cx=8,cy=8,r=3)
+    return m,[],1.0
+
+def spore(c,t,o):
+    m=sm(m_ellipse(8,9,4.4,5))
+    for a in range(8):
+        ang=a*0.79
+        m|=m_line(8,9,int(8+7*math.cos(ang)),int(9+7*math.sin(ang)),1)
+    put(c,m,t,o)
+    return m,[(7,8),(10,8)],0.9
+
+def sentinel(c,t,o):
+    m=sm(m_rect(5,2,10,13), m_poly([(3,5),(5,3),(5,12),(3,10)]), m_poly([(12,5),(10,3),(10,12),(12,10)]))
+    m|=m_rect(6,13,9,15)
+    put(c,m,t,o)
+    c.rect(5,7,10,7,o)
+    return m,[(7,5),(9,5)],1.0
+
+COSMIC={'probe':probe,'asteroid':asteroid,'nebula':nebula,'stareater':stareater,
+        'satellite':satellite,'gravity':gravity,'blackhole':blackhole,'guardian':guardian,
+        'rift':rift,'dyson':dyson,'spore':spore,'sentinel':sentinel}
+
+def supernova(c,t,o):
+    m=set()
+    for a in range(8):
+        ang=a*0.79
+        m|=m_line(8,8,int(8+8*math.cos(ang)),int(8+8*math.sin(ang)),2)
+    m|=m_ellipse(8,8,4,4)
+    bands(c,m,t,n=3,mode='glow',cx=8,cy=8,r=9); edge(c,m,o)
+    return m,[],1.0
+
+def quasar(c,t,o):
+    m=sm(m_ellipse(8,8,5,4), m_poly([(7,0),(9,0),(9,4),(7,4)]), m_poly([(7,12),(9,12),(9,16),(7,16)]))
+    bands(c,m,t,n=3,mode='glow',cx=8,cy=8,r=9); edge(c,m,o)
+    return m,[(8,8)],1.4
+
+def gcore(c,t,o):
+    m=sm(m_ellipse(8,8,7.6,3), m_ellipse(8,8,3.4,3.4))
+    for a in range(3):
+        ang=a*1.05
+        m|=m_line(int(8-7*math.cos(ang)),int(8-3*math.sin(ang)),int(8+7*math.cos(ang)),int(8+3*math.sin(ang)),1)
+    bands(c,m,t,n=3,mode='glow',cx=8,cy=8,r=8); edge(c,m,o)
+    return m,[],1.0
+
+def watcher(c,t,o):
+    m=sm(m_ellipse(8,8,7,7)-m_ellipse(8,8,5,5))
+    m|=m_ellipse(8,8,3.4,4.4)
+    put(c,m,t,o)
+    for p in m_ellipse(8,8,1.6,1.6): c.px(*p,'0')
+    return m,[(8,8)],1.6
+
+COSMIC_BOSS={'supernova':supernova,'quasar':quasar,'gcore':gcore,'watcher':watcher}
+
 def draw_eyes(c, spots, r, col):
     """16칸에서 눈은 1픽셀이면 충분하다. 크게 찍으면 얼굴이 통째로 눈이 된다."""
     for (ex,ey) in spots:
@@ -392,7 +521,7 @@ def part(c, mask, kind, acc):
 
 def build():
     out={}
-    for group,pre in ((BASE,'foe'),(BOSS,'boss')):
+    for group,pre in ((BASE,'foe'),(BOSS,'boss'),(COSMIC,'cos'),(COSMIC_BOSS,'cboss')):
         for bk,fn in group.items():
             for ak,(t,o,eye,acc,pk) in AFFIX.items():
                 c=C(N)
@@ -401,7 +530,7 @@ def build():
                 draw_eyes(c,spots,r,eye)
                 out[f'{pre}_{bk}_{ak}']=c.rows()
     save(out,{k:N for k in out})
-    print(f'몬스터 {len(out)}종 = 일반 {len(BASE)}×{len(AFFIX)} + 보스 {len(BOSS)}×{len(AFFIX)}')
+    print(f'몬스터 {len(out)}종 = 지상 {len(BASE)}+{len(BOSS)} · 우주 {len(COSMIC)}+{len(COSMIC_BOSS)} × 속성 {len(AFFIX)}')
 
 if __name__=='__main__':
     build()

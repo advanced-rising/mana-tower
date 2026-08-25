@@ -798,13 +798,16 @@ function newState(){return{
   soul:0, soulAsc:0, soulEver:0, soulUps:{},
   relic:0, relicEver:0, relicUps:{}, relicTrans:0,
   star:0, starEver:0, starUps:{},
+  inf:0, infEver:0, infCount:0, eter:0, eterEver:0, eterCount:0,
+  real:0, realEver:0, realCount:0, void:0, voidEver:0, voidCount:0,
+  origin:0, originEver:0, originCount:0,
   rebirths:0, ascensions:0, transcends:0,
   lastSoulGain:0, lastRelicGain:0, lastStarGain:0,
   sinceRebirth:0, sinceAscend:0, sinceTrans:0,
   deepest:0, floor:1, prog:0, exploring:false,
-  chal:null, chalDone:{}, chalTime:0, bestRun:0,
+  chal:null, chalDone:{}, chalTime:0, bestRun:0, floorCd:0,
   achs:{},
-  auto:{gather:1,build:1,research:1,rune:1,gear:1,dungeon:1,soulup:1,rebirth:1,relicup:1,ascend:1,trans:1,chal:1},
+  auto:{gather:1,build:1,research:1,rune:1,gear:1,dungeon:1,soulup:1,rebirth:1,relicup:1,ascend:1,trans:1,inf:1,chal:1},
   timers:{build:0,research:0,rune:0,gear:0,gather:0},
   buyAmt:'max',
   started:Date.now(), lastTick:Date.now(), playtime:0, clicks:0,
@@ -812,9 +815,17 @@ function newState(){return{
 let S=newState(), LOG=[], MC=null;
 
 /* ══════════════ 유틸 ══════════════ */
+/* 큰 수의 이름
+   한자 문화권은 만(10^4)부터 네 자리마다 이름이 붙어 무량대수(10^68)까지 간다.
+   그 위로는 표준 이름이 없어 지수 표기로 넘어간다. */
+const KO_UNITS=['','만','억','조','경','해','자','양','구','간','정','재','극',
+                '항하사','아승기','나유타','불가사의','무량대수'];
+const EN_UNITS=['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc','UDc','DDc',
+                'TDc','QaDc','QiDc','SxDc','SpDc','ODc','NDc','Vg'];
 function fmt(n){
   if(n===Infinity) return '∞';
-  if(!isFinite(n)||isNaN(n)) return '0';
+  if(n===-Infinity) return '-∞';
+  if(typeof n!=='number'||isNaN(n)) return '0';   // 망가진 값만 0. 무한대는 무한대로 보여 준다.
   if(n<0) return '-'+fmt(-n);
   if(n===0) return '0';
   if(n<1e3){
@@ -822,10 +833,24 @@ function fmt(n){
     if(n<100) return (Math.round(n*10)/10).toString();
     return Math.floor(n).toString();
   }
-  if(n<1e6) return Math.floor(n).toLocaleString(LANG==='en'?'en-US':'ko-KR');
+  if(LANG==='en'){
+    const i=Math.floor(Math.log10(n)/3);
+    if(i<EN_UNITS.length){
+      const v=n/Math.pow(10,i*3);
+      return (v<10?v.toFixed(2):v<100?v.toFixed(1):Math.floor(v))+EN_UNITS[i];
+    }
+  }else{
+    if(n<1e4) return Math.floor(n).toLocaleString('ko-KR');
+    const i=Math.floor(Math.log10(n)/4);
+    if(i<KO_UNITS.length){
+      const v=n/Math.pow(10,i*4);
+      return (v<10?v.toFixed(2):v<100?v.toFixed(1):Math.floor(v))+KO_UNITS[i];
+    }
+  }
   const e=Math.floor(Math.log10(n));
   return (n/Math.pow(10,e)).toFixed(2)+'e'+e;
 }
+
 function fmtTime(s){
   s=Math.floor(s);
   const U=LANG==='en'?['s','m','h','d']:['초','분','시간','일'];
@@ -857,6 +882,7 @@ function computeM(){
   for(const u of SOUL_UPS){const l=S.soulUps[u.id]||0; if(l) u.apply(m,l);}
   for(const u of RELIC_UPS){const l=S.relicUps[u.id]||0; if(l) u.apply(m,l);}
   for(const u of STAR_UPS){const l=S.starUps[u.id]||0; if(l) u.apply(m,l);}
+  { const v=infBonus(); m.prod*=v; m.soul*=v; m.offer*=v; m.crystal*=v; m.dungeon*=v; m.relic*=v; }
   for(const c of CHALLENGES){const n=S.chalDone[c.id]||0; if(n) c.apply(m,n*m.chalPow);}
   for(const ms of MILESTONES) if(S.rebirths>=ms.n) ms.apply(m);
   m.prod*=1+0.02*achCount();
@@ -899,6 +925,7 @@ function addMana(v){S.mana+=v;S.manaRun+=v;S.manaEver+=v}
 
 /* ══════════════ 던전 ══════════════ */
 const isBoss=f=>f%10===0;
+const FLOOR_MIN_TIME=1.2;   // 한 층을 돌파하는 데 드는 최소 시간(초)
 
 /* ── 우주 계층 ────────────────────────────────
    실제 천문학의 구조를 그대로 따른다.
@@ -920,6 +947,7 @@ const COSMOS=[
  {k:'multi',   per:10,  ko:'다중우주',  en:"Multiverse",  eg:''},
 ];
 /* 칸을 하나 넘길 때마다 전체 생산에 붙는 배율. 위로 갈수록 가파르다. */
+const COSMOS_SP=['sword','tower','offering','sparkle','spiral','star','crown16','gem','bolt','infinity','portal','soul'];
 const COSMOS_MUL=[1, 1.5, 4, 12, 40, 150, 600, 2500, 1.2e4, 6e4, 3e5, 2e6];
 
 function cosmos(f){
@@ -939,7 +967,10 @@ function chapterOf(f){
   if(top===0 && f<=100) return 0;          // 지구
   return Math.max(1,top);
 }
-function chapterName(i){
+/* 가 본 곳 중 가장 높은 장 */
+const chapterSeen=()=>chapterOf(Math.max(1,S.deepest||1));
+function chapterName(i,reveal){
+  if(!reveal&&i>chapterSeen()) return '???';       // 못 뚫은 계층은 무엇인지 알 수 없다
   if(i===0) return X('지구','Earth');
   return X(COSMOS[i].ko, COSMOS[i].en);
 }
@@ -998,11 +1029,28 @@ const BOSS_BASE=[
 const mkFoes = (bases, pre) => FOE_AFFIX.flatMap(([ak,ako,aen,af]) =>
   bases.map(([bk,bko,ben]) => ({sp:`${pre}_${bk}_${ak}`, af,
     nm:{ko:`${ako} ${bko}`, en:`${aen} ${ben}`}})));
+const COS_BASE=[
+ ['probe',    '탐사정',    "Probe"],        ['asteroid', '소행성체',  "Asteroid"],
+ ['nebula',   '성운체',    "Nebula Being"], ['stareater','항성 포식자',"Star Eater"],
+ ['satellite','위성 병기',  "War Satellite"],['gravity',  '중력체',    "Gravity Well"],
+ ['blackhole','블랙홀',    "Black Hole"],   ['guardian', '은하 수호자',"Guardian"],
+ ['rift',     '차원 균열',  "Rift"],         ['dyson',    '항성 기계',  "Dyson Engine"],
+ ['spore',    '성간 포자',  "Void Spore"],   ['sentinel', '감시자',    "Sentinel"],
+];
+const CBOSS_BASE=[
+ ['supernova','초신성',    "Supernova"],    ['quasar',  '퀘이사',     "Quasar"],
+ ['gcore',    '은하핵',    "Galactic Core"],['watcher', '우주의 눈',  "The Watcher"],
+];
 const FOES=mkFoes(FOE_BASE,'foe');
+const COSFOES=mkFoes(COS_BASE,'cos');
+const CBOSSES=mkFoes(CBOSS_BASE,'cboss');
 const BOSSES=mkFoes(BOSS_BASE,'boss');
 const elemOf=f=>foeOf(f).af;
+/* 항성계(제 3 장) 위로는 지구의 짐승 대신 천체와 기계가 나온다 */
 function foeOf(f){
-  return isBoss(f) ? BOSSES[(Math.floor(f/10)-1)%BOSSES.length] : FOES[(f-1)%FOES.length];
+  const cosmic = chapterOf(f) >= 2;
+  const pool = isBoss(f) ? (cosmic?CBOSSES:BOSSES) : (cosmic?COSFOES:FOES);
+  return isBoss(f) ? pool[(Math.floor(f/10)-1)%pool.length] : pool[(f-1)%pool.length];
 }
 function dungeonPower(){
   /* 시설 수는 완만하게(0.45제곱) 오르는데 층 체력은 지수로 오른다.
@@ -1034,9 +1082,9 @@ function syncChapter(force){
   if(first) return;
   const box=$('chapter'); if(!box) return;
   box.querySelector('.k').textContent=X(`제 ${ch+1} 장`,`CHAPTER ${ch+1}`);
-  box.querySelector('.t').textContent=chapterName(ch);
+  box.querySelector('.t').textContent=chapterName(ch,true);
   box.classList.remove('on'); void box.offsetWidth; box.classList.add('on');
-  log(`${icHTML('star')}<b class="gold">${X(`제 ${ch+1} 장 · ${chapterName(ch)}`,`Chapter ${ch+1} · ${chapterName(ch)}`)}</b> ${X('에 들어섰다','reached')}`,true);
+  log(`${icHTML('star')}<b class="gold">${X(`제 ${ch+1} 장 · ${chapterName(ch,true)}`,`Chapter ${ch+1} · ${chapterName(ch,true)}`)}</b> ${X('에 들어섰다','reached')}`,true);
 }
 
 function clearFloor(){
@@ -1099,6 +1147,50 @@ function doAscend(silent){
   log(`${icHTML('relic')}<b>${X('승천','Ascension')}</b> · ${X('유물','Relics')} <b class="relic">+${fmt(g)}</b> · ${X('영혼석과 룬이 초기화되었다','soul shards and runes reset')}`,true);
   if(!silent) toast(icHTML('relic')+X(` 승천 · 유물 +${fmt(g)}`,` Ascension · Relics +${fmt(g)}`));
   return true;
+}
+
+/* ── 무한 계층 ────────────────────────────────
+   자바스크립트 수는 약 1.8e308 에서 Infinity 가 된다.
+   그 벽을 게임의 관문으로 쓴다 — 수가 넘칠 지경이 되면 한 칸 위로 올라가고,
+   아래는 전부 초기화된다. 칸은 얼마든지 이어 붙일 수 있다. */
+const INF_CAP=1e300;
+const INF_LAYERS=[
+ {k:'inf',  ko:'무한',  en:"Infinity",  from:()=>S.manaEver, sp:'infinity'},
+ {k:'eter', ko:'영원',  en:"Eternity",  from:()=>S.inf,      sp:'hourglass'},
+ {k:'real', ko:'현실',  en:"Reality",   from:()=>S.eter,     sp:'portal'},
+ {k:'void', ko:'공허',  en:"The Void",  from:()=>S.real,     sp:'abysseye'},
+ {k:'origin',ko:'근원', en:"Origin",    from:()=>S.void,     sp:'star'},
+];
+const infUnlocked=i=>i===0 ? S.manaEver>=INF_CAP/1e40 || S.inf>0
+                           : (S[INF_LAYERS[i-1].k]||0)>0;
+function infGain(i){
+  const v=INF_LAYERS[i].from();
+  if(v===Infinity) return 10;          // 이미 넘쳤다면 그것이 곧 최대 돌파
+  if(!isFinite(v)||v<INF_CAP) return 0;
+  return 1+Math.floor(Math.log10(v/INF_CAP));
+}
+function doInfBreak(i){
+  const g=infGain(i);
+  if(g<=0) return false;
+  const L=INF_LAYERS[i];
+  S[L.k]=(S[L.k]||0)+g; S[L.k+'Ever']=(S[L.k+'Ever']||0)+g; S[L.k+'Count']=(S[L.k+'Count']||0)+1;
+  /* 이 칸 아래는 전부 접는다 */
+  for(let j=i-1;j>=0;j--){ S[INF_LAYERS[j].k]=0; }
+  S.star=0; S.starUps={}; S.relic=0; S.relicTrans=0; S.relicUps={};
+  S.soul=0; S.soulAsc=0; S.soulUps={}; S.runes={}; S.gear={};
+  S.crystal=0; S.offering=0; S.manaEver=0;
+  S.rebirths=0; S.ascensions=0; S.transcends=0; S.deepest=0;
+  if(S.chal) exitChallenge(false);
+  softReset();
+  log(`${icHTML(L.sp)}<b class="gold">${X(L.ko,L.en)} ${X('돌파','Break')}</b> · <b>+${fmt(g)}</b> · ${X('아래 계층이 모두 접혔다','everything below folded away')}`,true);
+  toast(icHTML(L.sp)+X(` ${L.ko} 돌파 +${fmt(g)}`,` ${L.en} +${fmt(g)}`));
+  return true;
+}
+/* 무한 계층은 그 자체가 전체 배율이 된다 */
+function infBonus(){
+  let v=1;
+  for(let i=0;i<INF_LAYERS.length;i++) v*=Math.pow(4+i*4, S[INF_LAYERS[i].k+'Ever']||0);
+  return isFinite(v)?v:1e300;
 }
 
 const TRANS_REQ=500;
@@ -1175,6 +1267,7 @@ const AUTO_DEFS=[
  {k:'rune',   nm:{ko:'룬 강화',en:"Rune Upgrading"},       d:()=>X('오퍼링으로 가장 싼 룬부터 새긴다',"Engraves the cheapest rune first"),           unlock:()=>S.ascensions>=1,                  req:()=>X('승천 1회',"1 ascension")},
  {k:'gear',   nm:{ko:'장비 제작',en:"Gear Crafting"},     d:()=>X('결정으로 가장 싼 장비부터 벼린다',"Forges the cheapest gear first"),           unlock:()=>S.ascensions>=1,                  req:()=>X('승천 1회',"1 ascension")},
  {k:'soulup', nm:{ko:'영혼 강화 구매',en:"Soul Upgrade Buying"},d:()=>X('영혼석으로 가장 싼 강화를 사들인다',"Buys the cheapest soul upgrade"),         unlock:()=>S.rebirths>=10||S.ascensions>0,   req:()=>X('환생 10회',"10 rebirths")},
+ {k:'inf',    nm:{ko:'자동 무한 돌파',en:"Auto Infinity"}, d:()=>X('수가 넘칠 지경이 되면 알아서 한 칸 올라간다',"Breaks a rung as soon as a number is ready to overflow"), unlock:()=>(S.infEver||0)>0, req:()=>X('무한 돌파 1회',"1 infinity break")},
  {k:'trans',  nm:{ko:'자동 초월',en:"Auto Transcend"}, d:()=>X('직전 주기보다 1.5배 이상 벌릴 때 초월한다',"Transcends when the cycle beats the last by 1.5x"), unlock:()=>S.transcends>=1||S.starEver>0, req:()=>X('초월 1회',"1 transcendence")},
  {k:'rebirth',nm:{ko:'자동 환생',en:"Auto Rebirth"},     d:()=>X('직전 회차보다 1.5배 이상 벌릴 때 환생한다',"Rebirths when the run beats the last by 1.5x"),  unlock:()=>S.rebirths>=20||S.ascensions>0,   req:()=>X('환생 20회',"20 rebirths")},
  {k:'relicup',nm:{ko:'유물 강화 구매',en:"Relic Upgrade Buying"},d:()=>X('유물로 가장 싼 강화를 사들인다',"Buys the cheapest relic upgrade"),             unlock:()=>S.ascensions>=2,                  req:()=>X('승천 2회',"2 ascensions")},
@@ -1245,9 +1338,15 @@ function runAutomation(dt){
     const g=relicGain();
     if(g>=3&&g>=1.5*(S.lastRelicGain||0)) doAscend(true);
   }
+  for(let i=INF_LAYERS.length-1;i>=0;i--){
+    if(autoOK('inf')&&infUnlocked(i)&&infGain(i)>0){ doInfBreak(i); break; }
+  }
   if(autoOK('trans')&&S.sinceTrans>300){
     const g=starGain();
     if(g>=2&&g>=1.5*(S.lastStarGain||0)) doTranscend(true);
+  }
+  for(let i=INF_LAYERS.length-1;i>=0;i--){
+    if(autoOK('inf')&&infUnlocked(i)&&infGain(i)>0){ doInfBreak(i); break; }
   }
   if(autoOK('trans')&&S.sinceTrans>300){
     const g=starGain();
@@ -1261,11 +1360,14 @@ function tick(dt){
   for(let i=PRODUCERS.length-1;i>=1;i--) S.gen[i-1]+=cnt(i)*PRODUCERS[i].rate*m.tUp*d;
   addMana(cnt(0)*PRODUCERS[0].rate*m.t0*m.prod*d);
   if(S.exploring&&!(ch&&ch.rule.noDungeon)){
-    S.prog+=dungeonPower()*d;
-    let guard=0;
-    while(S.prog>=floorHP(S.floor)&&guard++<400){
-      S.prog-=floorHP(S.floor); clearFloor();
-      if(!autoOK('dungeon')){ S.exploring=false; S.prog=0; break; }   // 수동: 한 층마다 직접 다시 출격
+    /* 한 번에 여러 층이 쓸려 나가면 돌파하는 맛이 없다.
+       공격력이 아무리 넘쳐도 한 층에는 최소 시간이 든다. */
+    const hp=floorHP(S.floor);
+    S.prog=Math.min(hp, S.prog+dungeonPower()*d);
+    S.floorCd=Math.max(0,(S.floorCd||0)-d);
+    if(S.prog>=hp&&S.floorCd<=0){
+      S.prog=0; S.floorCd=FLOOR_MIN_TIME; clearFloor();
+      if(!autoOK('dungeon')){ S.exploring=false; }   // 수동: 한 층마다 직접 다시 출격
     }
   }
   runAutomation(dt);
@@ -1354,6 +1456,7 @@ const TABS=[
  {id:'rebirth', sp:'soul',     nm:{ko:'환생',en:"Rebirth"},      open:()=>S.manaEver>=REBIRTH_REQ/20||S.rebirths>0||S.soulEver>0},
  {id:'ascend',  sp:'relic',    nm:{ko:'승천',en:"Ascension"},      open:()=>S.soulEver>=ASCEND_REQ/10||S.ascensions>0||S.relicEver>0},
  {id:'trans',   sp:'star',     nm:{ko:'초월',en:"Transcend"},   open:()=>transUnlocked()},
+ {id:'inf',     sp:'infinity', nm:{ko:'무한',en:"Infinity"},   open:()=>infUnlocked(0)},
  {id:'chal',    sp:'chain',    nm:{ko:'도전',en:"Trials"},      open:()=>chalUnlocked()},
  {id:'ach',     sp:'medal',    nm:{ko:'업적',en:"Feats"},      open:()=>true},
  {id:'auto',    sp:'cog',      nm:{ko:'자동화',en:"Automation"},    open:()=>true},
@@ -1536,6 +1639,35 @@ function buildDungeon(p){
   ctl.append(bDown,bUp,go,auto); c.appendChild(ctl);
   p.appendChild(c);
 
+  /* 탐사 계층표 — 못 뚫은 칸은 무엇인지 알 수 없다 */
+  const tc=card([X('탐사 계층',"The Ladder"),'map'],X('층을 100개 뚫으면 행성 하나를 넘어선다. 그 위로도 계속 이어진다.',"A hundred floors make a planet. It keeps going above that."));
+  const tg=el('div','grid');
+  const tiers=COSMOS.map((lv,i)=>{
+    if(i===0) return null;
+    const row=el('div','up'); row.style.cursor='default';
+    row.innerHTML='<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>';
+    tg.appendChild(row);
+    return {i,row,ic:row.querySelector('.ic'),t:row.querySelector('.t'),d:row.querySelector('.d'),c:row.querySelector('.c')};
+  }).filter(Boolean);
+  tc.appendChild(tg); p.appendChild(tc);
+  updaters.push(()=>{
+    const seen=chapterSeen(), cur=cosmos(Math.max(1,S.deepest||1));
+    tiers.forEach(t=>{
+      const open=t.i<=seen, next=t.i===seen+1;
+      t.ic.innerHTML='';
+      t.ic.appendChild(ic(open?COSMOS_SP[t.i]:'unknown',32));
+      t.t.textContent = open ? X(COSMOS[t.i].ko,COSMOS[t.i].en) : '???';
+      t.d.textContent = open
+        ? (COSMOS[t.i].eg?X(`예: ${COSMOS[t.i].eg}`,COSMOS[t.i].eg):'')
+        : (next?X('한 칸만 더 올라가면 열린다',"One rung above you"):X('아직 알 수 없다',"Unknown"));
+      t.c.textContent = open
+        ? X(`${COSMOS[t.i].ko} ${fmt(cur[COSMOS[t.i].k])} · 전체 ×${fmt(Math.pow(COSMOS_MUL[t.i],cur[COSMOS[t.i].k]-1))}`,
+            `${COSMOS[t.i].en} ${fmt(cur[COSMOS[t.i].k])} · ×${fmt(Math.pow(COSMOS_MUL[t.i],cur[COSMOS[t.i].k]-1))}`)
+        : '';
+      t.row.className='up'+(open?(t.i===seen?' afford':' done'):' lock');
+    });
+  });
+
   const lc=card([X('탐험 기록',"Delve Log"),'scroll']);
   const lg=el('div','log'); lg.id='dlog';
   lg.innerHTML=LOG.map(l=>`<div class="${l.hl?'hl':''}">${l.html}</div>`).join('');
@@ -1708,6 +1840,35 @@ function buildTrans(p){
   });
 }
 
+function buildInf(p){
+  const c=card([X('무한',"Infinity"),'infinity'],X(`수가 <b>1e300</b> 을 넘길 지경이 되면 그 자체가 관문이 된다. 한 칸 위로 올라가고 아래는 전부 접힌다. 칸을 넘길 때마다 모든 생산에 큰 배율이 영구히 붙는다.<br>칸은 <b>${INF_LAYERS.length}</b> 개가 준비돼 있고, 더 이어 붙일 수 있다.`,`When a number is about to overflow past <b>1e300</b>, that ceiling becomes a door. You rise one rung and everything below folds away, leaving a permanent multiplier.`));
+  p.appendChild(c);
+  INF_LAYERS.forEach((L,i)=>{
+    const lc=card([X(L.ko,L.en),L.sp]);
+    const info=el('div','row'); info.style.margin='4px 0 9px'; lc.appendChild(info);
+    const b=btn('gold big','',()=>{
+      if(infGain(i)<=0) return;
+      modal(X(`${L.ko} 돌파`,`${L.en} Break`),
+        X(`<b class="gold">${L.ko} +${fmt(infGain(i))}</b> 을 얻고<br>그 아래 계층이 전부 초기화됩니다.`,
+          `Gain <b class="gold">+${fmt(infGain(i))} ${L.en}</b>.<br>Everything below resets.`),
+        ()=>doInfBreak(i));
+    });
+    lc.appendChild(b); p.appendChild(lc);
+    updaters.push(()=>{
+      const open=infUnlocked(i), g=infGain(i), v=L.from();
+      lc.style.display=open?'':'none';
+      if(!open) return;
+      info.innerHTML=`<span class="tag">${X('현재',"Now")} <b>${fmt(v)}</b></span>
+        <span class="tag">${X('필요',"Needs")} <b>${fmt(INF_CAP)}</b></span>
+        <span class="tag">${X('보유',"Held")} <b class="gold">${fmt(S[L.k]||0)}</b></span>
+        <span class="tag">${X('전체 배율',"Total")} ×<b>${fmt(Math.pow(4+i*4,S[L.k+'Ever']||0))}</b></span>`;
+      b.disabled=g<=0;
+      b.innerHTML=icHTML(L.sp,16)+' '+(g>0?X(`${L.ko} 돌파 · +${fmt(g)}`,`${L.en} Break · +${fmt(g)}`)
+        :X(`${fmt(INF_CAP)} 필요`,`Needs ${fmt(INF_CAP)}`));
+    });
+  });
+}
+
 function buildChal(p){
   const c=card([X('시련',"Trials"),'chain'],X('제약을 받아들이고 목표 마나에 도달하면 <b>영구 보상</b>을 얻는다. 시련에 들어가거나 나오면 회차가 초기화된다.',"Accept a handicap, reach the goal mana, keep a <b>permanent reward</b>. Entering or leaving a trial resets the run."));
   const info=el('div','row'); info.style.marginBottom='9px'; c.appendChild(info);
@@ -1810,7 +1971,7 @@ function buildSettings(p){
 }
 
 const BUILDERS={tower:buildTower,research:buildResearch,dungeon:buildDungeon,relics:buildRelics,
-  rebirth:buildRebirth,ascend:buildAscend,trans:buildTrans,chal:buildChal,ach:buildAch,auto:buildAuto,settings:buildSettings};
+  rebirth:buildRebirth,ascend:buildAscend,trans:buildTrans,inf:buildInf,chal:buildChal,ach:buildAch,auto:buildAuto,settings:buildSettings};
 
 /* ══════════════ 자원 바 ══════════════ */
 const RES=[
@@ -1826,6 +1987,9 @@ const RES=[
   val:()=>fmt(S.relic), sub:()=>X('승천 ','Ascensions ')+S.ascensions},
  {id:'star',   sp:'star',   nm:{ko:'별가루',en:"Stardust"}, cls:'gold',   show:()=>S.starEver>0||transUnlocked(),
   val:()=>fmt(S.star), sub:()=>X('초월 ','Transcends ')+S.transcends},
+ ...INF_LAYERS.map((L,i)=>({id:L.k, sp:L.sp, nm:{ko:L.ko,en:L.en}, cls:'gold',
+   show:()=>(S[L.k+'Ever']||0)>0||infUnlocked(i),
+   val:()=>fmt(S[L.k]||0), sub:()=>X(`돌파 ${S[L.k+'Count']||0}회`,`${S[L.k+'Count']||0} breaks`)})),
  {id:'floor',  sp:'sword',  nm:{ko:'탐사 깊이',en:"Depth"}, cls:'floor',  show:()=>S.manaEver>=5e3,
   val:()=>fmt(S.deepest), sub:()=>cosmosLabel(S.deepest||1)},
 ];
@@ -1914,7 +2078,7 @@ function mergeState(o){
     if(!s[k]||typeof s[k]!=='object') s[k]={};
   for(const k of ['mana','manaRun','manaEver','offering','offerEver','crystal','crystalEver',
                   'soul','soulAsc','soulEver','relic','relicEver','relicTrans','star','starEver'])
-    if(typeof s[k]!=='number'||!isFinite(s[k])) s[k]=0;   // NaN·Infinity 가 새면 표기가 0 이 된다
+    if(typeof s[k]!=='number'||isNaN(s[k])) s[k]=0;   // 망가진 값만 되돌린다. 무한대는 돌파 조건이므로 살려 둔다.
   s.auto=Object.assign(newState().auto,o.auto||{});
   s.timers=Object.assign({build:0,research:0,rune:0,gear:0,gather:0},o.timers||{});
   return s;
