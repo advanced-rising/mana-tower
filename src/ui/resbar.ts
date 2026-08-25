@@ -1,3 +1,4 @@
+import { INF_LAYERS } from '../layers'
 import { $, el } from './dom'
 import { cosmosLabel, floorHP, foeOf } from '../dungeon'
 import { AUTO_DEFS } from '../automation'
@@ -5,10 +6,14 @@ import { DSF, NM, X, ic, icHTML } from '../core'
 import { S } from '../state'
 import { curChal, fmt, fmtLog, gearTotal, numLog, pctTxt, runeTotal } from '../num'
 import { M, manaRateLog } from '../multipliers'
-import { INF_LAYERS, infUnlocked, transUnlocked } from '../prestige'
+import { infUnlocked, transUnlocked } from '../prestige'
 
 /* ══════════════ 자원 바 ══════════════ */
-export const RES=[
+/* 목록을 모듈 평가 시점에 만들면 INF_LAYERS 가 아직 안 채워져 있을 수 있다.
+   (모듈끼리 서로를 물면 먼저 들어간 쪽이 빈 채로 보인다.)
+   그릴 때 한 번 만들고 그 뒤로는 재사용한다. */
+let _res=null;
+export function RES_LIST(){ return _res||(_res=[
  {id:'mana',   sp:'mana',   nm:{ko:'마나',en:"Mana"},   cls:'mana',   show:()=>true,
   val:()=>fmtLog(S.manaL), sub:()=>'+'+fmtLog(manaRateLog())+X(' /초',' /s')},
  {id:'offer',  sp:'offering',nm:{ko:'오퍼링',en:"Offerings"},cls:'offer',  show:()=>S.offerEver>0,
@@ -26,11 +31,11 @@ export const RES=[
    val:()=>fmt(S[L.k]||0), sub:()=>X(`돌파 ${S[L.k+'Count']||0}회`,`${S[L.k+'Count']||0} breaks`)})),
  {id:'floor',  sp:'sword',  nm:{ko:'탐사 깊이',en:"Depth"}, cls:'floor',  show:()=>S.manaPeakL>=numLog(5e3),
   val:()=>fmt(S.deepest), sub:()=>cosmosLabel(S.deepest||1)},
-];
+]) }
 export let resNodes={};
 export function buildRes(){
   const box=$('res'); box.innerHTML=''; resNodes={};
-  RES.forEach(r=>{
+  RES_LIST().forEach(r=>{
     const d=el('div','res '+r.cls);
     d.appendChild(ic(r.sp,32));   // 16px 원본을 2배로 (정수배라 도트가 안 뭉갠다)
     const t=el('div','txt');
@@ -58,7 +63,7 @@ export function updateSide(){
           <div class="k">${nextAuto?DSF(nextAuto.req):''}</div>`}`;
 }
 export function updateRes(){
-  RES.forEach(r=>{
+  RES_LIST().forEach(r=>{
     const n=resNodes[r.id]; if(!n) return;
     const sh=r.show();
     n.box.style.display=sh?'':'none';

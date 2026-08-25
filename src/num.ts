@@ -161,3 +161,37 @@ export function smallMul(v){
   if(v>=0.001) return v.toFixed(3);
   return '1/'+fmt(1/v);
 }
+
+/* ── 화폐와 비용을 자릿수로 ────────────────────────
+   영혼석·유물·별가루·결정·오퍼링은 평범한 수여서 safeAdd 의 1e300 상한에
+   붙어 버렸고, 강화 비용도 레벨 1340 쯤에서 그대로 ∞ 가 되어 더 살 수 없었다.
+   비용 곡선은 전부 base·g^l 꼴이라 레벨 0 과 1 만 보면 어떤 레벨의 비용도
+   자릿수로 정확히 나온다 — c(l) 을 직접 부를 이유가 없다. */
+export const RES=['soul','relic','star','crystal','offering'];
+export function curL(k){ const v=S[k+'L']; return (typeof v==='number'&&!isNaN(v))?v:-Infinity }
+export function syncRes(k){ const l=curL(k); S[k]=l<308?Math.pow(10,l):Infinity }
+export function gainRes(k,addLog){
+  if(!(addLog>-Infinity)) return;
+  S[k+'L']=logAdd(curL(k),addLog);
+  const e=k==='offering'?'offerEver':k+'Ever';
+  S[e+'L']=logAdd((typeof S[e+'L']==='number'&&!isNaN(S[e+'L']))?S[e+'L']:-Infinity,addLog);
+  S[e]=S[e+'L']<308?Math.pow(10,S[e+'L']):Infinity;
+  syncRes(k);
+}
+export function spendRes(k,costLog){ S[k+'L']=logSub(curL(k),costLog); syncRes(k) }
+export function setRes(k,l){ S[k+'L']=l; syncRes(k) }
+
+/* base·g^l 의 자릿수 */
+export function ratioOf(costFn){ const c0=costFn(0); return costFn(1)/c0 }
+export function costLogAt(costFn,l){ return numLog(costFn(0))+l*L10(ratioOf(costFn)) }
+/* 레벨 l 부터 n 단계를 사는 값의 자릿수 */
+export function bulkCostLog(costFn,l,n){ return costLogAt(costFn,l)+geoSumLog(ratioOf(costFn),n) }
+/* 예산(자릿수) 으로 살 수 있는 단계 수 */
+export function bulkMaxLog(costFn,l,budgetLog){
+  const g=ratioOf(costFn); if(!(g>1)) return 0;
+  const lg=L10(g);
+  const A=budgetLog+L10(g-1)-costLogAt(costFn,l);   // log10( 예산·(g-1)/c(l) )
+  if(!(A>-300)) return 0;
+  const n = A>15 ? A/lg : L10(1+Math.pow(10,A))/lg;
+  return Math.max(0,Math.floor(n));
+}

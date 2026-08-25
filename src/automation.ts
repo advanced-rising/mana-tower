@@ -1,11 +1,12 @@
+import { INF_LAYERS } from './layers'
 import { PRODUCERS } from './producers'
 import { X } from './core'
 import { GEAR, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, bulkCost, bulkMax, gearCost, runeCost } from './content'
 import { S } from './state'
-import { L10, chalTotal, curChal, logSub, numLog } from './num'
+import { L10, RES, bulkCostLog, bulkMaxLog, chalTotal, costLogAt, curChal, curL, logSub, numLog, spendRes } from './num'
 import { M, costLogOf, gather, maxAfford, recalc, tierLocked } from './multipliers'
 
-import { INF_AUTO_CD, INF_LAYERS, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, relicGain, soulGain, starGain } from './prestige'
+import { INF_AUTO_CD, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, relicGain, soulGain, starGain } from './prestige'
 import { autoEnterChallenge } from './trials'
 
 /* ══════════════ 자동화 ══════════════
@@ -58,37 +59,49 @@ export const autoOK=k=>autoUnlocked(k)&&!!S.auto[k];
    결국 손으로 눌러야 했다. 이제는 예산이 닿는 만큼 한 번에 산다 —
    비용이 등비수열이라 몇 단계를 살 수 있는지는 닫힌 식으로 바로 나온다.
    한 항목이 예산을 독차지하지 않도록 회차마다 남은 항목 수로 나눠 쓴다. */
-export function buyBulk(costFn,l,budget,cap){
-  const c0=costFn(l);
-  if(!isFinite(c0)||c0>budget) return {n:0,cost:0};
-  const g=costFn(l+1)/c0;
-  let n=(isFinite(g)&&g>1)?bulkMax(costFn,l,budget,g):1;
-  n=Math.max(1,Math.min(n,cap));
-  let cost=(isFinite(g)&&g>1)?bulkCost(costFn,l,n,g):c0*n;
-  while(n>1&&(!isFinite(cost)||cost>budget)){ n=Math.floor(n/2); cost=bulkCost(costFn,l,n,g); }
-  if(!isFinite(cost)||cost>budget) return {n:0,cost:0};
-  return {n,cost};
+/* 예산도 비용도 자릿수로 다룬다. 평범한 수로 하면 자원이 1e308 을 넘는 순간
+   예산이 ∞ 가 되고, 살 수 있는 단계도 ∞ 가 되어 n 을 절반씩 줄이는 고리가
+   Infinity/2 = Infinity 로 영원히 돌았다 — 게임이 통째로 멈추던 자리다. */
+const LOGGED=new Set(RES);
+function budgetLogOf(k){ return LOGGED.has(k)?curL(k):numLog(S[k]||0) }
+function payFrom(k,costLog){
+  if(LOGGED.has(k)) spendRes(k,costLog);
+  else S[k]=Math.max(0,(S[k]||0)-(costLog<300?Math.pow(10,costLog):Infinity));
+}
+const STEP_CAP=1e12;          // 한 번에 사들이는 단계 수 상한 — 정수 정밀도를 지킨다
+export function buyBulkLog(costFn,l,budgetLog,cap){
+  if(!(budgetLog>-Infinity)) return {n:0,costLog:-Infinity};
+  let n=bulkMaxLog(costFn,l,budgetLog);
+  n=Math.min(n, isFinite(cap)?cap:STEP_CAP, STEP_CAP);
+  if(!(n>0)) return {n:0,costLog:-Infinity};
+  let costLog=bulkCostLog(costFn,l,n);
+  if(!(costLog<=budgetLog)){                        // 반올림으로 살짝 넘칠 때만 한 단계 물러선다
+    n-=1; if(n<=0) return {n:0,costLog:-Infinity};
+    costLog=bulkCostLog(costFn,l,n);
+    if(!(costLog<=budgetLog)) return {n:0,costLog:-Infinity};
+  }
+  return {n,costLog};
 }
 export function autoBuyTree(defs,store,curKey){
   let bought=0;
   for(let round=0;round<6;round++){
     const st=S[store]=S[store]||{};
-    const open=defs.filter(u=>(st[u.id]||0)<u.max&&isFinite(u.c(st[u.id]||0)));
+    const open=defs.filter(u=>(st[u.id]||0)<u.max);
     if(!open.length) break;
-    open.sort((a,b)=>a.c(st[a.id]||0)-b.c(st[b.id]||0));
+    open.sort((a,b)=>costLogAt(a.c,st[a.id]||0)-costLogAt(b.c,st[b.id]||0));
     let did=0;
     for(const u of open){
       const l=st[u.id]||0;
-      const share=(S[curKey]||0)/open.length;
-      const {n,cost}=buyBulk(u.c,l,share,u.max-l);
+      const share=budgetLogOf(curKey)-L10(open.length);   // 한 항목이 예산을 독차지하지 않게
+      const {n,costLog}=buyBulkLog(u.c,l,share,u.max-l);
       if(!(n>0)) continue;
-      S[curKey]-=cost; st[u.id]=l+n; bought+=n; did+=n;
+      payFrom(curKey,costLog); st[u.id]=l+n; bought+=n; did+=n;
     }
     if(!did) break;
   }
   if(bought) recalc();
   return bought;
-}   // 해금 판정을 먼저. 그래야 열리는 순간 켜진다.
+}
 export const AUTO_INTERVAL={gather:0.2,build:0.25,research:0.8,rune:1.2,gear:1.5};
 export function runAutomation(dt){
   const m=M(), ch=curChal();
@@ -132,20 +145,20 @@ export function runAutomation(dt){
     t.rune=0;
     const cap=Math.floor(m.runeCap);
     let did=0;
-    for(const r of [...RUNES].sort((a,b)=>runeCost(S.runes[a.id]||0)-runeCost(S.runes[b.id]||0))){
+    for(const r of [...RUNES].sort((a,b)=>costLogAt(runeCost,S.runes[a.id]||0)-costLogAt(runeCost,S.runes[b.id]||0))){
       const l=S.runes[r.id]||0; if(l>=cap) continue;
-      const {n,cost}=buyBulk(runeCost,l,S.offering/RUNES.length,cap-l);
-      if(n>0){ S.offering-=cost; S.runes[r.id]=l+n; did+=n }
+      const {n,costLog}=buyBulkLog(runeCost,l,curL('offering')-L10(RUNES.length),cap-l);
+      if(n>0){ spendRes('offering',costLog); S.runes[r.id]=l+n; did+=n }
     }
     if(did) recalc()
   }
   if(autoOK('gear')&&t.gear>=iv('gear')){
     t.gear=0;
     let did=0;
-    for(const g of [...GEAR].sort((a,b)=>gearCost(S.gear[a.id]||0)-gearCost(S.gear[b.id]||0))){
+    for(const g of [...GEAR].sort((a,b)=>costLogAt(gearCost,S.gear[a.id]||0)-costLogAt(gearCost,S.gear[b.id]||0))){
       const l=S.gear[g.id]||0;
-      const {n,cost}=buyBulk(gearCost,l,S.crystal/GEAR.length,1e9);
-      if(n>0){ S.crystal-=cost; S.gear[g.id]=l+n; did+=n }
+      const {n,costLog}=buyBulkLog(gearCost,l,curL('crystal')-L10(GEAR.length),Infinity);
+      if(n>0){ spendRes('crystal',costLog); S.gear[g.id]=l+n; did+=n }
     }
     if(did) recalc()
   }

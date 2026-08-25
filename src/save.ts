@@ -70,6 +70,23 @@ export function mergeState(o){
   const pk=(typeof s.manaPeakL==='number'&&!isNaN(s.manaPeakL))?s.manaPeakL:-Infinity;
   const ev=(typeof s.manaEverL==='number'&&!isNaN(s.manaEverL))?s.manaEverL:-Infinity;
   s.manaPeakL=Math.max(pk,ev);
+  /* 화폐도 자릿수가 진실이 되었다. 옛 세이브는 그 값이 없으니 평범한 수에서
+     만들어 주고, 이미 자릿수가 실려 있으면 둘 중 큰 쪽을 믿는다. */
+  for(const [k,e] of [['soul','soulEver'],['relic','relicEver'],['star','starEver'],
+                      ['crystal','crystalEver'],['offering','offerEver'],
+                      ['soulAsc','relicTrans']]){
+    for(const f of [k,e]){
+      const L=f+'L', have=s[L];
+      const fromNum=(typeof s[f]==='number'&&s[f]>0)?(isFinite(s[f])?Math.log10(s[f]):308):-Infinity;
+      s[L]=(typeof have==='number'&&!isNaN(have))?Math.max(have,fromNum):fromNum;
+      s[f]=s[L]<308?Math.pow(10,s[L]):Infinity;
+    }
+  }  for(const f of ['lastSoulGain','lastRelicGain','lastStarGain']){
+    const L=f+'L', have=s[L];
+    const fromNum=(typeof s[f]==='number'&&s[f]>0)?(isFinite(s[f])?Math.log10(s[f]):308):-Infinity;
+    s[L]=(typeof have==='number'&&!isNaN(have))?Math.max(have,fromNum):fromNum;
+  }
+
   for(const k in got){ if(!got[k]||!k.startsWith('mx')) continue;
     const e=parseFloat(k.slice(2)); if(isFinite(e)&&e>s.manaPeakL) s.manaPeakL=e; }
   if(got.h2) s.manaPeakL=Math.max(s.manaPeakL,3);

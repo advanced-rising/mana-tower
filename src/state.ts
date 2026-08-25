@@ -9,7 +9,14 @@ export function newState(){return{
   v:VERSION,
   mana:0, manaRun:0, manaEver:0,
   manaL:-Infinity, manaRunL:-Infinity, manaEverL:-Infinity,   // 진실의 원천 (log10, 0 은 -Infinity)
-  offering:0, offerEver:0, crystal:0, crystalEver:0,
+  offering:0, offerEver:0,
+  /* 자릿수가 진실이다. 위의 평범한 수는 표시와 옛 코드를 위한 파생값이며
+     1e308 에서 멈춘다. */
+  soulL:-Infinity, soulEverL:-Infinity, relicL:-Infinity, relicEverL:-Infinity,
+  starL:-Infinity, starEverL:-Infinity, crystalL:-Infinity, crystalEverL:-Infinity,
+  offeringL:-Infinity, offerEverL:-Infinity,
+  soulAscL:-Infinity, relicTransL:-Infinity,
+  lastSoulGainL:-Infinity, lastRelicGainL:-Infinity, lastStarGainL:-Infinity, crystal:0, crystalEver:0,
   bought:PRODUCERS.map(()=>0), gen:PRODUCERS.map(()=>0),
   genL:PRODUCERS.map(()=>-Infinity),   // 상위 시설이 만들어 낸 수 · 자릿수(log10)가 진실. 0 은 -Infinity
   research:{}, runes:{}, gear:{},

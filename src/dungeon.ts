@@ -4,7 +4,7 @@ import { log } from './tick'
 
 import { NM, X, icHTML } from './core'
 import { S } from './state'
-import { L10, cntLog, fmt, fmtLog, geoSumLog, logAdd, numLog, safeLog } from './num'
+import { L10, cntLog, fmt, fmtLog, gainRes, geoSumLog, logAdd, numLog, safeLog } from './num'
 import { M, addManaLog, manaRateLog, recalc, safeAdd } from './multipliers'
 
 /* ══════════════ 던전 ══════════════ */
@@ -262,13 +262,11 @@ export function sweepFloors(n){
   addManaLog(floorLootManaLog(f)+geoSumLog(1.40,n));
   const csum=n+0.5*(n*f+n*(n-1)/2);                       // Σ(1+0.5·층)
   const cl=numLog(csum)+m.crystalLog+m.floorLootLog+numLog(e.crystal)-L10(8);
-  const cAdd=cl<300?Math.pow(10,cl):Infinity;
-  S.crystal=safeAdd(S.crystal,cAdd); S.crystalEver=safeAdd(S.crystalEver,cAdd);
+  gainRes('crystal',cl);
   const bn=Math.floor((f+n-1)/10)-Math.floor((f-1)/10);   // 이 구간의 보스 수
   if(bn>0){
     const ol=numLog(0.8*bn*(f+n/2))+m.offerLog+L10(10)+m.bossLog+numLog(e.offer)-L10(6);
-    const oAdd=ol<300?Math.pow(10,ol):Infinity;
-    S.offering=safeAdd(S.offering,oAdd); S.offerEver=safeAdd(S.offerEver,oAdd);
+    gainRes('offering',ol);
   }
   const last=f+n-1;
   if(last>S.deepest){ S.deepest=last; if(last>(S.deepestEver||0)) S.deepestEver=last; syncChapter(); }
@@ -279,8 +277,8 @@ export function sweepFloors(n){
 export function clearFloor(show){
   const f=S.floor,l=floorLoot(f);
   addManaLog(l.manaLog);
-  S.crystal=safeAdd(S.crystal,l.crystal); S.crystalEver=safeAdd(S.crystalEver,l.crystal);
-  if(l.offering){S.offering=safeAdd(S.offering,l.offering); S.offerEver=safeAdd(S.offerEver,l.offering);}
+  gainRes('crystal',l.crystalLog);
+  if(l.offeringLog>-Infinity) gainRes('offering',l.offeringLog);
   const nw=f>S.deepest;
   if(nw){ S.deepest=f; if(f>(S.deepestEver||0)) S.deepestEver=f; syncChapter(); }
   const foe=foeOf(f);

@@ -1,9 +1,10 @@
+import { INF_LAYERS } from './layers'
 import { PRODUCERS } from './producers'
 import { CHALLENGES, GEAR, MILESTONES, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS } from './content'
 import { MC, S, setMC } from './state'
 import { L10, achCount, cntLog, curChal, geoSumLog, logAdd, logSub, numLog } from './num'
 import { cosmosBonus, floorLoot } from './dungeon'
-import { INF_LAYERS, infBonus } from './prestige'
+import { infBonus } from './prestige'
 import { log } from './tick'
 
 /* ══════════════ 배율 계산 ══════════════ */

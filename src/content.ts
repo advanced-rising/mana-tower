@@ -1,4 +1,5 @@
-import { INF_LAYERS } from './prestige'
+import { INF_LAYERS } from './layers'
+
 import { COSMOS, chapterOf } from './dungeon'
 import { X } from './core'
 import { S } from './state'
@@ -602,19 +603,8 @@ for(let i=1;i<COSMOS.length;i++){
     d:()=>X(`탐사에서 ${COSMOS[i].ko} 계층 돌파`,`Break into the ${COSMOS[i].en}`),
     f:()=>chapterOf(Math.max(1,S.deepest||1))>=i});
 }
-for(let i=0;i<INF_LAYERS.length;i++){
-  for(const n of [1,5,25,100]){
-    ACHS.push({id:'ix'+i+'_'+n, sp:INF_LAYERS[i].sp, nm:{ko:`${INF_LAYERS[i].ko}의 ${ACH_NOUN[_ac.ix%ACH_NOUN.length][0]}`,en:`${ACH_NOUN[_ac.ix%ACH_NOUN.length][1]} of ${INF_LAYERS[i].en}`}, _n:_ac.ix++,
-      d:()=>X(`${INF_LAYERS[i].ko} 돌파 ${n}회`,`Break ${INF_LAYERS[i].en} ${n} times`),
-      f:()=>(S[INF_LAYERS[i].k+'Count']||0)>=n});
-  }
-}
 for(let n=1;n<=200;n+=1){
   ACHS.push({id:'tx'+n, nm:achName('tx',_ac.tx++),
     d:()=>X(`초월 ${n}회`,`Transcend ${n} times`), f:()=>(S.transEver||S.transcends)>=n});
 }
 
-/* 그림이 지정되지 않은 업적에 배지를 하나씩 떼어 준다. 앞에서부터 순서대로 주면
-   문양이 매번, 색이 열두 개마다, 테두리가 아흔여섯 개마다 바뀐다. */
-export let _bi=0;
-for(const a of ACHS) if(!a.sp) a.sp=BADGES[_bi++%BADGES.length];

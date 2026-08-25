@@ -1,10 +1,11 @@
+import { INF_LAYERS } from './layers'
 import { PRODUCERS } from './producers'
 import { toast } from './ui/dom'
 import { autoOK } from './automation'
 import { X, icHTML } from './core'
 import { ACHS, ACH_NOUN, BADGES, ETER_UPS, INF_UPS, ORIGIN_UPS, REAL_UPS, VOID_UPS, achName } from './content'
 import { S } from './state'
-import { L10, fmt, numLog, startManaLog, syncGen } from './num'
+import { L10, fmt, gainRes, logAdd, numLog, setRes, startManaLog, syncGen } from './num'
 import { M, recalc, safeAdd } from './multipliers'
 import { COSMOS, chapterOf } from './dungeon'
 import { autoEnterChallenge, exitChallenge } from './trials'
@@ -13,20 +14,22 @@ import { log } from './tick'
 /* ══════════════ 프레스티지 ══════════════ */
 export const REBIRTH_REQ=1e6, ASCEND_REQ=1000;
 /* 회차 마나가 1e300 을 넘어도 획득량이 ∞ 로 튀지 않게 자릿수에서 계산한다 */
-export function soulGain(){
-  if(!(S.manaRunL>=numLog(REBIRTH_REQ))) return 0;
-  const l=L10(3)+0.3*(S.manaRunL-numLog(REBIRTH_REQ))+M().soulLog;
-  return l<300?Math.floor(Math.pow(10,l)):Infinity;
+export function soulGainLog(){
+  if(!(S.manaRunL>=numLog(REBIRTH_REQ))) return -Infinity;
+  return L10(3)+0.3*(S.manaRunL-numLog(REBIRTH_REQ))+M().soulLog;
 }
-export function offerGain(){
-  if(!(S.manaRunL>=numLog(REBIRTH_REQ))) return 0;
-  const l=L10(2)+0.22*(S.manaRunL-numLog(REBIRTH_REQ))+M().offerLog;
-  return l<300?Math.floor(Math.pow(10,l)):Infinity;
+export function soulGain(){ const l=soulGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
+export function offerGainLog(){
+  if(!(S.manaRunL>=numLog(REBIRTH_REQ))) return -Infinity;
+  return L10(2)+0.22*(S.manaRunL-numLog(REBIRTH_REQ))+M().offerLog;
 }
-export function relicGain(){
-  if(S.soulAsc<ASCEND_REQ) return 0;
-  return Math.floor(2*Math.pow(S.soulAsc/ASCEND_REQ,0.35)*M().relic);
+export function offerGain(){ const l=offerGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
+export function relicGainLog(){
+  const a=(typeof S.soulAscL==='number'&&!isNaN(S.soulAscL))?S.soulAscL:-Infinity;
+  if(!(a>=numLog(ASCEND_REQ))) return -Infinity;
+  return L10(2)+0.35*(a-numLog(ASCEND_REQ))+M().relicLog;
 }
+export function relicGain(){ const l=relicGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
 export function softReset(){
   const free=8*(S.relicUps.a5||0)+25*(S.starUps.t9||0)+500*((S.eterUps||{}).e13||0)+5000*((S.realUps||{}).r9||0)+1e5*((S.originUps||{}).o6||0);
   S.manaL=Math.max(L10(25),startManaLog(S.soulUps.s7||0));
@@ -40,8 +43,10 @@ export function softReset(){
 export function doRebirth(silent){
   const g=soulGain(), o=offerGain();
   if(g<=0) return false;
-  S.soul=safeAdd(S.soul,g); S.soulAsc=safeAdd(S.soulAsc,g); S.soulEver=safeAdd(S.soulEver,g); S.lastSoulGain=g; S.rebirthEver=(S.rebirthEver||0)+1;
-  S.offering=safeAdd(S.offering,o); S.offerEver=safeAdd(S.offerEver,o);
+  const gl=soulGainLog(), ol=offerGainLog();
+  gainRes('soul',gl); S.soulAscL=logAdd(S.soulAscL,gl); S.soulAsc=S.soulAscL<308?Math.pow(10,S.soulAscL):Infinity;
+  S.lastSoulGainL=gl; S.lastSoulGain=g; S.rebirthEver=(S.rebirthEver||0)+1;
+  gainRes('offering',ol);
   S.rebirths++;
   if(S.chal) exitChallenge(false);
   softReset();
@@ -53,9 +58,11 @@ export function doRebirth(silent){
 export function doAscend(silent){
   const g=relicGain();
   if(g<=0) return false;
-  S.relic=safeAdd(S.relic,g); S.relicEver=safeAdd(S.relicEver,g); S.relicTrans=safeAdd(S.relicTrans,g); S.lastRelicGain=g; S.ascensions++; S.ascendEver=(S.ascendEver||0)+1;
-  S.soul=0; S.soulAsc=0; S.soulUps={}; S.runes={};
-  S.rebirths=0; S.deepest=0; S.offering=0; S.lastSoulGain=0; S.sinceAscend=0;
+  const rl=relicGainLog();
+  gainRes('relic',rl); S.relicTransL=logAdd(S.relicTransL,rl); S.relicTrans=S.relicTransL<308?Math.pow(10,S.relicTransL):Infinity;
+  S.lastRelicGainL=rl; S.lastRelicGain=g; S.ascensions++; S.ascendEver=(S.ascendEver||0)+1;
+  setRes('soul',-Infinity); S.soulAsc=0; S.soulAscL=-Infinity; S.soulUps={}; S.runes={};
+  S.rebirths=0; S.deepest=0; setRes('offering',-Infinity); S.lastSoulGain=0; S.lastSoulGainL=-Infinity; S.sinceAscend=0;
   if(S.chal) exitChallenge(false);
   softReset();
   log(`${icHTML('relic')}<b>${X('승천','Ascension')}</b> · ${X('유물','Relics')} <b class="relic">+${fmt(g)}</b> · ${X('영혼석과 룬이 초기화되었다','soul shards and runes reset')}`,true);
@@ -69,13 +76,6 @@ export function doAscend(silent){
    아래는 전부 초기화된다. 칸은 얼마든지 이어 붙일 수 있다. */
 export const INF_CAP=1e300;
 export const INF_AUTO_CD=60;                  // 자동 돌파는 60초에 한 번까지
-export const INF_LAYERS=[
- {k:'inf',  ko:'무한',  en:"Infinity",  from:()=>S.manaEver, sp:'infinity', ups:()=>INF_UPS,   store:'infUps'},
- {k:'eter', ko:'영원',  en:"Eternity",  from:()=>S.inf,      sp:'hourglass', ups:()=>ETER_UPS,  store:'eterUps'},
- {k:'real', ko:'현실',  en:"Reality",   from:()=>S.eter,     sp:'portal',   ups:()=>REAL_UPS,  store:'realUps'},
- {k:'void', ko:'공허',  en:"The Void",  from:()=>S.real,     sp:'abysseye', ups:()=>VOID_UPS,  store:'voidUps'},
- {k:'origin',ko:'근원', en:"Origin",    from:()=>S.void,     sp:'orig_tree',ups:()=>ORIGIN_UPS,store:'originUps'},
-];
 /* 무한만 마나가 넘칠 때 열린다. 그 위로는 아래 계층을 열 개 모아야 한 칸 오른다. */
 export const INF_STACK=10;
 export const infUnlocked=i=>i===0 ? S.manaEver>=INF_CAP/1e40 || S.inf>0
@@ -108,11 +108,11 @@ export function doInfBreak(i){
   /* 무한 돌파에서는 별가루와 별 강화가 남는다 — 초월 탭이 약속한 것이 그것이다.
      그러나 영원 위로는 진짜 처음부터다. 별 강화까지 전부 접힌다. */
   for(let j=i-1;j>=0;j--){ S[INF_LAYERS[j].k]=0; if(INF_LAYERS[j].store) S[INF_LAYERS[j].store]={}; }
-  if(i>0){ S.star=0; S.starUps={}; }
+  if(i>0){ setRes('star',-Infinity); S.starUps={}; }
 
-  S.relic=0; S.relicTrans=0; S.relicUps={};
-  S.soul=0; S.soulAsc=0; S.soulUps={}; S.runes={}; S.gear={};
-  S.crystal=0; S.offering=0; S.manaEver=0; S.manaEverL=-Infinity;
+  setRes('relic',-Infinity); S.relicTrans=0; S.relicTransL=-Infinity; S.relicUps={};
+  setRes('soul',-Infinity); S.soulAsc=0; S.soulAscL=-Infinity; S.soulUps={}; S.runes={}; S.gear={};
+  setRes('crystal',-Infinity); setRes('offering',-Infinity); S.manaEver=0; S.manaEverL=-Infinity;
   S.rebirths=0; S.ascensions=0; S.transcends=0; S.deepest=0;
   if(S.chal) exitChallenge(false);
   softReset();
@@ -129,17 +129,20 @@ export function infBonus(){
 }
 
 export const TRANS_REQ=500;
-export function starGain(){
-  if(S.relicTrans<TRANS_REQ) return 0;
-  return Math.floor(2*Math.pow(S.relicTrans/TRANS_REQ,0.4));
+export function starGainLog(){
+  const r=(typeof S.relicTransL==='number'&&!isNaN(S.relicTransL))?S.relicTransL:-Infinity;
+  if(!(r>=numLog(TRANS_REQ))) return -Infinity;
+  return L10(2)+0.4*(r-numLog(TRANS_REQ));
 }
+export function starGain(){ const l=starGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
 export function doTranscend(silent){
   const g=starGain();
   if(g<=0) return false;
-  S.star=safeAdd(S.star,g); S.starEver=safeAdd(S.starEver,g); S.lastStarGain=g; S.transcends++; S.transEver=(S.transEver||0)+1;
+  const sl=starGainLog();
+  gainRes('star',sl); S.lastStarGainL=sl; S.lastStarGain=g; S.transcends++; S.transEver=(S.transEver||0)+1;
   S.relic=0; S.relicTrans=0; S.relicUps={};
   S.soul=0; S.soulAsc=0; S.soulUps={}; S.runes={}; S.gear={};
-  S.crystal=0; S.offering=0;
+  setRes('crystal',-Infinity); setRes('offering',-Infinity);
   S.rebirths=0; S.ascensions=0; S.deepest=0;
   S.lastSoulGain=0; S.lastRelicGain=0; S.sinceAscend=0; S.sinceTrans=0;
   if(S.chal) exitChallenge(false);
