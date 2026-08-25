@@ -16,31 +16,19 @@ Pixelorama, Piskel, GIMP, Photoshop 등 PNG를 저장할 수 있으면 무엇이
 import re, sys, os, argparse
 from PIL import Image
 
+import json
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GAME = os.path.join(ROOT, 'index.html')
+DATA = os.path.join(ROOT, 'tools', 'sprites.json')
 ART  = os.path.join(ROOT, 'art')
 
 def read_game():
-    return open(GAME, encoding='utf-8').read()
+    return json.load(open(DATA, encoding='utf-8'))
 
-def parse_palette(src):
-    blk = src[src.index('const PAL={'):src.index('const SPR24=')]
-    pal = {}
-    for k, v in re.findall(r"'?([A-Za-z0-9.])'?\s*:\s*'(#[0-9a-fA-F]{6})'", blk):
-        pal[k] = tuple(int(v[i:i+2], 16) for i in (1, 3, 5))
-    return pal
+def parse_palette(d):
+    return {k: tuple(int(v[i:i+2], 16) for i in (1, 3, 5)) for k, v in d['palette'].items()}
 
-def parse_sprites(src):
-    """{name: (rows, size)}"""
-    out = {}
-    for tag, size in (('const SPR24={', 24), ('const SPR16={', 16)):
-        start = src.index(tag)
-        end = src.index('const SPR16={') if size == 24 else src.index('/* 스프라이트')
-        for nm, body in re.findall(r"(\w+):\[([^\]]*)\]", src[start:end]):
-            rows = re.findall(r"'([^']*)'", body)
-            if rows:
-                out[nm] = (rows, size)
-    return out
+def parse_sprites(d):
+    return {k: (v['rows'], v['size']) for k, v in d['sprites'].items()}
 
 def to_image(rows, size, pal, scale=1):
     img = Image.new('RGBA', (size * scale, size * scale), (0, 0, 0, 0))
@@ -95,12 +83,13 @@ def from_image(path, pal, want=None):
         rows.pop()
     return rows, size
 
-def patch(src, name, rows):
-    body = ','.join("'%s'" % r for r in rows)
-    pat = re.compile(r"(\b%s:\[)[^\]]*(\])" % re.escape(name))
-    if not pat.search(src):
-        raise SystemExit(f"'{name}' 스프라이트를 index.html 에서 찾지 못했습니다")
-    return pat.sub(lambda m: m.group(1) + body + m.group(2), src, count=1)
+def patch(d, name, rows):
+    """sprites.json 을 갱신한다. 실제 PNG 는 build_sprites.py 가 굽는다."""
+    if name not in d['sprites']:
+        raise SystemExit(f"'{name}' 스프라이트가 sprites.json 에 없습니다")
+    d['sprites'][name]['rows'] = rows
+    json.dump(d, open(DATA, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    return d
 
 def main():
     ap = argparse.ArgumentParser(add_help=False)
@@ -174,8 +163,9 @@ def main():
         for r in rows:
             print('   ' + r)
         if a.apply:
-            open(GAME, 'w', encoding='utf-8').write(patch(src, name, rows))
-            print(f'index.html 의 {name} 을 교체했습니다')
+            patch(src, name, rows)
+            os.system(f'python3 {os.path.join(ROOT,"tools","build_sprites.py")} >/dev/null')
+            print(f'{name} 을 교체하고 PNG 를 다시 구웠습니다 (가운데 정렬 자동 적용)')
         else:
             print('실제 반영하려면 --apply 를 붙이세요')
     else:

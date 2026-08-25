@@ -41,39 +41,47 @@
 
 ## 도트 이미지
 
-47종을 전부 직접 찍었습니다. 외부 이미지 파일은 하나도 없습니다.
-`PAL`(34색 팔레트) + `SPR24`/`SPR16`(문자 격자)으로 정의하고, 실행할 때 캔버스로
-그려 data URI 로 캐시합니다. 광원은 좌상단 고정, 그림자는 푸른 쪽 / 하이라이트는
-노란 쪽으로 색을 이동시키는 셀 셰이딩입니다.
+77종 전부 직접 찍었습니다. 그림은 `art/sprites/*.png` 실제 파일이고,
+원본은 `tools/sprites.json` 의 문자 격자입니다.
 
-```js
-mana:['.......0','......0s0', ...]   // 문자 하나 = 픽셀 하나, '.'은 투명
 ```
+tools/sprites.json   문자 격자 + 34색 팔레트 (원본)
+      ↓  python3 tools/build_sprites.py
+art/sprites/*.png    게임이 읽는 실제 이미지 (77개, 합계 16KB)
+```
+
+빌드할 때 각 그림의 **바운딩 박스를 계산해 캔버스 정중앙에 배치**합니다.
+격자를 왼쪽 위부터 대충 채워도 결과물은 항상 가운데 정렬됩니다.
+광원은 좌상단 고정, 그림자는 푸른 쪽 / 하이라이트는 노란 쪽으로 색을 이동시키는 셀 셰이딩입니다.
 
 ### 그림 고치기 (Aseprite 필요 없음)
 
-`tools/sprite_tool.py` 가 PNG 와 게임 격자를 양방향으로 변환합니다.
-PNG 를 저장할 수 있는 에디터면 무엇이든 됩니다.
-**Pixelorama**(무료 오픈소스, `brew install --cask pixelorama`), Piskel, GIMP, Photoshop 등.
-
 ```bash
-python3 tools/sprite_tool.py list                    # 47종 목록과 색 단계 수
-python3 tools/sprite_tool.py palette                 # art/mana-tower.gpl (에디터에 불러올 팔레트)
-python3 tools/sprite_tool.py export --scale 8        # 전부 PNG 로 (8배 확대해서 그리기 편하게)
-python3 tools/sprite_tool.py export tower --scale 8  # 하나만
-python3 tools/sprite_tool.py sheet                   # 한 장짜리 대조표
-
-# 에디터에서 고친 뒤 되돌려 넣기
-python3 tools/sprite_tool.py import art/tower.png tower          # 미리보기만
-python3 tools/sprite_tool.py import art/tower.png tower --apply  # index.html 에 반영
+python3 tools/sprite_tool.py list                    # 77종 목록
+python3 tools/sprite_tool.py palette                 # art/mana-tower.gpl (에디터용 팔레트)
+python3 tools/sprite_tool.py export tower --scale 8  # 8배로 확대해 PNG 추출
+#   Pixelorama / Piskel / GIMP / 포토샵 등 아무 에디터로 수정
+python3 tools/sprite_tool.py import art/tower.png tower --apply
+python3 tools/build_sprites.py                       # 전체 다시 굽기
 ```
 
 1배·4배·8배 어느 배율로 그려도 정수배로 정확히 축소해 받습니다.
-팔레트에 없는 색은 가장 가까운 팔레트 색으로 자동 대응되고, 투명은 그대로 유지됩니다.
-47종 × 3배율 = 141회 왕복 검사에서 **손실 0** 을 확인했습니다.
+팔레트에 없는 색은 가장 가까운 색으로 자동 대응되고, 77종 × 3배율 = 141회
+왕복 검사에서 손실 0 을 확인했습니다.
 
-새 아이콘을 추가하려면 `SPR16` 에 격자를 한 줄 넣고 콘텐츠 정의에서 `sp:'이름'` 으로
-참조하면 됩니다.
+## 한국어 / English
+
+한 파일에 두 언어가 들어 있습니다. 우측 상단 버튼으로 전환하고, 선택은 브라우저에 저장됩니다.
+처음 열 때는 브라우저 언어를 따릅니다 (`ko` 로 시작하면 한국어, 아니면 영어).
+
+번역은 콘텐츠 정의 안에 함께 있습니다.
+
+```js
+nm:{ko:'견습 마법사', en:"Apprentice Mage"}          // 이름
+d:()=>X('마나 생산 ×2', "Mana output ×2")           // 설명 (호출 시점에 번역)
+```
+
+`X(ko, en)` 은 현재 언어를 그때그때 읽으므로, 항목을 추가할 때 두 문자열만 넣으면 됩니다.
 
 ## 수치를 고치려면
 
