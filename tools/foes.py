@@ -550,6 +550,146 @@ def origin(c,t,o):
 
 DEEP_BOSS={'worldeater':worldeater,'origin':origin}
 
+
+# ══ 가장 먼 계층 : 필라멘트 위로 ═══════════════
+def weaver(c,t,o):
+    m=set()
+    for a in range(4):
+        ang=a*0.79; m|=m_line(8,8,int(8+8*math.cos(ang)),int(8+8*math.sin(ang)),1)
+    m|=m_ellipse(8,8,3.4,3.4)
+    for r in (5,7): m|=m_ellipse(8,8,r,r)-m_ellipse(8,8,r-0.9,r-0.9)
+    put(c,m,t,o); return m,[(8,8)],1.0
+
+def knot(c,t,o):
+    m=sm(m_ellipse(8,8,4.4,4.4))
+    for a in range(3):
+        ang=a*1.05
+        m|=m_line(int(8-8*math.cos(ang)),int(8-8*math.sin(ang)),
+                  int(8+8*math.cos(ang)),int(8+8*math.sin(ang)),2)
+    put(c,m,t,o); return m,[(8,8)],1.2
+
+def strand(c,t,o):
+    m=set()
+    for dx in (-4,0,4):
+        prev=None
+        for y in range(0,16):
+            x=round(8+dx+2.2*math.sin(y*0.7+dx))
+            if prev: m|=m_line(prev[0],prev[1],x,y,1)
+            prev=(x,y)
+    put(c,m,t,o); return m,[(8,3),(8,12)],0.8
+
+def lattice(c,t,o):
+    m=set()
+    for v in (2,6,10,14): m|=m_rect(v,1,v,14)|m_rect(1,v,14,v)
+    put(c,m,t,o); return m,[(6,6),(10,10)],0.9
+
+def spinner(c,t,o):
+    m=sm(m_ellipse(8,8,3,3))
+    for a in range(6):
+        ang=a*1.05
+        pts=[(8,8)]
+        for k in range(4):
+            r=2+k*1.8; aa=ang+k*0.4
+            pts.append((round(8+r*math.cos(aa)),round(8+r*math.sin(aa))))
+        for j in range(len(pts)-1): m|=m_line(*pts[j],*pts[j+1],1)
+    put(c,m,t,o); return m,[(8,8)],1.0
+
+def greatvoid(c,t,o):
+    m=sm(m_ellipse(8,8,7.5,7))
+    put(c,m,t,o)
+    for p in m_ellipse(8,8,5,4.6): c.px(*p,'0')
+    for a in range(8):
+        ang=a*0.79; c.px(int(8+6.4*math.cos(ang)),int(8+6*math.sin(ang)),t[2])
+    return m,[],1.0
+
+def pulse(c,t,o):
+    m=set()
+    for r in (2.4,4.4,6.4): m|=m_ellipse(8,8,r,r)-m_ellipse(8,8,r-1.1,r-1.1)
+    bands(c,m,t,n=3,mode='glow',cx=8,cy=8,r=8); edge(c,m,o)
+    return m,[(8,8)],1.0
+
+def shroud(c,t,o):
+    m=sm(m_ellipse(8,6,7,5), m_poly([(1,7),(15,7),(13,15),(3,15)]))
+    put(c,m,t,o)
+    for x in range(2,15,3):
+        for y in (13,14,15): c.px(x,y,'.')
+    return m,[(6,6),(10,6)],1.0
+
+def horizon(c,t,o):
+    m=sm(m_ellipse(8,13,9,5)-m_rect(0,14,15,15))
+    m|=m_ellipse(8,5,3.4,3.4)
+    bands(c,m,t,n=3,mode='glow',cx=8,cy=8,r=9); edge(c,m,o)
+    return m,[(8,5)],1.2
+
+def cosmiclens(c,t,o):
+    m=sm(m_ellipse(8,8,7.5,3.4), m_ellipse(8,8,3.4,7.5))
+    bands(c,m,t,n=3,mode='glow',cx=8,cy=8,r=8); edge(c,m,o)
+    for p in m_ellipse(8,8,1.4,1.4): c.px(*p,'9')
+    return m,[],1.0
+
+def firstecho(c,t,o):
+    m=set()
+    for r in (1.6,3.4,5.2,7): m|=m_ellipse(8,8,r,r*0.7)-m_ellipse(8,8,r-0.9,(r-0.9)*0.7)
+    bands(c,m,t,n=3,mode='glow',cx=8,cy=8,r=8); edge(c,m,o)
+    return m,[(8,8)],0.9
+
+def edgeofall(c,t,o):
+    m=m_rect(1,1,14,14)-m_rect(3,3,12,12)
+    m|=m_ellipse(8,8,2.4,2.4)
+    put(c,m,t,o); return m,[(8,8)],1.0
+
+def mirroruni(c,t,o):
+    m=sm(m_poly([(1,2),(7,2),(7,14),(1,14)]), m_poly([(9,2),(15,2),(15,14),(9,14)]))
+    put(c,m,t,o)
+    c.rect(8,1,8,15,o)
+    for p in (m_ellipse(4,8,1.6,1.6)|m_ellipse(12,8,1.6,1.6)): c.px(*p,t[2])
+    return m,[(4,5),(12,5)],1.0
+
+def branching(c,t,o):
+    m=m_rect(7,10,8,15)
+    def gr(x,y,dx,dy,n):
+        nonlocal m
+        if n<=0: return
+        m|=m_line(x,y,x+dx,y+dy,1)
+        gr(x+dx,y+dy,dx-2,dy,n-1); gr(x+dx,y+dy,dx+2,dy,n-1)
+    gr(8,10,-2,-3,3)
+    put(c,m,t,o); return m,[(8,12)],0.9
+
+def uniswarm(c,t,o):
+    m=set()
+    for cx,cy,r in ((3,4,2.2),(9,3,1.9),(13,7,2.2),(5,10,2.4),(11,12,2.0),(8,7,2.6)):
+        m|=m_ellipse(cx,cy,r,r)
+    put(c,m,t,o); return m,[(3,4),(13,7),(11,12)],0.8
+
+def theend(c,t,o):
+    m=sm(m_ellipse(8,8,7,7))
+    put(c,m,t,o)
+    for p in m_ellipse(8,8,4.6,4.6): c.px(*p,'0')
+    c.rect(2,7,13,8,t[2])
+    return m,[],1.0
+
+FAR={'weaver':weaver,'knot':knot,'strand':strand,'lattice':lattice,
+     'spinner':spinner,'greatvoid':greatvoid,'pulse':pulse,'shroud':shroud,
+     'horizon':horizon,'cosmiclens':cosmiclens,'firstecho':firstecho,'edgeofall':edgeofall,
+     'mirroruni':mirroruni,'branching':branching,'uniswarm':uniswarm,'theend':theend}
+
+def loomgod(c,t,o):
+    m=sm(m_ellipse(8,8,4,4))
+    for a in range(8):
+        ang=a*0.79; m|=m_line(8,8,int(8+8*math.cos(ang)),int(8+8*math.sin(ang)),1)
+    for r in (6,7.5): m|=m_ellipse(8,8,r,r)-m_ellipse(8,8,r-0.9,r-0.9)
+    bands(c,m,t,n=3,mode='glow',cx=8,cy=8,r=9); edge(c,m,o)
+    return m,[(8,8)],1.4
+
+def allmind(c,t,o):
+    m=sm(m_ellipse(8,7,6.5,5.5), m_poly([(3,11),(13,11),(11,15),(5,15)]))
+    put(c,m,t,o)
+    for cx,cy in ((5,6),(11,6),(8,9)):
+        for p in m_ellipse(cx,cy,1.6,1.6): c.px(*p,'0')
+    return m,[(5,6),(11,6),(8,9)],1.0
+
+FAR_BOSS={'loomgod':loomgod,'allmind':allmind}
+
 def draw_eyes(c, spots, r, col):
     """16칸에서 눈은 1픽셀이면 충분하다. 크게 찍으면 얼굴이 통째로 눈이 된다."""
     for (ex,ey) in spots:
@@ -625,7 +765,7 @@ def part(c, mask, kind, acc):
 
 def build():
     out={}
-    for group,pre in ((BASE,'foe'),(BOSS,'boss'),(COSMIC,'cos'),(COSMIC_BOSS,'cboss'),(DEEP,'deep'),(DEEP_BOSS,'dboss')):
+    for group,pre in ((BASE,'foe'),(BOSS,'boss'),(COSMIC,'cos'),(COSMIC_BOSS,'cboss'),(DEEP,'deep'),(DEEP_BOSS,'dboss'),(FAR,'far'),(FAR_BOSS,'fboss')):
         for bk,fn in group.items():
             for ak,(t,o,eye,acc,pk) in AFFIX.items():
                 c=C(N)
@@ -634,7 +774,7 @@ def build():
                 draw_eyes(c,spots,r,eye)
                 out[f'{pre}_{bk}_{ak}']=c.rows()
     save(out,{k:N for k in out})
-    print(f'몬스터 {len(out)}종 = 지상 {len(BASE)}+{len(BOSS)} · 우주 {len(COSMIC)}+{len(COSMIC_BOSS)} · 심층 {len(DEEP)}+{len(DEEP_BOSS)} × 속성 {len(AFFIX)}')
+    print(f'몬스터 {len(out)}종 = 지상 {len(BASE)}+{len(BOSS)} · 우주 {len(COSMIC)}+{len(COSMIC_BOSS)} · 심층 {len(DEEP)}+{len(DEEP_BOSS)} · 최원 {len(FAR)}+{len(FAR_BOSS)} × 속성 {len(AFFIX)}')
 
 if __name__=='__main__':
     build()
