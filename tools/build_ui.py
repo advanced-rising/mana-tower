@@ -293,19 +293,25 @@ def emblem():
     for p in ((3,6),(28,9),(5,27),(27,26)): c.px(*p,'e')
     return render_rows(c.rows(),32)
 
-t1=bitmap_text('무한의 탑',21)
-t2=bitmap_text('지구에서 근원까지',12)
-EMB=32; GAP=8; PADX=1; PADY=2
-tx=PADX+EMB+GAP
-W=tx+max(t1.width,t2.width)+3
-H=max(EMB, PADY+t1.height+4+t2.height+PADY)
-logo=Image.new('RGBA',(W,H),T)
-logo.alpha_composite(emblem(),(PADX,(H-EMB)//2))
-ty=(H-(t1.height+4+t2.height))//2
-stamp(logo, t1, tx, ty, GOLD)
-stamp(logo, t2, tx+1, ty+t1.height+4, ['#6b5222','#a8823a','#d4a94a','#ecd08a'], shine=False)
-for x in range(tx, W-2):
-    logo.putpixel((x, min(H-1, ty+t1.height+2)), rgb('#7a5f28'))
-logo.save(os.path.join(OUT,'logo.png'))
+def build_logo(title, sub, out, size=21, subsize=12):
+    t1=bitmap_text(title,size)
+    t2=bitmap_text(sub,subsize)
+    EMB=32; GAP=8; PADX=1; PADY=2
+    tx=PADX+EMB+GAP
+    W=tx+max(t1.width,t2.width)+3
+    H=max(EMB, PADY+t1.height+4+t2.height+PADY)
+    lg=Image.new('RGBA',(W,H),T)
+    lg.alpha_composite(emblem(),(PADX,(H-EMB)//2))
+    ty=(H-(t1.height+4+t2.height))//2
+    stamp(lg, t1, tx, ty, GOLD)
+    stamp(lg, t2, tx+1, ty+t1.height+4, ['#6b5222','#a8823a','#d4a94a','#ecd08a'], shine=False)
+    for x in range(tx, W-2):
+        lg.putpixel((x, min(H-1, ty+t1.height+2)), rgb('#7a5f28'))
+    lg.save(os.path.join(OUT,out))
+    return lg.size
 
-print('art/ui 에',len(os.listdir(OUT)),'개 저장 · 로고',logo.size)
+ko=build_logo('무한의 탑','지구에서 근원까지','logo.png')
+en=build_logo('TOWER OF INFINITY','FROM EARTH TO ORIGIN','logo_en.png',size=17,subsize=10)
+print('logo ko',ko,'en',en)
+
+print('art/ui 에',len(os.listdir(OUT)),'개 저장')

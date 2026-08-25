@@ -446,6 +446,110 @@ def watcher(c,t,o):
 
 COSMIC_BOSS={'supernova':supernova,'quasar':quasar,'gcore':gcore,'watcher':watcher}
 
+
+# ══ 더 깊은 계층 : 은하군 위로 ═════════════════
+def swarm(c,t,o):
+    m=set()
+    for cx,cy,r in ((4,5,2.4),(11,4,2.0),(7,9,2.8),(12,11,2.2),(3,12,1.9)):
+        m|=m_ellipse(cx,cy,r,r)
+    m|=m_line(4,5,7,9,1)|m_line(11,4,7,9,1)|m_line(7,9,12,11,1)|m_line(7,9,3,12,1)
+    put(c,m,t,o); return m,[(4,5),(7,9),(12,11)],0.8
+
+def tendril(c,t,o):
+    m=sm(m_ellipse(8,11,5,4))
+    for a in range(5):
+        ang=3.9+a*0.35
+        m|=m_line(8,9,int(8+9*math.cos(ang)),int(9+9*math.sin(ang)),2)
+    put(c,m,t,o); return m,[(6,11),(10,11)],1.0
+
+def legion(c,t,o):
+    m=set()
+    for cx in (3,8,13): m|=m_poly([(cx,3),(cx+2,7),(cx,14),(cx-2,7)])
+    m|=m_rect(1,7,14,8)
+    put(c,m,t,o); return m,[(3,5),(8,4),(13,5)],0.8
+
+def darkmatter(c,t,o):
+    m=sm(m_ellipse(8,8,6.5,6))
+    put(c,m,t,o)
+    for p in m_ellipse(8,8,4,3.6): c.px(*p,'0')
+    for cx,cy in ((6,6),(10,9),(8,11)): c.px(cx,cy,t[2])
+    return m,[],1.0
+
+def lens(c,t,o):
+    m=sm(m_ellipse(8,8,7,3), m_ellipse(8,8,3,7))
+    bands(c,m,t,n=3,mode='glow',cx=8,cy=8,r=8); edge(c,m,o)
+    for p in m_ellipse(8,8,1.6,1.6): c.px(*p,'9')
+    return m,[],1.0
+
+def breaker(c,t,o):
+    m=sm(m_poly([(8,0),(12,4),(12,11),(8,16),(4,11),(4,4)]))
+    put(c,m,t,o); c.line(4,6,12,10,o); c.line(12,6,4,10,o)
+    return m,[(8,8)],1.4
+
+def fracture(c,t,o):
+    m=set()
+    for a in range(6):
+        ang=a*1.05
+        m|=m_line(8,8,int(8+8*math.cos(ang)),int(8+8*math.sin(ang)),2)
+    bands(c,m,t,n=3,mode='glow',cx=8,cy=8,r=9); edge(c,m,o)
+    return m,[(8,8)],1.2
+
+def primeval(c,t,o):
+    m=sm(m_poly([(3,4),(12,3),(14,10),(11,15),(4,15),(2,9)]), m_poly([(5,1),(11,1),(12,4),(4,4)]))
+    m|=m_rect(0,7,2,12)|m_rect(13,7,15,12)
+    put(c,m,t,o); return m,[(6,3),(10,3)],1.0
+
+def ascendant(c,t,o):
+    m=sm(m_ellipse(8,6,3.4,3.4), m_poly([(5,9),(11,9),(13,15),(3,15)]),
+         m_poly([(1,2),(6,7),(3,9)]), m_poly([(15,2),(10,7),(13,9)]))
+    put(c,m,t,o)
+    for p in m_ellipse(8,6,1.9,1.9): c.px(*p,t[2])
+    return m,[(8,6)],1.2
+
+def wall(c,t,o):
+    m=m_rect(1,2,14,13)
+    put(c,m,t,o)
+    for x in range(2,14,3): c.rect(x,2,x,13,o)
+    for y in range(4,13,3): c.rect(1,y,14,y,o)
+    return m,[(4,6),(11,9)],1.0
+
+def devourer(c,t,o):
+    m=sm(m_ellipse(8,8,7,6.5))
+    put(c,m,t,o)
+    for p in m_poly([(2,8),(14,4),(14,12)]): c.px(*p,'0')
+    for x in range(4,14,2): c.px(x,8,'z')
+    return m,[(5,4),(5,12)],0.9
+
+def circuit(c,t,o):
+    m=m_rect(2,2,13,13)-m_rect(5,5,10,10)
+    m|=m_line(2,8,5,8,1)|m_line(10,8,13,8,1)|m_line(8,2,8,5,1)|m_line(8,10,8,13,1)
+    put(c,m,t,o)
+    bands(c,m_ellipse(8,8,2,2),['d','e','f'],n=3,mode='glow',cx=8,cy=8,r=2.6)
+    return m,[],1.0
+
+DEEP={'swarm':swarm,'tendril':tendril,'legion':legion,'darkmatter':darkmatter,
+      'lens':lens,'breaker':breaker,'fracture':fracture,'primeval':primeval,
+      'ascendant':ascendant,'wall':wall,'devourer':devourer,'circuit':circuit}
+
+def worldeater(c,t,o):
+    m=sm(m_ellipse(8,8,7.5,7))
+    put(c,m,t,o)
+    for p in m_poly([(1,8),(15,3),(15,13)]): c.px(*p,'0')
+    for x in range(3,15,2): c.px(x,8,'z')
+    for a in range(4):
+        ang=a*1.57; c.px(int(8+7*math.cos(ang)),int(8+7*math.sin(ang)),t[2])
+    return m,[(4,4),(4,12)],1.0
+
+def origin(c,t,o):
+    m=sm(m_ellipse(8,8,7,7)-m_ellipse(8,8,5.4,5.4))
+    m|=m_ellipse(8,8,3,3)
+    bands(c,m,t,n=3,mode='glow',cx=8,cy=8,r=8); edge(c,m,o)
+    for a in range(8):
+        ang=a*0.79; c.px(int(8+5*math.cos(ang)),int(8+5*math.sin(ang)),t[2])
+    return m,[],1.0
+
+DEEP_BOSS={'worldeater':worldeater,'origin':origin}
+
 def draw_eyes(c, spots, r, col):
     """16칸에서 눈은 1픽셀이면 충분하다. 크게 찍으면 얼굴이 통째로 눈이 된다."""
     for (ex,ey) in spots:
@@ -521,7 +625,7 @@ def part(c, mask, kind, acc):
 
 def build():
     out={}
-    for group,pre in ((BASE,'foe'),(BOSS,'boss'),(COSMIC,'cos'),(COSMIC_BOSS,'cboss')):
+    for group,pre in ((BASE,'foe'),(BOSS,'boss'),(COSMIC,'cos'),(COSMIC_BOSS,'cboss'),(DEEP,'deep'),(DEEP_BOSS,'dboss')):
         for bk,fn in group.items():
             for ak,(t,o,eye,acc,pk) in AFFIX.items():
                 c=C(N)
@@ -530,7 +634,7 @@ def build():
                 draw_eyes(c,spots,r,eye)
                 out[f'{pre}_{bk}_{ak}']=c.rows()
     save(out,{k:N for k in out})
-    print(f'몬스터 {len(out)}종 = 지상 {len(BASE)}+{len(BOSS)} · 우주 {len(COSMIC)}+{len(COSMIC_BOSS)} × 속성 {len(AFFIX)}')
+    print(f'몬스터 {len(out)}종 = 지상 {len(BASE)}+{len(BOSS)} · 우주 {len(COSMIC)}+{len(COSMIC_BOSS)} · 심층 {len(DEEP)}+{len(DEEP_BOSS)} × 속성 {len(AFFIX)}')
 
 if __name__=='__main__':
     build()
