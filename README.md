@@ -1,9 +1,48 @@
 # Tower of Infinity
 
 A fantasy idle/incremental game that grows from a single tower into the structure of the
-cosmos. One `index.html`. No build step, no dependencies, no network — open the file and play.
+cosmos. No network, no runtime dependencies — open the page and play.
 
 Play: <https://advanced-rising.github.io/mana-tower/>
+
+## Layout
+
+The code lives in `src/` and esbuild bundles it into `dist/bundle.js`, which is committed.
+Playing needs no build; only changing the code does.
+
+```
+index.html          46 lines of shell
+src/style.css       the whole stylesheet
+src/
+  core.ts           language switch, sprite helpers
+  producers.ts      the six buildings (kept apart so state can size its arrays)
+  content.ts        research, runes, gear, every upgrade tree, trials, achievements
+  state.ts          the save shape
+  num.ts            log-space arithmetic and the notation ladder
+  multipliers.ts    computeM — where every multiplier is combined
+  dungeon.ts        floors, monsters, loot, the cosmic ladder
+  prestige.ts       rebirth, ascension, transcendence, the infinity layers
+  trials.ts         challenge entry and rewards
+  automation.ts     what runs itself, and when it unlocks
+  tick.ts           one step of the world
+  save.ts           localStorage, import, export
+  main.ts           the loop, hotkeys, boot
+  ui/
+    dom.ts  tabs.ts  widgets.ts  panels.ts  resbar.ts  render.ts
+```
+
+```bash
+npm install
+npm run build      # dist/bundle.js
+npm run watch      # rebuild on save
+npm run check      # tsc --noEmit
+npm run art        # regenerate sprites and UI from tools/
+```
+
+Types are deliberately loose for now — the split came first, and it is verified to behave
+exactly as the single file did. `npm run check` lists what is left to tighten.
+
+A `window.__game` handle exposes the internals for the console and the test harness.
 
 ## The shape of a run
 

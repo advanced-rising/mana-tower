@@ -1,0 +1,166 @@
+import { PRODUCERS } from './producers'
+import { X } from './core'
+import { GEAR, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, gearCost, runeCost } from './content'
+import { S } from './state'
+import { chalTotal, curChal } from './num'
+import { M, costLogOf, gather, maxAfford, recalc, tierLocked } from './multipliers'
+import { L10, logSub, numLog } from './dungeon'
+import { INF_AUTO_CD, INF_LAYERS, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, relicGain, soulGain, starGain } from './prestige'
+import { autoEnterChallenge } from './trials'
+
+/* ══════════════ 자동화 ══════════════
+   자동화는 기본값이 아니라 진행으로 얻는 보상이다.
+   초반에는 채집·건설·연구·던전을 직접 해야 한다. */
+export const AUTO_DEFS=[
+ {k:'gather', sp:'mana', g:{ko:"한 회차 안",en:"Within a run"}, nm:{ko:'마나 채집',en:"Mana Gathering"},     d:()=>X('채집 버튼을 대신 눌러 준다',"Presses the gather button for you"),                unlock:()=>S.manaPeakL>=3,                  req:()=>X('누적 마나 1,000',"1,000 total mana")},
+ {k:'build', sp:'workshop',  nm:{ko:'시설 건설',en:"Construction"},     d:()=>X('여유 마나로 가장 비싼 시설부터 사들인다',"Buys the priciest affordable building"),   unlock:()=>S.manaPeakL>=numLog(2e4),                  req:()=>X('누적 마나 2만',"20,000 total mana")},
+ {k:'research', sp:'flask',nm:{ko:'연구 구매',en:"Research Buying"},    d:()=>X('조건을 만족한 연구를 순서대로 사들인다',"Buys available researches in order"),     unlock:()=>(S.rebirthEver||S.rebirths)>=5||(S.ascendEver||S.ascensions)>0,    req:()=>X('환생 5회',"5 rebirths")},
+ {k:'dungeon', sp:'sword',nm:{ko:'던전 연속 탐험',en:"Continuous Delving"},d:()=>X('층을 깬 뒤 멈추지 않고 계속 내려간다',"Keeps descending after each floor"),       unlock:()=>(S.deepestEver||S.deepest)>=20,                    req:()=>X('던전 20층 돌파',"Reach dungeon floor 20")},
+ {k:'rebirth', sp:'spiral', g:{ko:"환생",en:"Rebirth"},nm:{ko:'자동 환생',en:"Auto Rebirth"},     d:()=>X('직전 회차보다 1.5배 이상 벌릴 때 환생한다',"Rebirths when the run beats the last by 1.5x"),  unlock:()=>(S.rebirthEver||S.rebirths)>=20||(S.ascendEver||S.ascensions)>0,   req:()=>X('환생 20회',"20 rebirths")},
+ {k:'soulup', sp:'soul', nm:{ko:'영혼 강화 구매',en:"Soul Upgrade Buying"},d:()=>X('영혼석으로 가장 싼 강화를 사들인다',"Buys the cheapest soul upgrade"),         unlock:()=>(S.rebirthEver||S.rebirths)>=10||(S.ascendEver||S.ascensions)>0,   req:()=>X('환생 10회',"10 rebirths")},
+ {k:'chal', sp:'chain',   nm:{ko:'자동 시련',en:"Auto Trials"},     d:()=>X('환생할 때마다 감당 가능한 시련에 들어간다',"Enters a reachable trial on each rebirth"),  unlock:()=>chalTotal()>=3,                   req:()=>X('시련 3단계 완료',"Clear 3 trial stages")},
+ {k:'ascend', sp:'reliquary', g:{ko:"승천",en:"Ascension"}, nm:{ko:'자동 승천',en:"Auto Ascension"},     d:()=>X('유물이 충분히 쌓이면 승천한다',"Ascends once relics pile up"),              unlock:()=>(S.ascendEver||S.ascensions)>=3,                  req:()=>X('승천 3회',"3 ascensions")},
+ {k:'relicup', sp:'relic',nm:{ko:'유물 강화 구매',en:"Relic Upgrade Buying"},d:()=>X('유물로 가장 싼 강화를 사들인다',"Buys the cheapest relic upgrade"),             unlock:()=>(S.ascendEver||S.ascensions)>=2,                  req:()=>X('승천 2회',"2 ascensions")},
+ {k:'rune', sp:'runering',   nm:{ko:'룬 강화',en:"Rune Upgrading"},       d:()=>X('오퍼링으로 가장 싼 룬부터 새긴다',"Engraves the cheapest rune first"),           unlock:()=>(S.ascendEver||S.ascensions)>=1,                  req:()=>X('승천 1회',"1 ascension")},
+ {k:'gear', sp:'anvil',   nm:{ko:'장비 제작',en:"Gear Crafting"},     d:()=>X('결정으로 가장 싼 장비부터 벼린다',"Forges the cheapest gear first"),           unlock:()=>(S.ascendEver||S.ascensions)>=1,                  req:()=>X('승천 1회',"1 ascension")},
+ {k:'trans', sp:'starcrown', g:{ko:"초월",en:"Transcendence"},  nm:{ko:'자동 초월',en:"Auto Transcend"}, d:()=>X('직전 주기보다 1.5배 이상 벌릴 때 초월한다',"Transcends when the cycle beats the last by 1.5x"), unlock:()=>(S.transEver||S.transcends)>=1||S.starEver>0, req:()=>X('초월 1회',"1 transcendence")},
+ {k:'starup', sp:'starsigil', nm:{ko:'별 강화 구매',en:"Star Upgrade Buying"}, d:()=>X('별가루로 가장 싼 강화를 사들인다',"Buys the cheapest star upgrade"), unlock:()=>(S.transEver||S.transcends)>=1||S.starEver>0, req:()=>X('초월 1회',"1 transcendence")},
+ {k:'inf', sp:'infinity', g:{ko:"무한 너머",en:"Beyond Infinity"},    nm:{ko:'자동 무한 돌파',en:"Auto Infinity"}, d:()=>X('수가 넘칠 지경이 되면 알아서 한 칸 올라간다',"Breaks a rung as soon as a number is ready to overflow"), unlock:()=>(S.infEver||0)>0, req:()=>X('무한 돌파 1회',"1 infinity break")},
+ {k:'upinf', sp:'inf_core',  nm:{ko:'무한 강화 구매',en:"Infinity Upgrade Buying"}, d:()=>X('무한으로 가장 싼 강화를 사들인다',"Buys the cheapest infinity upgrade"), unlock:()=>(S.infEver||0)>0, req:()=>X('무한 돌파 1회',"1 infinity break")},
+ {k:'brketer', sp:'etercrown',  nm:{ko:'자동 영원 돌파',en:"Auto Eternity"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.eterCount||0)>=1, req:()=>X('영원 돌파 1회',"1 eternity break")},
+ {k:'upeter', sp:'etersigil', nm:{ko:'영원 강화 구매',en:"Eternity Upgrade Buying"}, d:()=>X('영원으로 가장 싼 강화를 사들인다',"Buys the cheapest eternity upgrade"), unlock:()=>(S.eterEver||0)>0, req:()=>X('영원 돌파 1회',"1 eternity break")},
+ {k:'brkreal', sp:'real_gate',  nm:{ko:'자동 현실 돌파',en:"Auto Reality"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.realCount||0)>=1, req:()=>X('현실 돌파 1회',"1 reality break")},
+ {k:'upreal', sp:'real_shard', nm:{ko:'현실 강화 구매',en:"Reality Upgrade Buying"}, d:()=>X('현실로 가장 싼 강화를 사들인다',"Buys the cheapest reality upgrade"), unlock:()=>(S.realEver||0)>0, req:()=>X('현실 돌파 1회',"1 reality break")},
+ {k:'brkvoid', sp:'void_gate',  nm:{ko:'자동 공허 돌파',en:"Auto Void"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.voidCount||0)>=1, req:()=>X('공허 돌파 1회',"1 void break")},
+ {k:'upvoid', sp:'void_star', nm:{ko:'공허 강화 구매',en:"Void Upgrade Buying"}, d:()=>X('공허로 가장 싼 강화를 사들인다',"Buys the cheapest void upgrade"), unlock:()=>(S.voidEver||0)>0, req:()=>X('공허 돌파 1회',"1 void break")},
+ {k:'brkorigin', sp:'orig_crown',nm:{ko:'자동 근원 돌파',en:"Auto Origin"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.originCount||0)>=1, req:()=>X('근원 돌파 1회',"1 origin break")},
+ {k:'uporigin', sp:'orig_seed',nm:{ko:'근원 강화 구매',en:"Origin Upgrade Buying"}, d:()=>X('근원으로 가장 싼 강화를 사들인다',"Buys the cheapest origin upgrade"), unlock:()=>(S.originEver||0)>0, req:()=>X('근원 돌파 1회',"1 origin break")},
+];
+export const AUTO_DEF=k=>AUTO_DEFS.find(a=>a.k===k);
+/* 승천·초월로 최심층이 초기화되면 자동 탐험이 다시 잠기던 문제.
+   한 번 조건을 만족한 자동화는 계속 열려 있다. */
+export function autoUnlocked(k){
+  const d=AUTO_DEF(k); if(!d) return false;
+  if(S.autoUnlocked&&S.autoUnlocked[k]) return true;
+  if(d.unlock()){
+    (S.autoUnlocked=S.autoUnlocked||{})[k]=1;
+    if(S.auto[k]===undefined||S.auto[k]===0) S.auto[k]=1;   // 열리는 순간 켠다
+    return true;
+  }
+  return false;
+}
+/* 전부 열렸는가 — 그때부터는 손댈 것이 없다 */
+export const allAuto=()=>AUTO_DEFS.every(d=>autoUnlocked(d.k));
+export const autoOK=k=>autoUnlocked(k)&&!!S.auto[k];
+/* 강화 나무는 여덟인데 자동 구매는 영혼·유물 둘뿐이었다.
+   나머지도 같은 규칙으로 — 가장 싼 것부터, 살 수 있는 만큼. */
+export function autoBuyTree(defs,store,curKey){
+  let bought=0;
+  for(let round=0;round<8;round++){
+    let best=null,bc=Infinity;
+    const st=S[store]||{};
+    for(const u of defs){
+      const l=st[u.id]||0; if(l>=u.max) continue;
+      const c=u.c(l); if(isFinite(c)&&c<bc){ bc=c; best=u; }
+    }
+    if(!best||(S[curKey]||0)<bc) break;
+    S[curKey]-=bc;
+    (S[store]=S[store]||{})[best.id]=((S[store]||{})[best.id]||0)+1;
+    bought++;
+  }
+  if(bought) recalc();
+  return bought;
+}   // 해금 판정을 먼저. 그래야 열리는 순간 켜진다.
+export const AUTO_INTERVAL={gather:0.2,build:0.25,research:0.8,rune:1.2,gear:1.5};
+export function runAutomation(dt){
+  const m=M(), ch=curChal();
+  if(ch&&ch.rule.noAuto) return;
+  const t=S.timers;
+  for(const k in AUTO_INTERVAL) t[k]=(t[k]||0)+dt;
+  const iv=k=>AUTO_INTERVAL[k]*m.autoSpeed;
+
+  if(autoOK('gather')&&t.gather>=iv('gather')){t.gather=0;gather()}
+  if(autoOK('build')&&t.build>=iv('build')){
+    t.build=0;
+    /* 하나 사고 멈추면 마나가 넉넉할 때 늘 위 단계에서 끊겨 아래 단계가 방치된다.
+       위에서 아래로 훑되 예산(남은 마나의 일부) 이 허락하는 단계는 모두 산다. */
+    for(let i=PRODUCERS.length-1;i>=0;i--){
+      if(tierLocked(i)) continue;
+      if(m.autoMax){
+        const n=maxAfford(i), cn=n>0?costLogOf(i,n):Infinity;
+        if(n>0&&cn<=S.manaL+L10(0.5)){S.manaL=logSub(S.manaL,cn);S.bought[i]+=n;recalc();continue}
+      }
+      const c=costLogOf(i,1);
+      if(c<=S.manaL+L10(0.25)){S.manaL=logSub(S.manaL,c);S.bought[i]++;recalc()}
+    }
+  }
+  if(autoOK('research')&&t.research>=iv('research')){
+    t.research=0;
+    if(!(ch&&ch.rule.noResearch))
+      for(const r of RESEARCH){
+        if(S.research[r.id]||(r.req&&!S.research[r.req])) continue;
+        const rl=numLog(r.cost);
+        if(S.manaL>=rl){S.manaL=logSub(S.manaL,rl);S.research[r.id]=1;recalc();break}
+      }
+  }
+  if(autoOK('rune')&&t.rune>=iv('rune')){
+    t.rune=0;
+    const cap=Math.floor(m.runeCap);
+    let best=null,bc=Infinity;
+    for(const r of RUNES){const l=S.runes[r.id]||0;if(l>=cap)continue;const c=runeCost(l);if(c<bc){bc=c;best=r}}
+    if(best&&S.offering>=bc){S.offering-=bc;S.runes[best.id]=(S.runes[best.id]||0)+1;recalc()}
+  }
+  if(autoOK('gear')&&t.gear>=iv('gear')){
+    t.gear=0;
+    let best=null,bc=Infinity;
+    for(const g of GEAR){const l=S.gear[g.id]||0;const c=gearCost(l);if(c<bc){bc=c;best=g}}
+    if(best&&S.crystal>=bc){S.crystal-=bc;S.gear[best.id]=(S.gear[best.id]||0)+1;recalc()}
+  }
+  // 영혼 / 유물 강화 자동 (가장 싼 것부터)
+  if(autoOK('soulup')){
+    let best=null,bc=Infinity;
+    for(const u of SOUL_UPS){const l=S.soulUps[u.id]||0;if(l>=u.max)continue;const c=u.c(l);if(c<bc){bc=c;best=u}}
+    if(best&&S.soul>=bc){S.soul-=bc;S.soulUps[best.id]=(S.soulUps[best.id]||0)+1;recalc()}
+  }
+  if(autoOK('relicup')){
+    let best=null,bc=Infinity;
+    for(const u of RELIC_UPS){const l=S.relicUps[u.id]||0;if(l>=u.max)continue;const c=u.c(l);if(c<bc){bc=c;best=u}}
+    if(best&&S.relic>=bc){S.relic-=bc;S.relicUps[best.id]=(S.relicUps[best.id]||0)+1;recalc()}
+  }
+  // 환생 / 승천 · 직전 회차보다 확실히 나아졌을 때만
+  if(autoOK('rebirth')&&S.sinceRebirth>90){   // 회차가 너무 짧으면 연구·룬이 쌓일 틈이 없다
+    const g=soulGain();
+    if(g>=10&&g>=1.5*(S.lastSoulGain||0)) doRebirth(true);
+  }
+  if(autoOK('ascend')&&S.sinceAscend>120){
+    const g=relicGain();
+    if(g>=3&&g>=1.5*(S.lastRelicGain||0)) doAscend(true);
+  }
+  /* 첫 돌파는 손으로 해야 한다 — 아래 계층을 통째로 갈아 넣는 결정이기 때문이다.
+     한 번 해 본 뒤로는 그 계층을 자동으로 뚫는다. 위 계층부터 살핀다. */
+  if(S.sinceInf>=INF_AUTO_CD){
+    for(let i=INF_LAYERS.length-1;i>=0;i--){
+      const L=INF_LAYERS[i];
+      const key = i===0 ? 'inf' : 'brk'+L.k;
+      if(!autoOK(key)) continue;
+      if(i>0 && (S[L.k+'Count']||0)<1) continue;   // 아직 손으로 한 번도 안 뚫었다
+      if(!infUnlocked(i)||infGain(i)<=0) continue;
+      doInfBreak(i); break;
+    }
+  }
+  if(autoOK('starup')) autoBuyTree(STAR_UPS,'starUps','star');
+  for(const L of INF_LAYERS){
+    if(!L.ups) continue;
+    if(autoOK('up'+L.k)) autoBuyTree(L.ups(), L.store, L.k);
+  }
+  /* 자동 시련이 환생 직후에만 걸려 있었다. 자동 환생을 끄면 영영 발동하지 않는다.
+     자동화 고리에서도 직접 걸되, 들어가기 전에 회차를 정산해 손해가 없게 한다. */
+  if(autoOK('chal')&&!S.chal&&(S.chalCd||0)<=0){
+    if(soulGain()>0) doRebirth(true);      // doRebirth 안에서 시련 진입을 시도한다
+    if(!S.chal) autoEnterChallenge();
+  }
+  if(autoOK('trans')&&S.sinceTrans>300){
+    const g=starGain();
+    if(g>=2&&g>=1.5*(S.lastStarGain||0)) doTranscend(true);
+  }
+}
