@@ -1094,36 +1094,36 @@ const MILESTONES=[
 ];
 
 const ACHS=[
- {id:'h1', nm:{ko:'첫 걸음',en:"First Step"},      d:()=>X('견습 마법사 고용',"Hire an Apprentice Mage"),      f:()=>S.bought[0]>=1},
- {id:'h2', nm:{ko:'소규모 길드',en:"Small Guild"},  d:()=>X('마나 1,000',"1,000 mana"),            f:()=>S.manaEver>=1e3},
- {id:'h3', nm:{ko:'마나 부자',en:"Mana Rich"},    d:()=>X('마나 1e6',"1e6 mana"),              f:()=>S.manaEver>=1e6},
- {id:'h4', nm:{ko:'대부호',en:"Magnate"},       d:()=>X('마나 1e12',"1e12 mana"),             f:()=>S.manaEver>=1e12},
- {id:'h5', nm:{ko:'천문학자',en:"Astronomer"},     d:()=>X('마나 1e20',"1e20 mana"),             f:()=>S.manaEver>=1e20},
- {id:'h6', nm:{ko:'무한의 문턱',en:"Brink of Infinity"},  d:()=>X('마나 1e40',"1e40 mana"),             f:()=>S.manaEver>=1e40},
- {id:'h7', nm:{ko:'공방장',en:"Workshop Master"},       d:()=>X('마법 공방 25개',"25 Arcane Workshops"),        f:()=>cnt(1)>=25},
- {id:'h8', nm:{ko:'탑주',en:"Tower Lord"},         d:()=>X('마탑 25개',"25 Mage Towers"),             f:()=>cnt(2)>=25},
- {id:'h9', nm:{ko:'학장',en:"Dean"},         d:()=>X('아카데미 25개',"25 Academies"),         f:()=>cnt(3)>=25},
- {id:'h10',nm:{ko:'대현자',en:"Archsage"},       d:()=>X('대현자 회의 10개',"10 Archsage Councils"),      f:()=>cnt(4)>=10},
- {id:'h11',nm:{ko:'첫 환생',en:"First Rebirth"},      d:()=>X('환생 1회',"Rebirth once"),              f:()=>S.rebirths>=1},
- {id:'h12',nm:{ko:'윤회',en:"Samsara"},         d:()=>X('환생 25회',"Rebirth 25 times"),             f:()=>S.rebirths>=25},
- {id:'h13',nm:{ko:'영원한 순환',en:"Eternal Cycle"},  d:()=>X('환생 100회',"Rebirth 100 times"),            f:()=>S.rebirths>=100},
- {id:'h14',nm:{ko:'승천자',en:"Ascendant"},       d:()=>X('승천 1회',"Ascend once"),              f:()=>S.ascensions>=1},
- {id:'h15',nm:{ko:'초월자',en:"Transcendent"},       d:()=>X('승천 10회',"Ascend 10 times"),             f:()=>S.ascensions>=10},
- {id:'h16',nm:{ko:'탐험가',en:"Explorer"},       d:()=>X('던전 10층',"Dungeon floor 10"),             f:()=>S.deepest>=10},
- {id:'h17',nm:{ko:'보스 사냥꾼',en:"Boss Hunter"},  d:()=>X('던전 30층',"Dungeon floor 30"),             f:()=>S.deepest>=30},
- {id:'h18',nm:{ko:'심연 정복자',en:"Abyss Conqueror"},  d:()=>X('던전 75층',"Dungeon floor 75"),             f:()=>S.deepest>=75},
- {id:'h19',nm:{ko:'룬 수집가',en:"Rune Collector"},    d:()=>X('룬 합계 레벨 25',"25 total rune levels"),       f:()=>runeTotal()>=25},
- {id:'h20',nm:{ko:'룬 대가',en:"Rune Master"},      d:()=>X('룬 합계 레벨 100',"100 total rune levels"),      f:()=>runeTotal()>=100},
- {id:'h21',nm:{ko:'무장',en:"Armed"},         d:()=>X('장비 합계 레벨 15',"15 total gear levels"),     f:()=>gearTotal()>=15},
- {id:'h22',nm:{ko:'전설의 장비',en:"Legendary Gear"},  d:()=>X('장비 합계 레벨 45',"45 total gear levels"),     f:()=>gearTotal()>=45},
- {id:'h23',nm:{ko:'학자',en:"Scholar"},         d:()=>X('연구 10개 완료',"Complete 10 researches"),        f:()=>Object.keys(S.research).length>=10},
- {id:'h24',nm:{ko:'전지',en:"Omniscient"},         d:()=>X('연구 20개 모두 완료',"Complete all 20 researches"),   f:()=>Object.keys(S.research).length>=20},
- {id:'h25',nm:{ko:'봉헌자',en:"Devotee"},       d:()=>X('오퍼링 1,000 획득',"Earn 1,000 offerings"),     f:()=>S.offerEver>=1e3},
- {id:'h26',nm:{ko:'보석상',en:"Jeweler"},       d:()=>X('결정 1,000 획득',"Earn 1,000 crystals"),       f:()=>S.crystalEver>=1e3},
- {id:'h27',nm:{ko:'도전자',en:"Challenger"},       d:()=>X('도전 1회 완료',"Clear 1 trial stage"),         f:()=>chalTotal()>=1},
- {id:'h28',nm:{ko:'시련의 주인',en:"Master of Trials"},  d:()=>X('도전 15회 완료',"Clear 15 trial stages"),        f:()=>chalTotal()>=15},
- {id:'h29',nm:{ko:'유물 사냥꾼',en:"Relic Hunter"},  d:()=>X('유물 50개 획득',"Earn 50 relics"),        f:()=>S.relicEver>=50},
- {id:'h30',nm:{ko:'왕국의 지배자',en:"Ruler of the Kingdom"},d:()=>X('전체 배율 1e6 돌파',"Total multiplier past 1e6"),    f:()=>M().prod>=1e6},
+ {id:'h1', sp:'apprentice', nm:{ko:'첫 걸음',en:"First Step"},      d:()=>X('견습 마법사 고용',"Hire an Apprentice Mage"),      f:()=>S.bought[0]>=1},
+ {id:'h2', sp:'coinpurse', nm:{ko:'소규모 길드',en:"Small Guild"},  d:()=>X('마나 1,000',"1,000 mana"),            f:()=>S.manaEver>=1e3},
+ {id:'h3', sp:'treasure', nm:{ko:'마나 부자',en:"Mana Rich"},    d:()=>X('마나 1e6',"1e6 mana"),              f:()=>S.manaEver>=1e6},
+ {id:'h4', sp:'vault', nm:{ko:'대부호',en:"Magnate"},       d:()=>X('마나 1e12',"1e12 mana"),             f:()=>S.manaEver>=1e12},
+ {id:'h5', sp:'starcompass', nm:{ko:'천문학자',en:"Astronomer"},     d:()=>X('마나 1e20',"1e20 mana"),             f:()=>S.manaEver>=1e20},
+ {id:'h6', sp:'inf_frame', nm:{ko:'무한의 문턱',en:"Brink of Infinity"},  d:()=>X('마나 1e40',"1e40 mana"),             f:()=>S.manaEver>=1e40},
+ {id:'h7', sp:'workshop', nm:{ko:'공방장',en:"Workshop Master"},       d:()=>X('마법 공방 25개',"25 Arcane Workshops"),        f:()=>cnt(1)>=25},
+ {id:'h8', sp:'tower', nm:{ko:'탑주',en:"Tower Lord"},         d:()=>X('마탑 25개',"25 Mage Towers"),             f:()=>cnt(2)>=25},
+ {id:'h9', sp:'academy', nm:{ko:'학장',en:"Dean"},         d:()=>X('아카데미 25개',"25 Academies"),         f:()=>cnt(3)>=25},
+ {id:'h10', sp:'council',nm:{ko:'대현자',en:"Archsage"},       d:()=>X('대현자 회의 10개',"10 Archsage Councils"),      f:()=>cnt(4)>=10},
+ {id:'h11', sp:'soul',nm:{ko:'첫 환생',en:"First Rebirth"},      d:()=>X('환생 1회',"Rebirth once"),              f:()=>S.rebirths>=1},
+ {id:'h12', sp:'spiral',nm:{ko:'윤회',en:"Samsara"},         d:()=>X('환생 25회',"Rebirth 25 times"),             f:()=>S.rebirths>=25},
+ {id:'h13', sp:'eonring',nm:{ko:'영원한 순환',en:"Eternal Cycle"},  d:()=>X('환생 100회',"Rebirth 100 times"),            f:()=>S.rebirths>=100},
+ {id:'h14', sp:'reliquary',nm:{ko:'승천자',en:"Ascendant"},       d:()=>X('승천 1회',"Ascend once"),              f:()=>S.ascensions>=1},
+ {id:'h15', sp:'starcrown',nm:{ko:'초월자',en:"Transcendent"},       d:()=>X('승천 10회',"Ascend 10 times"),             f:()=>S.ascensions>=10},
+ {id:'h16', sp:'compass',nm:{ko:'탐험가',en:"Explorer"},       d:()=>X('던전 10층',"Dungeon floor 10"),             f:()=>S.deepest>=10},
+ {id:'h17', sp:'skull',nm:{ko:'보스 사냥꾼',en:"Boss Hunter"},  d:()=>X('던전 30층',"Dungeon floor 30"),             f:()=>S.deepest>=30},
+ {id:'h18', sp:'abysscrown',nm:{ko:'심연 정복자',en:"Abyss Conqueror"},  d:()=>X('던전 75층',"Dungeon floor 75"),             f:()=>S.deepest>=75},
+ {id:'h19', sp:'runebook',nm:{ko:'룬 수집가',en:"Rune Collector"},    d:()=>X('룬 합계 레벨 25',"25 total rune levels"),       f:()=>runeTotal()>=25},
+ {id:'h20', sp:'rune_forge',nm:{ko:'룬 대가',en:"Rune Master"},      d:()=>X('룬 합계 레벨 100',"100 total rune levels"),      f:()=>runeTotal()>=100},
+ {id:'h21', sp:'helm',nm:{ko:'무장',en:"Armed"},         d:()=>X('장비 합계 레벨 15',"15 total gear levels"),     f:()=>gearTotal()>=15},
+ {id:'h22', sp:'omniforge',nm:{ko:'전설의 장비',en:"Legendary Gear"},  d:()=>X('장비 합계 레벨 45',"45 total gear levels"),     f:()=>gearTotal()>=45},
+ {id:'h23', sp:'book',nm:{ko:'학자',en:"Scholar"},         d:()=>X('연구 10개 완료',"Complete 10 researches"),        f:()=>Object.keys(S.research).length>=10},
+ {id:'h24', sp:'library',nm:{ko:'전지',en:"Omniscient"},         d:()=>X('연구 20개 모두 완료',"Complete all 20 researches"),   f:()=>Object.keys(S.research).length>=20},
+ {id:'h25', sp:'offering',nm:{ko:'봉헌자',en:"Devotee"},       d:()=>X('오퍼링 1,000 획득',"Earn 1,000 offerings"),     f:()=>S.offerEver>=1e3},
+ {id:'h26', sp:'gem',nm:{ko:'보석상',en:"Jeweler"},       d:()=>X('결정 1,000 획득',"Earn 1,000 crystals"),       f:()=>S.crystalEver>=1e3},
+ {id:'h27', sp:'chain',nm:{ko:'도전자',en:"Challenger"},       d:()=>X('도전 1회 완료',"Clear 1 trial stage"),         f:()=>chalTotal()>=1},
+ {id:'h28', sp:'trialcrown',nm:{ko:'시련의 주인',en:"Master of Trials"},  d:()=>X('도전 15회 완료',"Clear 15 trial stages"),        f:()=>chalTotal()>=15},
+ {id:'h29', sp:'relicheart',nm:{ko:'유물 사냥꾼',en:"Relic Hunter"},  d:()=>X('유물 50개 획득',"Earn 50 relics"),        f:()=>S.relicEver>=50},
+ {id:'h30', sp:'throne',nm:{ko:'왕국의 지배자',en:"Ruler of the Kingdom"},d:()=>X('전체 배율 1e6 돌파',"Total multiplier past 1e6"),    f:()=>M().prod>=1e6},
 ];
 
 /* ══════════════ 상태 ══════════════ */
@@ -1403,18 +1403,18 @@ const FLOOR_MAX_STEPS=40;   // 한 틱에 처리할 수 있는 최대 층수
    층 번호를 오도미터로 읽을 뿐이라 기존 계산과 세이브를 건드리지 않는다.
    맨 윗 칸은 자릿수 제한이 없다 — 여기서 끝나지 않는다. */
 const COSMOS=[
- {k:'floor',   per:1,   ko:'층',        en:"Floor",       eg:''},
- {k:'planet',  per:100, ko:'행성',      en:"Planet",      eg:'지구'},
- {k:'system',  per:8,   ko:'항성계',    en:"Star System", eg:'태양계'},
- {k:'cluster', per:10,  ko:'성단',      en:"Star Cluster",eg:'플레이아데스'},
- {k:'galaxy',  per:10,  ko:'은하',      en:"Galaxy",      eg:'우리 은하'},
- {k:'group',   per:10,  ko:'은하군',    en:"Galaxy Group",eg:'국부은하군'},
- {k:'gcluster',per:10,  ko:'은하단',    en:"Galaxy Cluster",eg:'처녀자리 은하단'},
- {k:'super',   per:10,  ko:'초은하단',  en:"Supercluster",eg:'라니아케아'},
- {k:'filament',per:10,  ko:'우주 필라멘트',en:"Filament", eg:'슬론 장성'},
- {k:'web',     per:10,  ko:'우주 거대구조',en:"Cosmic Web",eg:'우주 그물'},
- {k:'observ',  per:10,  ko:'관측 가능한 우주',en:"Observable Universe",eg:''},
- {k:'multi',   per:10,  ko:'다중우주',  en:"Multiverse",  eg:''},
+ {k:'floor', sp:'tier_floor',   per:1,   ko:'층',        en:"Floor",       eg:''},
+ {k:'planet', sp:'tier_planet',  per:100, ko:'행성',      en:"Planet",      eg:'지구'},
+ {k:'system', sp:'tier_system',  per:8,   ko:'항성계',    en:"Star System", eg:'태양계'},
+ {k:'cluster', sp:'tier_cluster', per:10,  ko:'성단',      en:"Star Cluster",eg:'플레이아데스'},
+ {k:'galaxy', sp:'tier_galaxy',  per:10,  ko:'은하',      en:"Galaxy",      eg:'우리 은하'},
+ {k:'group', sp:'tier_group',   per:10,  ko:'은하군',    en:"Galaxy Group",eg:'국부은하군'},
+ {k:'gcluster', sp:'tier_gcluster',per:10,  ko:'은하단',    en:"Galaxy Cluster",eg:'처녀자리 은하단'},
+ {k:'super', sp:'tier_super',   per:10,  ko:'초은하단',  en:"Supercluster",eg:'라니아케아'},
+ {k:'filament', sp:'tier_filament',per:10,  ko:'우주 필라멘트',en:"Filament", eg:'슬론 장성'},
+ {k:'web', sp:'tier_web',     per:10,  ko:'우주 거대구조',en:"Cosmic Web",eg:'우주 그물'},
+ {k:'observ', sp:'tier_observ',  per:10,  ko:'관측 가능한 우주',en:"Observable Universe",eg:''},
+ {k:'multi', sp:'tier_multi',   per:10,  ko:'다중우주',  en:"Multiverse",  eg:''},
 ];
 /* 칸을 하나 넘길 때마다 전체 생산에 붙는 배율. 위로 갈수록 가파르다. */
 const COSMOS_SP=['sword','tower','offering','sparkle','spiral','star','crown16','gem','bolt','infinity','portal','soul'];
@@ -1797,36 +1797,36 @@ const transUnlocked=()=>S.ascensions>=5||S.starEver>0;
    업적 하나당 마나 생산 +2% 이므로 이 자체가 끝없는 사다리가 된다. */
 for(let e=25;e<=300;e+=3){
   const v=Math.pow(10,e);
-  ACHS.push({id:'mx'+e, nm:{ko:`마나 1e${e}`,en:`1e${e} mana`},
+  ACHS.push({id:'mx'+e, sp:'mana', nm:{ko:`마나 1e${e}`,en:`1e${e} mana`},
     d:()=>X(`누적 마나 1e${e}`,`1e${e} total mana`), f:()=>S.manaEver>=v});
 }
 for(let f=100;f<=3000;f+=50){
-  ACHS.push({id:'dx'+f, nm:{ko:`${f}층 도달`,en:`Floor ${f}`},
+  ACHS.push({id:'dx'+f, sp:'tier_floor', nm:{ko:`${f}층 도달`,en:`Floor ${f}`},
     d:()=>X(`던전 ${f}층`,`Dungeon floor ${f}`), f:()=>S.deepest>=f});
 }
 for(let n=50;n<=3000;n+=50){
-  ACHS.push({id:'rx'+n, nm:{ko:`환생 ${n}회`,en:`${n} rebirths`},
+  ACHS.push({id:'rx'+n, sp:'spiral', nm:{ko:`환생 ${n}회`,en:`${n} rebirths`},
     d:()=>X(`환생 ${n}회`,`Rebirth ${n} times`), f:()=>S.rebirths>=n});
 }
 for(let n=5;n<=500;n+=5){
-  ACHS.push({id:'ax'+n, nm:{ko:`승천 ${n}회`,en:`${n} ascensions`},
+  ACHS.push({id:'ax'+n, sp:'reliquary', nm:{ko:`승천 ${n}회`,en:`${n} ascensions`},
     d:()=>X(`승천 ${n}회`,`Ascend ${n} times`), f:()=>S.ascensions>=n});
 }
 /* 우주 계층과 무한 계층을 밟을 때마다 */
 for(let i=1;i<COSMOS.length;i++){
-  ACHS.push({id:'cx'+i, nm:{ko:`${COSMOS[i].ko}에 닿다`,en:`Reach the ${COSMOS[i].en}`},
+  ACHS.push({id:'cx'+i, sp:COSMOS[i].sp, nm:{ko:`${COSMOS[i].ko}에 닿다`,en:`Reach the ${COSMOS[i].en}`},
     d:()=>X(`탐사에서 ${COSMOS[i].ko} 계층 돌파`,`Break into the ${COSMOS[i].en}`),
     f:()=>chapterOf(Math.max(1,S.deepest||1))>=i});
 }
 for(let i=0;i<INF_LAYERS.length;i++){
   for(const n of [1,5,25,100]){
-    ACHS.push({id:'ix'+i+'_'+n, nm:{ko:`${INF_LAYERS[i].ko} ${n}회`,en:`${INF_LAYERS[i].en} ×${n}`},
+    ACHS.push({id:'ix'+i+'_'+n, sp:INF_LAYERS[i].sp, nm:{ko:`${INF_LAYERS[i].ko} ${n}회`,en:`${INF_LAYERS[i].en} ×${n}`},
       d:()=>X(`${INF_LAYERS[i].ko} 돌파 ${n}회`,`Break ${INF_LAYERS[i].en} ${n} times`),
       f:()=>(S[INF_LAYERS[i].k+'Count']||0)>=n});
   }
 }
 for(let n=1;n<=200;n+=1){
-  ACHS.push({id:'tx'+n, nm:{ko:`초월 ${n}회`,en:`${n} transcends`},
+  ACHS.push({id:'tx'+n, sp:'starcrown', nm:{ko:`초월 ${n}회`,en:`${n} transcends`},
     d:()=>X(`초월 ${n}회`,`Transcend ${n} times`), f:()=>S.transcends>=n});
 }
 
@@ -1877,29 +1877,29 @@ function autoEnterChallenge(){
    자동화는 기본값이 아니라 진행으로 얻는 보상이다.
    초반에는 채집·건설·연구·던전을 직접 해야 한다. */
 const AUTO_DEFS=[
- {k:'gather', nm:{ko:'마나 채집',en:"Mana Gathering"},     d:()=>X('채집 버튼을 대신 눌러 준다',"Presses the gather button for you"),                unlock:()=>S.manaEver>=1e3,                  req:()=>X('누적 마나 1,000',"1,000 total mana")},
- {k:'build',  nm:{ko:'시설 건설',en:"Construction"},     d:()=>X('여유 마나로 가장 비싼 시설부터 사들인다',"Buys the priciest affordable building"),   unlock:()=>S.manaEver>=2e4,                  req:()=>X('누적 마나 2만',"20,000 total mana")},
- {k:'dungeon',nm:{ko:'던전 연속 탐험',en:"Continuous Delving"},d:()=>X('층을 깬 뒤 멈추지 않고 계속 내려간다',"Keeps descending after each floor"),       unlock:()=>S.deepest>=20,                    req:()=>X('던전 20층 돌파',"Reach dungeon floor 20")},
- {k:'research',nm:{ko:'연구 구매',en:"Research Buying"},    d:()=>X('조건을 만족한 연구를 순서대로 사들인다',"Buys available researches in order"),     unlock:()=>(S.rebirthEver||S.rebirths)>=5||(S.ascendEver||S.ascensions)>0,    req:()=>X('환생 5회',"5 rebirths")},
- {k:'rune',   nm:{ko:'룬 강화',en:"Rune Upgrading"},       d:()=>X('오퍼링으로 가장 싼 룬부터 새긴다',"Engraves the cheapest rune first"),           unlock:()=>(S.ascendEver||S.ascensions)>=1,                  req:()=>X('승천 1회',"1 ascension")},
- {k:'gear',   nm:{ko:'장비 제작',en:"Gear Crafting"},     d:()=>X('결정으로 가장 싼 장비부터 벼린다',"Forges the cheapest gear first"),           unlock:()=>(S.ascendEver||S.ascensions)>=1,                  req:()=>X('승천 1회',"1 ascension")},
- {k:'soulup', nm:{ko:'영혼 강화 구매',en:"Soul Upgrade Buying"},d:()=>X('영혼석으로 가장 싼 강화를 사들인다',"Buys the cheapest soul upgrade"),         unlock:()=>(S.rebirthEver||S.rebirths)>=10||(S.ascendEver||S.ascensions)>0,   req:()=>X('환생 10회',"10 rebirths")},
- {k:'inf',    nm:{ko:'자동 무한 돌파',en:"Auto Infinity"}, d:()=>X('수가 넘칠 지경이 되면 알아서 한 칸 올라간다',"Breaks a rung as soon as a number is ready to overflow"), unlock:()=>(S.infEver||0)>0, req:()=>X('무한 돌파 1회',"1 infinity break")},
- {k:'starup', nm:{ko:'별 강화 구매',en:"Star Upgrade Buying"}, d:()=>X('별가루로 가장 싼 강화를 사들인다',"Buys the cheapest star upgrade"), unlock:()=>(S.transEver||S.transcends)>=1||S.starEver>0, req:()=>X('초월 1회',"1 transcendence")},
- {k:'upinf',  nm:{ko:'무한 강화 구매',en:"Infinity Upgrade Buying"}, d:()=>X('무한으로 가장 싼 강화를 사들인다',"Buys the cheapest infinity upgrade"), unlock:()=>(S.infEver||0)>0, req:()=>X('무한 돌파 1회',"1 infinity break")},
- {k:'upeter', nm:{ko:'영원 강화 구매',en:"Eternity Upgrade Buying"}, d:()=>X('영원으로 가장 싼 강화를 사들인다',"Buys the cheapest eternity upgrade"), unlock:()=>(S.eterEver||0)>0, req:()=>X('영원 돌파 1회',"1 eternity break")},
- {k:'upreal', nm:{ko:'현실 강화 구매',en:"Reality Upgrade Buying"}, d:()=>X('현실로 가장 싼 강화를 사들인다',"Buys the cheapest reality upgrade"), unlock:()=>(S.realEver||0)>0, req:()=>X('현실 돌파 1회',"1 reality break")},
- {k:'upvoid', nm:{ko:'공허 강화 구매',en:"Void Upgrade Buying"}, d:()=>X('공허로 가장 싼 강화를 사들인다',"Buys the cheapest void upgrade"), unlock:()=>(S.voidEver||0)>0, req:()=>X('공허 돌파 1회',"1 void break")},
- {k:'uporigin',nm:{ko:'근원 강화 구매',en:"Origin Upgrade Buying"}, d:()=>X('근원으로 가장 싼 강화를 사들인다',"Buys the cheapest origin upgrade"), unlock:()=>(S.originEver||0)>0, req:()=>X('근원 돌파 1회',"1 origin break")},
- {k:'brketer',  nm:{ko:'자동 영원 돌파',en:"Auto Eternity"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.eterCount||0)>=1, req:()=>X('영원 돌파 1회',"1 eternity break")},
- {k:'brkreal',  nm:{ko:'자동 현실 돌파',en:"Auto Reality"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.realCount||0)>=1, req:()=>X('현실 돌파 1회',"1 reality break")},
- {k:'brkvoid',  nm:{ko:'자동 공허 돌파',en:"Auto Void"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.voidCount||0)>=1, req:()=>X('공허 돌파 1회',"1 void break")},
- {k:'brkorigin',nm:{ko:'자동 근원 돌파',en:"Auto Origin"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.originCount||0)>=1, req:()=>X('근원 돌파 1회',"1 origin break")},
- {k:'trans',  nm:{ko:'자동 초월',en:"Auto Transcend"}, d:()=>X('직전 주기보다 1.5배 이상 벌릴 때 초월한다',"Transcends when the cycle beats the last by 1.5x"), unlock:()=>(S.transEver||S.transcends)>=1||S.starEver>0, req:()=>X('초월 1회',"1 transcendence")},
- {k:'rebirth',nm:{ko:'자동 환생',en:"Auto Rebirth"},     d:()=>X('직전 회차보다 1.5배 이상 벌릴 때 환생한다',"Rebirths when the run beats the last by 1.5x"),  unlock:()=>(S.rebirthEver||S.rebirths)>=20||(S.ascendEver||S.ascensions)>0,   req:()=>X('환생 20회',"20 rebirths")},
- {k:'relicup',nm:{ko:'유물 강화 구매',en:"Relic Upgrade Buying"},d:()=>X('유물로 가장 싼 강화를 사들인다',"Buys the cheapest relic upgrade"),             unlock:()=>(S.ascendEver||S.ascensions)>=2,                  req:()=>X('승천 2회',"2 ascensions")},
- {k:'ascend', nm:{ko:'자동 승천',en:"Auto Ascension"},     d:()=>X('유물이 충분히 쌓이면 승천한다',"Ascends once relics pile up"),              unlock:()=>(S.ascendEver||S.ascensions)>=3,                  req:()=>X('승천 3회',"3 ascensions")},
- {k:'chal',   nm:{ko:'자동 시련',en:"Auto Trials"},     d:()=>X('환생할 때마다 감당 가능한 시련에 들어간다',"Enters a reachable trial on each rebirth"),  unlock:()=>chalTotal()>=3,                   req:()=>X('시련 3단계 완료',"Clear 3 trial stages")},
+ {k:'gather', sp:'mana', g:{ko:"한 회차 안",en:"Within a run"}, nm:{ko:'마나 채집',en:"Mana Gathering"},     d:()=>X('채집 버튼을 대신 눌러 준다',"Presses the gather button for you"),                unlock:()=>S.manaEver>=1e3,                  req:()=>X('누적 마나 1,000',"1,000 total mana")},
+ {k:'build', sp:'workshop',  nm:{ko:'시설 건설',en:"Construction"},     d:()=>X('여유 마나로 가장 비싼 시설부터 사들인다',"Buys the priciest affordable building"),   unlock:()=>S.manaEver>=2e4,                  req:()=>X('누적 마나 2만',"20,000 total mana")},
+ {k:'research', sp:'flask',nm:{ko:'연구 구매',en:"Research Buying"},    d:()=>X('조건을 만족한 연구를 순서대로 사들인다',"Buys available researches in order"),     unlock:()=>(S.rebirthEver||S.rebirths)>=5||(S.ascendEver||S.ascensions)>0,    req:()=>X('환생 5회',"5 rebirths")},
+ {k:'dungeon', sp:'sword',nm:{ko:'던전 연속 탐험',en:"Continuous Delving"},d:()=>X('층을 깬 뒤 멈추지 않고 계속 내려간다',"Keeps descending after each floor"),       unlock:()=>S.deepest>=20,                    req:()=>X('던전 20층 돌파',"Reach dungeon floor 20")},
+ {k:'rebirth', sp:'spiral', g:{ko:"환생",en:"Rebirth"},nm:{ko:'자동 환생',en:"Auto Rebirth"},     d:()=>X('직전 회차보다 1.5배 이상 벌릴 때 환생한다',"Rebirths when the run beats the last by 1.5x"),  unlock:()=>(S.rebirthEver||S.rebirths)>=20||(S.ascendEver||S.ascensions)>0,   req:()=>X('환생 20회',"20 rebirths")},
+ {k:'soulup', sp:'soul', nm:{ko:'영혼 강화 구매',en:"Soul Upgrade Buying"},d:()=>X('영혼석으로 가장 싼 강화를 사들인다',"Buys the cheapest soul upgrade"),         unlock:()=>(S.rebirthEver||S.rebirths)>=10||(S.ascendEver||S.ascensions)>0,   req:()=>X('환생 10회',"10 rebirths")},
+ {k:'chal', sp:'chain',   nm:{ko:'자동 시련',en:"Auto Trials"},     d:()=>X('환생할 때마다 감당 가능한 시련에 들어간다',"Enters a reachable trial on each rebirth"),  unlock:()=>chalTotal()>=3,                   req:()=>X('시련 3단계 완료',"Clear 3 trial stages")},
+ {k:'ascend', sp:'reliquary', g:{ko:"승천",en:"Ascension"}, nm:{ko:'자동 승천',en:"Auto Ascension"},     d:()=>X('유물이 충분히 쌓이면 승천한다',"Ascends once relics pile up"),              unlock:()=>(S.ascendEver||S.ascensions)>=3,                  req:()=>X('승천 3회',"3 ascensions")},
+ {k:'relicup', sp:'relic',nm:{ko:'유물 강화 구매',en:"Relic Upgrade Buying"},d:()=>X('유물로 가장 싼 강화를 사들인다',"Buys the cheapest relic upgrade"),             unlock:()=>(S.ascendEver||S.ascensions)>=2,                  req:()=>X('승천 2회',"2 ascensions")},
+ {k:'rune', sp:'runering',   nm:{ko:'룬 강화',en:"Rune Upgrading"},       d:()=>X('오퍼링으로 가장 싼 룬부터 새긴다',"Engraves the cheapest rune first"),           unlock:()=>(S.ascendEver||S.ascensions)>=1,                  req:()=>X('승천 1회',"1 ascension")},
+ {k:'gear', sp:'anvil',   nm:{ko:'장비 제작',en:"Gear Crafting"},     d:()=>X('결정으로 가장 싼 장비부터 벼린다',"Forges the cheapest gear first"),           unlock:()=>(S.ascendEver||S.ascensions)>=1,                  req:()=>X('승천 1회',"1 ascension")},
+ {k:'trans', sp:'starcrown', g:{ko:"초월",en:"Transcendence"},  nm:{ko:'자동 초월',en:"Auto Transcend"}, d:()=>X('직전 주기보다 1.5배 이상 벌릴 때 초월한다',"Transcends when the cycle beats the last by 1.5x"), unlock:()=>(S.transEver||S.transcends)>=1||S.starEver>0, req:()=>X('초월 1회',"1 transcendence")},
+ {k:'starup', sp:'starsigil', nm:{ko:'별 강화 구매',en:"Star Upgrade Buying"}, d:()=>X('별가루로 가장 싼 강화를 사들인다',"Buys the cheapest star upgrade"), unlock:()=>(S.transEver||S.transcends)>=1||S.starEver>0, req:()=>X('초월 1회',"1 transcendence")},
+ {k:'inf', sp:'infinity', g:{ko:"무한 너머",en:"Beyond Infinity"},    nm:{ko:'자동 무한 돌파',en:"Auto Infinity"}, d:()=>X('수가 넘칠 지경이 되면 알아서 한 칸 올라간다',"Breaks a rung as soon as a number is ready to overflow"), unlock:()=>(S.infEver||0)>0, req:()=>X('무한 돌파 1회',"1 infinity break")},
+ {k:'upinf', sp:'inf_core',  nm:{ko:'무한 강화 구매',en:"Infinity Upgrade Buying"}, d:()=>X('무한으로 가장 싼 강화를 사들인다',"Buys the cheapest infinity upgrade"), unlock:()=>(S.infEver||0)>0, req:()=>X('무한 돌파 1회',"1 infinity break")},
+ {k:'brketer', sp:'etercrown',  nm:{ko:'자동 영원 돌파',en:"Auto Eternity"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.eterCount||0)>=1, req:()=>X('영원 돌파 1회',"1 eternity break")},
+ {k:'upeter', sp:'etersigil', nm:{ko:'영원 강화 구매',en:"Eternity Upgrade Buying"}, d:()=>X('영원으로 가장 싼 강화를 사들인다',"Buys the cheapest eternity upgrade"), unlock:()=>(S.eterEver||0)>0, req:()=>X('영원 돌파 1회',"1 eternity break")},
+ {k:'brkreal', sp:'real_gate',  nm:{ko:'자동 현실 돌파',en:"Auto Reality"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.realCount||0)>=1, req:()=>X('현실 돌파 1회',"1 reality break")},
+ {k:'upreal', sp:'real_shard', nm:{ko:'현실 강화 구매',en:"Reality Upgrade Buying"}, d:()=>X('현실로 가장 싼 강화를 사들인다',"Buys the cheapest reality upgrade"), unlock:()=>(S.realEver||0)>0, req:()=>X('현실 돌파 1회',"1 reality break")},
+ {k:'brkvoid', sp:'void_gate',  nm:{ko:'자동 공허 돌파',en:"Auto Void"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.voidCount||0)>=1, req:()=>X('공허 돌파 1회',"1 void break")},
+ {k:'upvoid', sp:'void_star', nm:{ko:'공허 강화 구매',en:"Void Upgrade Buying"}, d:()=>X('공허로 가장 싼 강화를 사들인다',"Buys the cheapest void upgrade"), unlock:()=>(S.voidEver||0)>0, req:()=>X('공허 돌파 1회',"1 void break")},
+ {k:'brkorigin', sp:'orig_crown',nm:{ko:'자동 근원 돌파',en:"Auto Origin"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.originCount||0)>=1, req:()=>X('근원 돌파 1회',"1 origin break")},
+ {k:'uporigin', sp:'orig_seed',nm:{ko:'근원 강화 구매',en:"Origin Upgrade Buying"}, d:()=>X('근원으로 가장 싼 강화를 사들인다',"Buys the cheapest origin upgrade"), unlock:()=>(S.originEver||0)>0, req:()=>X('근원 돌파 1회',"1 origin break")},
 ];
 const AUTO_DEF=k=>AUTO_DEFS.find(a=>a.k===k);
 /* 승천·초월로 최심층이 초기화되면 자동 탐험이 다시 잠기던 문제.
@@ -2148,7 +2148,7 @@ const TABS=[
  {id:'tower',   sp:'tower',    nm:{ko:'마탑',en:"Mage Tower"},      open:()=>true},
  {id:'research',sp:'flask',    nm:{ko:'연구',en:"Research"},      open:()=>S.manaEver>=100},
  {id:'dungeon', sp:'sword',    nm:{ko:'던전',en:"Dungeon"},      open:()=>S.manaEver>=5e3},
- {id:'relics',  sp:'rune_wealth',nm:{ko:'룬 · 장비',en:"Runes & Gear"},open:()=>S.offerEver>0||S.crystalEver>0},
+ {id:'relics',  sp:'rune_wealth',nm:{ko:'룬 석판',en:"Rune Tablets"},open:()=>S.offerEver>0},
  {id:'rebirth', sp:'soul',     nm:{ko:'환생',en:"Rebirth"},      open:()=>S.manaEver>=REBIRTH_REQ/20||S.rebirths>0||S.soulEver>0},
  {id:'ascend',  sp:'relic',    nm:{ko:'승천',en:"Ascension"},      open:()=>S.soulEver>=ASCEND_REQ/10||S.ascensions>0||S.relicEver>0},
  {id:'trans',   sp:'star',     nm:{ko:'초월',en:"Transcend"},   open:()=>transUnlocked()},
@@ -2237,10 +2237,13 @@ function levelGrid(defs,lvOf,curOf,pay,curSp){
 function toggleRow(def){
   const r=el('div','row');
   r.style.cssText='justify-content:space-between;padding:7px 2px;gap:12px';
-  const left=el('div'); left.style.minWidth='0';
+  const left=el('div'); left.style.cssText='min-width:0;display:flex;align-items:center;gap:9px';
+  const icb=el('div'); icb.style.cssText='flex:0 0 auto;line-height:0';
+  icb.appendChild(ic(def.sp||'cog',24));            // 줄마다 제 그림이 있어야 눈으로 갈린다
+  const txt=el('div'); txt.style.minWidth='0';
   const nm=el('div'); nm.style.cssText='font-family:var(--serif);font-size:14px';
   const ds=el('div','hint'); ds.style.margin='0';
-  left.append(nm,ds);
+  txt.append(nm,ds); left.append(icb,txt);
   const b=btn('sm','',()=>{ S.auto[def.k]=S.auto[def.k]?0:1; });   // 잠김과 무관하게 토글
   r.append(left,b);
   updaters.push(()=>{
@@ -2410,6 +2413,41 @@ function buildDungeon(p){
     auto.className='btn sm '+(!ud?'off':(S.auto.dungeon?'on':'off'));
     auto.textContent=!ud?X('연속 탐험 잠김 (20층 돌파)','Auto-delve locked (floor 20)'):(S.auto.dungeon?X('연속 탐험 ON','Auto-delve ON'):X('연속 탐험 OFF','Auto-delve OFF'));
   });
+  buildGear(p);            // 결정을 캐는 곳에서 바로 벼린다
+}
+
+/* 장비는 던전에서 캐낸 결정으로 벼린다 — 재료가 나오는 곳에 두는 편이 찾기 쉽다 */
+function buildGear(p){
+  const c2=card([X('장비',"Gear"),'staff'],X('던전에서 캐낸 <b class="crystal">결정</b>으로 벼려낸다. 승천해도 사라지지 않는 영구 강화.',"Forged from <b class='crystal'>crystals</b> mined in the dungeon. Kept forever, even through ascension."));
+  const info2=el('div','row'); info2.style.marginBottom='9px'; c2.appendChild(info2);
+  const g2=el('div','grid wide');
+  GEAR.forEach(gr=>{
+    const b=document.createElement('button'); b.type='button'; b.className='up';
+    b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
+    b.querySelector('.ic').appendChild(ic(gr.sp,32));
+    b.addEventListener('click',e=>{
+      e.preventDefault();
+      const l=S.gear[gr.id]||0;
+      const n=buyAmtFor(gearCost,l,S.crystal,1.6);
+      if(n<=0) return;
+      S.crystal-=bulkCost(gearCost,l,n,1.6); S.gear[gr.id]=l+n; recalc(); refresh();
+    });
+    g2.appendChild(b);
+    updaters.push(()=>{
+      const l=S.gear[gr.id]||0, pw=M().gearPow;
+      const n=Math.max(1,buyAmtFor(gearCost,l,S.crystal,1.6));
+      const cost=bulkCost(gearCost,l,n,1.6);
+      b.querySelector('.t').innerHTML=`${NM(gr.nm)} <span class="lv">Lv.${fmt(l)}</span>`;
+      b.querySelector('.d').textContent=gr.d(l,pw);
+      b.querySelector('.c').innerHTML=`${icHTML('crystal')} ${fmt(cost)}${n>1?` <span class="dim">×${n}</span>`:''}`;
+      b.classList.toggle('afford',S.crystal>=cost);
+    });
+  });
+  c2.appendChild(g2); p.appendChild(c2);
+  updaters.push(()=>{info2.innerHTML=`<span class="tag">${icHTML('crystal')} ${X('보유','Held')} <b>${fmt(S.crystal)}</b></span>
+    <span class="tag">${X('합계 레벨',"Total level")} <b>${gearTotal()}</b></span>
+    <span class="tag">${X('효과 지수',"Effect exponent")} <b>×${fmt(M().gearPow)}</b></span>`});
+
 }
 
 function buildRelics(p){
@@ -2446,35 +2484,6 @@ function buildRelics(p){
     <span class="tag">${X('합계 레벨',"Total level")} <b>${runeTotal()}</b></span>
     <span class="tag">${X('최대 레벨',"Level cap")} <b>${Math.floor(M().runeCap)}</b></span>`});
 
-  const c2=card([X('장비',"Gear"),'staff'],X('던전에서 캐낸 <b class="crystal">결정</b>으로 벼려낸다. 승천해도 사라지지 않는 영구 강화.',"Forged from <b class='crystal'>crystals</b> mined in the dungeon. Kept forever, even through ascension."));
-  const info2=el('div','row'); info2.style.marginBottom='9px'; c2.appendChild(info2);
-  const g2=el('div','grid wide');
-  GEAR.forEach(gr=>{
-    const b=document.createElement('button'); b.type='button'; b.className='up';
-    b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
-    b.querySelector('.ic').appendChild(ic(gr.sp,32));
-    b.addEventListener('click',e=>{
-      e.preventDefault();
-      const l=S.gear[gr.id]||0;
-      const n=buyAmtFor(gearCost,l,S.crystal,1.6);
-      if(n<=0) return;
-      S.crystal-=bulkCost(gearCost,l,n,1.6); S.gear[gr.id]=l+n; recalc(); refresh();
-    });
-    g2.appendChild(b);
-    updaters.push(()=>{
-      const l=S.gear[gr.id]||0, pw=M().gearPow;
-      const n=Math.max(1,buyAmtFor(gearCost,l,S.crystal,1.6));
-      const cost=bulkCost(gearCost,l,n,1.6);
-      b.querySelector('.t').innerHTML=`${NM(gr.nm)} <span class="lv">Lv.${fmt(l)}</span>`;
-      b.querySelector('.d').textContent=gr.d(l,pw);
-      b.querySelector('.c').innerHTML=`${icHTML('crystal')} ${fmt(cost)}${n>1?` <span class="dim">×${n}</span>`:''}`;
-      b.classList.toggle('afford',S.crystal>=cost);
-    });
-  });
-  c2.appendChild(g2); p.appendChild(c2);
-  updaters.push(()=>{info2.innerHTML=`<span class="tag">${icHTML('crystal')} ${X('보유','Held')} <b>${fmt(S.crystal)}</b></span>
-    <span class="tag">${X('합계 레벨',"Total level")} <b>${gearTotal()}</b></span>
-    <span class="tag">${X('효과 지수',"Effect exponent")} <b>×${fmt(M().gearPow)}</b></span>`});
 }
 
 function buildRebirth(p){
@@ -2658,7 +2667,9 @@ function buildAch(p){
       if(!got) shown+=reveal?1:0;
       r.d.classList.toggle('got',got);
       r.icb.innerHTML='';
-      r.icb.appendChild(ic(reveal?(r.i<10?'medal_b':r.i<20?'medal_s':'medal'):'unknown',32));
+      /* 업적마다 제 그림이 있다. 메달 세 장을 572개가 나눠 쓰던 때는
+         무엇을 딴 것인지 이름을 읽어야만 알 수 있었다. */
+      r.icb.appendChild(ic(reveal?(r.a.sp||'medal'):'unknown',32));
       r.t.innerHTML = reveal
         ? `<div class="t">${NM(r.a.nm)}</div><div class="d">${DS(r.a)}</div>`
         : `<div class="t">???</div><div class="d">${X('아직 알 수 없다',"Unknown")}</div>`;
@@ -2681,9 +2692,15 @@ function buildAuto(p){
       ? X('<b class="gold">전부 열렸다</b> · 이제부터는 손댈 것이 없다',"<b class='gold'>All unlocked</b> · nothing left to do by hand")
       : X(`해금 <b>${n}</b> / ${AUTO_DEFS.length}`,`<b>${n}</b> / ${AUTO_DEFS.length} unlocked`);
   });
+  /* 진행 순서대로 묶어서 보여 준다 — 스물세 줄이 한 덩어리로 있으면 뭐가 뭔지 모른다 */
   AUTO_DEFS.forEach((def,i)=>{
+    if(def.g){
+      const h=el('div','hint');
+      h.style.cssText='margin:12px 0 2px;font-family:var(--serif);font-size:12px;letter-spacing:.06em;color:var(--gold);opacity:.85';
+      h.textContent=NM(def.g).toUpperCase();
+      c.appendChild(h);
+    } else if(i>0) c.appendChild(el('div','divider'));
     c.appendChild(toggleRow(def));
-    if(i<AUTO_DEFS.length-1) c.appendChild(el('div','divider'));
   });
   p.appendChild(c);
   const s=card([X('자동화 상태',"Automation Status"),'fastfwd']);

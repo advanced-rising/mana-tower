@@ -17763,6 +17763,258 @@
     ".CnnCllCClCnnC",
     ".CnnCCCnnCCnnC"
    ]
+  },
+  "tier_floor": {
+   "size": 16,
+   "rows": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "..MMMMMMMMMMMM",
+    ".MKKKKMKKKMKKJM",
+    ".MKJJJMJJJMJJIM",
+    ".00000M000M0000",
+    "0JJJMJJJMJJJMJI0",
+    "0JJIMIIIMIIIMIM0",
+    "0JIIMIIIMIIIMMM0",
+    "0IMMMMMMMMMMMMM0",
+    ".00000000000000",
+    "",
+    ""
+   ]
+  },
+  "tier_planet": {
+   "size": 16,
+   "rows": [
+    "",
+    ".......DD",
+    ".....DDttDD..e",
+    "....DtttttsDefe",
+    "...DtttttttsDe",
+    "..DttttttttsrD",
+    "..DtttttttssqD",
+    ".DttttttttsrqDD",
+    ".DsttttttsrrqDD",
+    "..DttqqqsrrqpD",
+    "..DsqqqqqrqpDD",
+    "...DrqqqqqpDD",
+    "....DqqppDDD",
+    ".....DDDDDD",
+    ".......DD",
+    ""
+   ]
+  },
+  "tier_system": {
+   "size": 16,
+   "rows": [
+    "",
+    "",
+    "",
+    "......0000",
+    "...000AAAA000",
+    "..066AfffeA6DD",
+    ".060AffffecDrpD",
+    "060.AffffeDrtrpD",
+    "070.AfffedDprppD",
+    ".060AdeddbaDppD",
+    "..046AbbbaA6DD",
+    "...000AAAA000",
+    "......0000",
+    "",
+    "",
+    ""
+   ]
+  },
+  "tier_cluster": {
+   "size": 16,
+   "rows": [
+    "",
+    "........b",
+    "...aa..beb",
+    "..acca..b.aa",
+    "..acfa...acca",
+    "...aa....acfa",
+    "..........aa",
+    "......aa......b",
+    ".....acca....beb",
+    ".....acfa.....b",
+    "...b..aa...aa",
+    "..beb.....acca",
+    "...b......acfa",
+    ".........b.aa",
+    "........beb",
+    ".........b"
+   ]
+  },
+  "tier_galaxy": {
+   "size": 16,
+   "rows": [
+    "",
+    "",
+    "",
+    "",
+    "........wwv",
+    "......wwwwwvvu",
+    ".....wwff..wvvu",
+    "uu...wfffe...vuu",
+    "uuv...ffecw...uu",
+    ".uvvw..cbww",
+    "..uvvwwwww",
+    ".....vww",
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  "tier_group": {
+   "size": 16,
+   "rows": [
+    "",
+    "....E",
+    "..EEvEE",
+    ".EvwwwvE..EEE",
+    ".EvwfwvE.EvwvE",
+    ".EvwwwvEEvwwwvE",
+    "..EEvEEuEvwwfvE",
+    "....E...uEvwvE",
+    ".......E..EEE",
+    ".....EEwEE",
+    "....EvwxwvE",
+    "...EvwxxxwvE",
+    "....EvwxfvE",
+    ".....EEwEE",
+    ".......E",
+    ""
+   ]
+  },
+  "tier_gcluster": {
+   "size": 16,
+   "rows": [
+    ".......EE",
+    "......EuuE",
+    ".....EvvvvE",
+    "...EEEvvfvEEE",
+    "..EvvvwwwwvvvE",
+    ".EuvvwwwwwwvvuE",
+    ".EvvfwwxxwwwfvE",
+    "..EvwwxxfxwwvE",
+    "...EwwxxffwwE",
+    "..EvwwwxxwwwvE",
+    ".EuvvwwwwwwvvuE",
+    ".EuvvfwwwwvfvuE",
+    "..EuvvvvvvvvuE",
+    "...EEEvvfvEEE",
+    "......EuuE",
+    ".......EE"
+   ]
+  },
+  "tier_super": {
+   "size": 16,
+   "rows": [
+    "",
+    "........u",
+    "........e",
+    "...e....v....e",
+    "....v..AA...u",
+    ".....vAffA.v",
+    ".....AfffeA",
+    "....AffffebA",
+    ".uevAeffecaAvueu",
+    ".....AddcbA",
+    "......AaaAv",
+    ".....v.AA..v",
+    "....u...v...u",
+    "...e....u....e",
+    "........e",
+    "........u"
+   ]
+  },
+  "tier_filament": {
+   "size": 16,
+   "rows": [
+    "..............E",
+    "............EExE",
+    "...........Exxfv",
+    "..........ExwvvE",
+    ".........ExwvEE",
+    "........ExwfE",
+    ".......ExxvE",
+    ".......ExvvE",
+    "......ExwvE",
+    "....EExwvE",
+    ".EEExxwfE",
+    "ExxxxvvE",
+    "xxvfvvE",
+    "EvvEEE",
+    ".EE",
+    ""
+   ]
+  },
+  "tier_web": {
+   "size": 16,
+   "rows": [
+    "..EE.......EE",
+    ".EuuE.....EuuE",
+    "EuwwuE...EuwwuE",
+    "EuwfuEuuuEuwfuE",
+    ".EuuE.....EuuE",
+    "..EE.u.EE.uEE",
+    "......EuuEu",
+    ".....EuwwuE",
+    ".....EuwfuE.EE",
+    "..EE..EuuEvEuuE",
+    ".EuuEuuEE.EuwwuE",
+    "EuwwuE...uEuwfuE",
+    "EuwfuEuuu..EuuE",
+    ".EuuE.......EE",
+    "..EE",
+    ""
+   ]
+  },
+  "tier_observ": {
+   "size": 16,
+   "rows": [
+    "",
+    ".....cccccc",
+    "...cc......cc",
+    "..cc.uuuuEE.cc",
+    "..c.uuuuuuEE.c",
+    ".c.uuuuuuuEEE.c",
+    ".c.uuufffuEEE.c",
+    ".c.uuufffcfEE.c",
+    ".c.uuuefdaEEE.c",
+    ".c.EufubaEEEE.c",
+    ".c.EEEEfEEEEE.c",
+    "..c.EEEEEEEf.c",
+    "..cc.EEEEEE.cc",
+    "...cc......cc",
+    ".....cccccc",
+    ""
+   ]
+  },
+  "tier_multi": {
+   "size": 16,
+   "rows": [
+    "",
+    "...EEEE",
+    "..EwwwwEDDDDD",
+    ".EwuuuEDrrrrrD",
+    "EwuuuuuDrEppDrD",
+    "EwuuuuDrwEppDrD",
+    "EwuuufDAAEpfDDrD",
+    "EwEuuAAccAADDrD",
+    ".EwEAccDrccADrD",
+    "..EAccwwDrccAD",
+    "...AcEEEaDDcA",
+    "...AcaaafAAcA",
+    "...AcaaaAAAcA",
+    "....AcAAAAcA",
+    "....AccccccA",
+    ".....AAAAAA"
+   ]
   }
  }
 }
