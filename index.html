@@ -290,16 +290,11 @@ main{min-width:0}
 @keyframes pop{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
 
 /* ── 스크롤바 ─────────────────────── */
-*{scrollbar-width:thin;scrollbar-color:#4a4740 #0c0c0e}
-::-webkit-scrollbar{width:11px;height:11px}
-::-webkit-scrollbar-track{background:#0c0c0e;border-left:1px solid #26241f}
-::-webkit-scrollbar-thumb{
-  border-radius:2px;border:2px solid #0c0c0e;
-  background:linear-gradient(180deg,#5c5748,#37342d);
-  box-shadow:inset 0 1px 0 rgba(212,169,74,.25)}
-::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#6e6a58,#46433a)}
-::-webkit-scrollbar-corner{background:#0c0c0e}
-.log::-webkit-scrollbar{width:9px}
+/* 스크롤바 막대를 아예 없앤다. 내용이 길어질 때만 나타났다 사라지느라
+   그때마다 페이지 폭이 11px 씩 흔들렸다. 스크롤 자체는 그대로 된다. */
+*{scrollbar-width:none;-ms-overflow-style:none}
+::-webkit-scrollbar{width:0;height:0;display:none}
+::-webkit-scrollbar-thumb,::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}
 ::selection{background:rgba(212,169,74,.28);color:#fff}
 
 @media(max-width:900px){
@@ -452,13 +447,8 @@ body{
 /* 자동화 스위치 */
 .sw{vertical-align:-2px;margin-right:5px}
 
-/* 스크롤바 */
-*{scrollbar-width:thin;scrollbar-color:#403d34 #0c0c0e}
-::-webkit-scrollbar{width:12px;height:12px}
-::-webkit-scrollbar-track{background:url('art/ui/scroll_track.png') repeat;border:0}
-::-webkit-scrollbar-thumb,::-webkit-scrollbar-thumb:hover{
-  background:url('art/ui/scroll_thumb.png') repeat;border:0;border-radius:0;box-shadow:none}
-::-webkit-scrollbar-corner{background:#0c0c0e}
+/* 스크롤바는 위에서 감췄다 — 도트 막대를 그려 두었더니 나타났다 사라질 때마다
+   페이지 폭이 12px 씩 움직여 레이아웃 전체가 출렁였다. */
 
 /* 도트 아이콘과 숫자는 한 줄로 — 사이에서 줄이 갈라지면 값이 두 줄로 찢어진다 */
 .btn .c,.up .c,.unit .dt,.unit .own,.res .val,.res .sub,.tag,.ach .d,.chal .goal,
@@ -1143,6 +1133,7 @@ function newState(){return{
   manaL:-Infinity, manaRunL:-Infinity, manaEverL:-Infinity,   // 진실의 원천 (log10, 0 은 -Infinity)
   offering:0, offerEver:0, crystal:0, crystalEver:0,
   bought:PRODUCERS.map(()=>0), gen:PRODUCERS.map(()=>0),
+  genL:PRODUCERS.map(()=>-Infinity),   // 상위 시설이 만들어 낸 수 · 자릿수(log10)가 진실. 0 은 -Infinity
   research:{}, runes:{}, gear:{},
   soul:0, soulAsc:0, soulEver:0, soulUps:{},
   relic:0, relicEver:0, relicUps:{}, relicTrans:0,
@@ -1158,7 +1149,7 @@ function newState(){return{
   deepest:0, floor:1, prog:0, exploring:false,
   chal:null, chalDone:{}, chalTime:0, chalCd:0, bestRun:0, floorCd:0, autoUnlocked:{},
   achs:{},
-  auto:{gather:1,build:1,research:1,rune:1,gear:1,dungeon:1,soulup:1,rebirth:1,relicup:1,ascend:1,trans:1,inf:1,chal:1},
+  auto:{gather:1,build:1,research:1,rune:1,gear:1,dungeon:1,soulup:1,rebirth:1,relicup:1,starup:1,upinf:1,upeter:1,upreal:1,upvoid:1,uporigin:1,brketer:1,brkreal:1,brkvoid:1,brkorigin:1,ascend:1,trans:1,inf:1,chal:1},
   timers:{build:0,research:0,rune:0,gear:0,gather:0},
   buyAmt:'max',
   started:Date.now(), lastTick:Date.now(), playtime:0, clicks:0,
@@ -1166,23 +1157,40 @@ function newState(){return{
 let S=newState(), LOG=[], MC=null;
 
 /* ══════════════ 유틸 ══════════════ */
-/* 자릿수(밑 10 로그)를 글자로.
-   e 는 마지막이 아니다. 지수가 커지면 로그를 한 번 더 취하고 e 를 하나 더 붙인다.
-     e538          = 10^538
-     ee18.85       = 10^(10^18.85)
-     eee9.4        = 10^(10^(10^9.4))
-   층이 다섯을 넘으면 e 를 늘어놓는 대신 (e^12)3.4 처럼 접는다. 끝은 없다. */
-const LAYER_MAX=1e4;          // 지수가 이만큼 커지면 로그를 한 번 더 취하고 e 를 하나 더 붙인다
+/* ── 숫자 표기 사다리 ─────────────────────────
+   1,234 → 1.23M → 1.23B → 1.23T → 1.23aa … 1.23zz(1e2040)
+   → 1.23aaa … 1.23zzz(1e54,768) → e54,771 → ee4.74 → eee → (e^12)3.4
+   문자는 세 자리까지 쓰고 그 위로는 지수를 층으로 쌓는다. 끝은 없다. */
+const SUF1=['K','M','B','T'];
+const SUF_MAX_TIER=4+676+17576;          // T 다음 aa..zz 676개, aaa..zzz 17576개
+function suffixOf(tier){
+  if(tier<=4) return SUF1[tier-1];
+  let n=tier-5, len=2, count=676;
+  while(n>=count){ n-=count; len++; count=Math.pow(26,len); }
+  let s='';
+  for(let i=0;i<len;i++){ s=String.fromCharCode(97+(n%26))+s; n=Math.floor(n/26); }
+  return s;
+}
+function headNum(m){
+  return m<10?m.toFixed(2):m<100?m.toFixed(1):String(Math.round(m));
+}
+/* 자릿수(밑 10 로그)를 글자로 */
 function fmtLog(l){
-  if(isNaN(l)) return '0';
+  if(typeof l!=='number'||isNaN(l)) return '0';
   if(l===Infinity) return '∞';
-  if(l<300) return fmt(Math.pow(10,l));
-  let layer=1, v=l;                       // 이미 한 번 로그를 취한 값이 들어온다
-  while(v>=LAYER_MAX && layer<1e9){ v=L10(v); layer++; }
-  const head = v>=1000 ? Math.round(v).toLocaleString()
-             : v>=100  ? v.toFixed(1)
-             :           v.toFixed(2);
-  return layer<=4 ? 'e'.repeat(layer)+head : '(e^'+layer+')'+head;
+  if(l===-Infinity) return '0';
+  if(l<6){                                  // 백만 아래는 쉼표로 그대로 읽힌다
+    const v=Math.pow(10,l);
+    if(v<10) return (Math.round(v*100)/100).toString();
+    if(v<100) return (Math.round(v*10)/10).toString();
+    return Math.round(v).toLocaleString(LANG==='en'?'en-US':'ko-KR');
+  }
+  const tier=Math.floor(l/3);
+  if(tier<=SUF_MAX_TIER) return headNum(Math.pow(10,l-tier*3))+suffixOf(tier);
+  let layer=1, v=l;
+  while(v>=1e6&&layer<1e9){ v=L10(v); layer++; }   // 1e6 아래는 e 한 겹으로 읽힌다 (e54,771)
+  const h=v>=1000?Math.round(v).toLocaleString():v>=100?v.toFixed(1):v.toFixed(2);
+  return layer<=4?'e'.repeat(layer)+h:'(e^'+layer+')'+h;
 }
 function fmt(n){
   if(n===Infinity) return '∞';
@@ -1196,9 +1204,7 @@ function fmt(n){
     return Math.floor(n).toString();
   }
   if(n<1e6) return Math.floor(n).toLocaleString(LANG==='en'?'en-US':'ko-KR');
-  const e=Math.floor(Math.log10(n));
-  if(e>=1e6) return fmtLog(Math.log10(n));      // 지수 자체가 커지면 층을 쌓아 적는다
-  return (n/Math.pow(10,e)).toFixed(2)+'e'+e;
+  return fmtLog(Math.log10(n));                 // 백만 위로는 같은 사다리를 탄다
 }
 
 
@@ -1211,6 +1217,12 @@ function fmtTime(s){
   if(s<86400) return j(Math.floor(s/3600)+U[2], Math.floor(s%3600/60)+U[1]);
   return j(Math.floor(s/86400)+U[3], Math.floor(s%86400/3600)+U[2]);
 }
+/* 시설 수도 자릿수가 진실이다. 산 것(bought)은 정수라 그대로 두고,
+   윗 단계가 만들어 낸 것(genL)만 로그로 센다 — 이쪽이 1e308 을 넘어간다.
+   S.gen 은 세이브 호환과 옛 조건식을 위한 읽기 전용 파생값. */
+const genNum=l=>((typeof l!=='number'||isNaN(l)||l===-Infinity)?0:(l<300?Math.pow(10,l):Infinity));
+function syncGen(){ for(let i=0;i<S.genL.length;i++) S.gen[i]=genNum(S.genL[i]); }
+const cntLog=i=>logAdd(numLog(S.bought[i]),S.genL[i]);
 const cnt=i=>S.bought[i]+S.gen[i];
 const achCount=()=>Object.keys(S.achs).length;
 const runeTotal=()=>RUNES.reduce((a,r)=>a+(S.runes[r.id]||0),0);
@@ -1221,36 +1233,96 @@ function startManaLog(l){return l<=0?-Infinity:2*l}
 function startMana(l){const x=startManaLog(l);return x<300?Math.pow(10,x):Infinity}
 
 /* ══════════════ 배율 계산 ══════════════ */
-function computeM(){
-  const m={prod:1,t0:1,tUp:1,speed:1,soul:1,offer:1,crystal:1,dungeon:1,relic:1,
-    floorPct:0.02,floorLoot:1,boss:1,costMul:1,runeCap:25,gearPow:1,
-    autoSpeed:1,offline:4,chalPow:1,autoMax:false};
-  const ch=curChal();
-  if(!(ch&&ch.rule.noResearch)) for(const r of RESEARCH) if(S.research[r.id]) r.apply(m);
-  if(!(ch&&ch.rule.noRelicGear)){
-    for(const r of RUNES){const l=S.runes[r.id]||0; if(l) r.apply(m,l);}
-    for(const g of GEAR){const l=S.gear[g.id]||0; if(l) g.apply(m,l);}
+/* 배율도 마나·비용처럼 자릿수(log10)가 진실이다.
+   강화 정의(apply)는 하나도 건드리지 않는다. 대신 항목을 하나씩 빈 그릇에 따로 적용해
+   그 항목이 만든 배수만 재고, 로그로 더한다. 한 항목이 혼자 1e308 을 넘기면
+   레벨을 잘게 줄여 재고 로그를 그만큼 도로 키운다 — 이 게임의 곱셈 강화는 전부
+   base^(레벨에 선형인 식) 꼴이라 이렇게 재도 값이 같다.
+   m.<필드>Log 가 진실이고 m.<필드> 는 읽기 전용 파생값이다. */
+const MUL_FIELDS=['prod','t0','tUp','speed','soul','offer','crystal','dungeon','relic',
+                  'floorLoot','boss','gearPow','autoSpeed','chalPow','costMul'];
+const ADD_FIELDS=['runeCap','offline'];
+/* floorPct 만 예외 — 곱셈(×1.07^l)·덧셈(+0.02l)·max 가 섞여 있다.
+   섞여 있어도 '적용 전 값 대비 배수'로 재면 셋 다 그대로 로그가 된다.
+   그래서 되먹임되는 두 값(floorPct·gearPow)만 진짜 값을 그릇에 넣어 준다. */
+const SEED_CAP=1e250;                    // 되먹임 값이 이보다 커지면 여기서 자른다
+const deriveNum=l=>(isNaN(l)?1:(l<308?Math.pow(10,l):Infinity));   // double 이 버티는 끝까지는 옛 값 그대로 준다
+const deriveSeed=l=>(isNaN(l)?1:(l<250?Math.pow(10,l):SEED_CAP));
+const _sm={prod:1,t0:1,tUp:1,speed:1,soul:1,offer:1,crystal:1,dungeon:1,relic:1,
+  floorPct:0.02,floorLoot:1,boss:1,costMul:1,runeCap:25,gearPow:1,
+  autoSpeed:1,offline:4,chalPow:1,autoMax:false};      // 항목 하나를 잴 때만 쓰는 그릇
+function _seedM(gp,fp,rc,off){
+  for(let i=0;i<MUL_FIELDS.length;i++) _sm[MUL_FIELDS[i]]=1;
+  _sm.gearPow=gp; _sm.floorPct=fp; _sm.runeCap=rc; _sm.offline=off; _sm.autoMax=false;
+}
+/* 항목 하나를 재서 st 에 로그로 얹는다. lv 를 주면 넘칠 때 잘게 줄여 잰다. */
+function foldUp(st,fn,lv){
+  const scalable=(typeof lv==='number'&&isFinite(lv)&&lv>0);
+  let f=1;
+  for(let it=0;it<400;it++){
+    const sg=st.gearPow, sf=st.floorPct;
+    _seedM(sg,sf,st.runeCap,st.offline);
+    try{ fn(_sm, scalable?lv*f:lv); }catch(e){ return; }
+    let ok=(_sm.floorPct>0&&isFinite(_sm.floorPct)&&_sm.gearPow>0&&isFinite(_sm.gearPow));
+    if(ok) for(let i=0;i<MUL_FIELDS.length;i++){
+      const v=_sm[MUL_FIELDS[i]]; if(!(v>0)||!isFinite(v)){ ok=false; break; }
+    }
+    if(!ok){
+      if(!scalable) return;              // 레벨이 없는 항목은 줄일 수 없다
+      f*=(it<10?0.5:1e-3);               // 처음엔 반씩, 그래도 넘치면 크게 줄인다
+      continue;
+    }
+    const inv=1/f;
+    for(let i=0;i<MUL_FIELDS.length;i++){
+      const k=MUL_FIELDS[i];
+      if(k==='gearPow'){ if(_sm.gearPow!==sg) st.gearPowL+=L10(_sm.gearPow/sg)*inv; }
+      else if(_sm[k]!==1) st[k+'L']+=L10(_sm[k])*inv;
+    }
+    if(_sm.floorPct!==sf) st.floorPctL+=L10(_sm.floorPct/sf)*inv;
+    for(let i=0;i<ADD_FIELDS.length;i++){ const k=ADD_FIELDS[i]; if(_sm[k]!==st[k]) st[k]=_sm[k]; }
+    if(_sm.autoMax) st.autoMax=true;
+    st.gearPow=deriveSeed(st.gearPowL);
+    st.floorPct=deriveSeed(st.floorPctL);
+    return;
   }
-  for(const u of SOUL_UPS){const l=S.soulUps[u.id]||0; if(l) u.apply(m,l);}
-  for(const u of RELIC_UPS){const l=S.relicUps[u.id]||0; if(l) u.apply(m,l);}
-  for(const u of STAR_UPS){const l=S.starUps[u.id]||0; if(l) u.apply(m,l);}
+}
+function computeM(){
+  const st={runeCap:25,offline:4,autoMax:false,gearPow:1,floorPct:0.02,floorPctL:L10(0.02)};
+  for(let i=0;i<MUL_FIELDS.length;i++) st[MUL_FIELDS[i]+'L']=0;
+  const ch=curChal();
+  if(!(ch&&ch.rule.noResearch)) for(const r of RESEARCH) if(S.research[r.id]) foldUp(st,r.apply);
+  if(!(ch&&ch.rule.noRelicGear)){
+    for(const r of RUNES){const l=S.runes[r.id]||0; if(l) foldUp(st,r.apply,l);}
+    for(const g of GEAR){const l=S.gear[g.id]||0; if(l) foldUp(st,g.apply,l);}
+  }
+  for(const u of SOUL_UPS){const l=S.soulUps[u.id]||0; if(l) foldUp(st,u.apply,l);}
+  for(const u of RELIC_UPS){const l=S.relicUps[u.id]||0; if(l) foldUp(st,u.apply,l);}
+  for(const u of STAR_UPS){const l=S.starUps[u.id]||0; if(l) foldUp(st,u.apply,l);}
   for(const L of INF_LAYERS){
     if(!L.ups) continue;
-    const st=S[L.store]||{};
-    for(const u of L.ups()){ const l=st[u.id]||0; if(l) u.apply(m,l); }
+    const store=S[L.store]||{};
+    for(const u of L.ups()){ const l=store[u.id]||0; if(l) foldUp(st,u.apply,l); }
   }
-  { const v=infBonus(); m.prod*=v; m.soul*=v; m.offer*=v; m.crystal*=v; m.dungeon*=v; m.relic*=v; }
-  for(const c of CHALLENGES){const n=S.chalDone[c.id]||0; if(n) c.apply(m,n*m.chalPow);}
-  for(const ms of MILESTONES) if(S.rebirths>=ms.n) ms.apply(m);
-  m.prod*=1+0.02*achCount();
-  m.prod*=1+0.05*S.rebirths;
-  m.prod*=1+m.floorPct*S.deepest;
-  { const v=cosmosBonus(S.deepest||1);        // 행성·행성계·은하를 넘길 때마다
-    m.prod*=v; m.soul*=v; m.offer*=v; m.crystal*=v; m.dungeon*=v; }
-  m.dungeon*=1+0.03*S.deepest;
-  if(ch&&ch.rule.drain) m.prod/=ch.rule.drain;
-  if(ch&&ch.rule.slow) m.speed/=ch.rule.slow;
-  m.autoSpeed=Math.max(0.15,m.autoSpeed);
+  { const v=L10(infBonus());             // infBonus·cosmosBonus 는 1e120 에서 잘려 넘치지 않는다
+    st.prodL+=v; st.soulL+=v; st.offerL+=v; st.crystalL+=v; st.dungeonL+=v; st.relicL+=v; }
+  { const cp=deriveSeed(st.chalPowL);
+    for(const c of CHALLENGES){const n=S.chalDone[c.id]||0; if(n) foldUp(st,c.apply,n*cp);} }
+  for(const ms of MILESTONES) if(S.rebirths>=ms.n) foldUp(st,ms.apply);
+  st.prodL+=L10(1+0.02*achCount());
+  st.prodL+=L10(1+0.05*S.rebirths);
+  st.prodL+=logAdd(0,st.floorPctL+numLog(S.deepest));   // 1+floorPct*deepest
+  { const v=L10(cosmosBonus(S.deepest||1));             // 행성·행성계·은하를 넘길 때마다
+    st.prodL+=v; st.soulL+=v; st.offerL+=v; st.crystalL+=v; st.dungeonL+=v; }
+  st.dungeonL+=L10(1+0.03*S.deepest);
+  if(ch&&ch.rule.drain) st.prodL-=L10(ch.rule.drain);   // 나누기는 로그에서 빼기다
+  if(ch&&ch.rule.slow) st.speedL-=L10(ch.rule.slow);
+  st.autoSpeedL=Math.max(L10(0.15),st.autoSpeedL);
+  const m={autoMax:st.autoMax,runeCap:st.runeCap,offline:st.offline,
+           floorPctLog:st.floorPctL,floorPct:deriveNum(st.floorPctL)};
+  for(let i=0;i<MUL_FIELDS.length;i++){
+    const k=MUL_FIELDS[i], l=st[k+'L'];
+    m[k+'Log']=l; m[k]=deriveNum(l);     // 옛 코드가 읽는 평범한 수는 파생값으로 남긴다
+  }
   return m;
 }
 function recalc(){MC=computeM(); syncMana();}
@@ -1291,9 +1363,9 @@ function buyProducer(i){
 }
 /* 각 항을 따로 로그로 바꿔 더한다 — 곱하는 순간 넘치던 자리가 여기서 풀린다 */
 function manaRateLog(){
-  const m=M(), c=cnt(0);
-  if(!(c>0)) return -Infinity;
-  return numLog(c)+numLog(PRODUCERS[0].rate)+numLog(m.t0)+numLog(m.prod);
+  const m=M(), cl=cntLog(0);
+  if(isNaN(cl)||cl===-Infinity) return -Infinity;
+  return cl+numLog(PRODUCERS[0].rate)+m.t0Log+m.prodLog;
 }
 function manaRate(){ const l=manaRateLog(); return l<300?Math.pow(10,l):Infinity; }
 function gatherAmountLog(){ return Math.max(0,manaRateLog()+L10(0.5)); }
@@ -1501,8 +1573,8 @@ function foeOf(f){
                    : foes[(f-1)%foes.length];
 }
 function dungeonPowerLog(){
-  let u=0;for(let i=0;i<PRODUCERS.length;i++)u+=cnt(i);
-  return safeLog(1+Math.pow(u,0.45))+safeLog(M().dungeon)+0.75*Math.max(0,manaRateLog());
+  let ul=-Infinity;for(let i=0;i<PRODUCERS.length;i++)ul=logAdd(ul,cntLog(i));
+  return logAdd(0,0.45*ul)+M().dungeonLog+0.75*Math.max(0,manaRateLog());   // log10(1+u^0.45)
 }
 function dungeonPower(){ const l=dungeonPowerLog(); return l<300?Math.pow(10,l):Infinity; }
 /* 체력과 공격력을 그대로 곱하면 1e308 에서 ∞ 가 되고 ∞/∞ 가 NaN 이 된다.
@@ -1541,8 +1613,8 @@ function floorHPLog(f){
 function floorHP(f){ const l=floorHPLog(f); return l<300?Math.pow(10,l):Infinity; }
 /* 층 보상 마나도 자릿수로 — 1.40^f 는 2,600 층쯤에서 넘친다 */
 function floorLootManaLog(f){
-  const m=M(), b=isBoss(f)?10*m.boss:1, e=elemOf(f);
-  return L10(80)+(f-1)*L10(1.40)+numLog(m.prod)+numLog(m.floorLoot)+numLog(b)+numLog(e.loot);
+  const m=M(), bl=isBoss(f)?L10(10)+m.bossLog:0, e=elemOf(f);
+  return L10(80)+(f-1)*L10(1.40)+m.prodLog+m.floorLootLog+bl+numLog(e.loot);
 }
 function floorLoot(f){
   const m=M(), b=isBoss(f)?10*m.boss:1, e=elemOf(f);
@@ -1585,12 +1657,12 @@ const REBIRTH_REQ=1e6, ASCEND_REQ=1000;
 /* 회차 마나가 1e300 을 넘어도 획득량이 ∞ 로 튀지 않게 자릿수에서 계산한다 */
 function soulGain(){
   if(!(S.manaRunL>=numLog(REBIRTH_REQ))) return 0;
-  const l=L10(3)+0.3*(S.manaRunL-numLog(REBIRTH_REQ))+numLog(M().soul);
+  const l=L10(3)+0.3*(S.manaRunL-numLog(REBIRTH_REQ))+M().soulLog;
   return l<300?Math.floor(Math.pow(10,l)):Infinity;
 }
 function offerGain(){
   if(!(S.manaRunL>=numLog(REBIRTH_REQ))) return 0;
-  const l=L10(2)+0.22*(S.manaRunL-numLog(REBIRTH_REQ))+numLog(M().offer);
+  const l=L10(2)+0.22*(S.manaRunL-numLog(REBIRTH_REQ))+M().offerLog;
   return l<300?Math.floor(Math.pow(10,l)):Infinity;
 }
 function relicGain(){
@@ -1601,7 +1673,7 @@ function softReset(){
   const free=8*(S.relicUps.a5||0)+25*(S.starUps.t9||0)+500*((S.eterUps||{}).e13||0)+5000*((S.realUps||{}).r9||0)+1e5*((S.originUps||{}).o6||0);
   S.manaL=Math.max(L10(25),startManaLog(S.soulUps.s7||0));
   S.manaRunL=S.manaL;
-  S.bought=PRODUCERS.map(()=>0); S.gen=PRODUCERS.map(()=>0);
+  S.bought=PRODUCERS.map(()=>0); S.genL=PRODUCERS.map(()=>-Infinity); syncGen();
   for(let i=0;i<5;i++) S.bought[i]=free;
   S.bought[0]=Math.max(1,free);
   S.research={}; S.floor=1; S.prog=0; S.sinceRebirth=0;
@@ -1813,6 +1885,16 @@ const AUTO_DEFS=[
  {k:'gear',   nm:{ko:'장비 제작',en:"Gear Crafting"},     d:()=>X('결정으로 가장 싼 장비부터 벼린다',"Forges the cheapest gear first"),           unlock:()=>(S.ascendEver||S.ascensions)>=1,                  req:()=>X('승천 1회',"1 ascension")},
  {k:'soulup', nm:{ko:'영혼 강화 구매',en:"Soul Upgrade Buying"},d:()=>X('영혼석으로 가장 싼 강화를 사들인다',"Buys the cheapest soul upgrade"),         unlock:()=>(S.rebirthEver||S.rebirths)>=10||(S.ascendEver||S.ascensions)>0,   req:()=>X('환생 10회',"10 rebirths")},
  {k:'inf',    nm:{ko:'자동 무한 돌파',en:"Auto Infinity"}, d:()=>X('수가 넘칠 지경이 되면 알아서 한 칸 올라간다',"Breaks a rung as soon as a number is ready to overflow"), unlock:()=>(S.infEver||0)>0, req:()=>X('무한 돌파 1회',"1 infinity break")},
+ {k:'starup', nm:{ko:'별 강화 구매',en:"Star Upgrade Buying"}, d:()=>X('별가루로 가장 싼 강화를 사들인다',"Buys the cheapest star upgrade"), unlock:()=>(S.transEver||S.transcends)>=1||S.starEver>0, req:()=>X('초월 1회',"1 transcendence")},
+ {k:'upinf',  nm:{ko:'무한 강화 구매',en:"Infinity Upgrade Buying"}, d:()=>X('무한으로 가장 싼 강화를 사들인다',"Buys the cheapest infinity upgrade"), unlock:()=>(S.infEver||0)>0, req:()=>X('무한 돌파 1회',"1 infinity break")},
+ {k:'upeter', nm:{ko:'영원 강화 구매',en:"Eternity Upgrade Buying"}, d:()=>X('영원으로 가장 싼 강화를 사들인다',"Buys the cheapest eternity upgrade"), unlock:()=>(S.eterEver||0)>0, req:()=>X('영원 돌파 1회',"1 eternity break")},
+ {k:'upreal', nm:{ko:'현실 강화 구매',en:"Reality Upgrade Buying"}, d:()=>X('현실로 가장 싼 강화를 사들인다',"Buys the cheapest reality upgrade"), unlock:()=>(S.realEver||0)>0, req:()=>X('현실 돌파 1회',"1 reality break")},
+ {k:'upvoid', nm:{ko:'공허 강화 구매',en:"Void Upgrade Buying"}, d:()=>X('공허로 가장 싼 강화를 사들인다',"Buys the cheapest void upgrade"), unlock:()=>(S.voidEver||0)>0, req:()=>X('공허 돌파 1회',"1 void break")},
+ {k:'uporigin',nm:{ko:'근원 강화 구매',en:"Origin Upgrade Buying"}, d:()=>X('근원으로 가장 싼 강화를 사들인다',"Buys the cheapest origin upgrade"), unlock:()=>(S.originEver||0)>0, req:()=>X('근원 돌파 1회',"1 origin break")},
+ {k:'brketer',  nm:{ko:'자동 영원 돌파',en:"Auto Eternity"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.eterCount||0)>=1, req:()=>X('영원 돌파 1회',"1 eternity break")},
+ {k:'brkreal',  nm:{ko:'자동 현실 돌파',en:"Auto Reality"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.realCount||0)>=1, req:()=>X('현실 돌파 1회',"1 reality break")},
+ {k:'brkvoid',  nm:{ko:'자동 공허 돌파',en:"Auto Void"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.voidCount||0)>=1, req:()=>X('공허 돌파 1회',"1 void break")},
+ {k:'brkorigin',nm:{ko:'자동 근원 돌파',en:"Auto Origin"}, d:()=>X('한 번 뚫어 본 뒤로는 알아서 뚫는다',"Once you have done it by hand, it repeats itself"), unlock:()=>(S.originCount||0)>=1, req:()=>X('근원 돌파 1회',"1 origin break")},
  {k:'trans',  nm:{ko:'자동 초월',en:"Auto Transcend"}, d:()=>X('직전 주기보다 1.5배 이상 벌릴 때 초월한다',"Transcends when the cycle beats the last by 1.5x"), unlock:()=>(S.transEver||S.transcends)>=1||S.starEver>0, req:()=>X('초월 1회',"1 transcendence")},
  {k:'rebirth',nm:{ko:'자동 환생',en:"Auto Rebirth"},     d:()=>X('직전 회차보다 1.5배 이상 벌릴 때 환생한다',"Rebirths when the run beats the last by 1.5x"),  unlock:()=>(S.rebirthEver||S.rebirths)>=20||(S.ascendEver||S.ascensions)>0,   req:()=>X('환생 20회',"20 rebirths")},
  {k:'relicup',nm:{ko:'유물 강화 구매',en:"Relic Upgrade Buying"},d:()=>X('유물로 가장 싼 강화를 사들인다',"Buys the cheapest relic upgrade"),             unlock:()=>(S.ascendEver||S.ascensions)>=2,                  req:()=>X('승천 2회',"2 ascensions")},
@@ -1834,7 +1916,26 @@ function autoUnlocked(k){
 }
 /* 전부 열렸는가 — 그때부터는 손댈 것이 없다 */
 const allAuto=()=>AUTO_DEFS.every(d=>autoUnlocked(d.k));
-const autoOK=k=>autoUnlocked(k)&&!!S.auto[k];   // 해금 판정을 먼저. 그래야 열리는 순간 켜진다.
+const autoOK=k=>autoUnlocked(k)&&!!S.auto[k];
+/* 강화 나무는 여덟인데 자동 구매는 영혼·유물 둘뿐이었다.
+   나머지도 같은 규칙으로 — 가장 싼 것부터, 살 수 있는 만큼. */
+function autoBuyTree(defs,store,curKey){
+  let bought=0;
+  for(let round=0;round<8;round++){
+    let best=null,bc=Infinity;
+    const st=S[store]||{};
+    for(const u of defs){
+      const l=st[u.id]||0; if(l>=u.max) continue;
+      const c=u.c(l); if(isFinite(c)&&c<bc){ bc=c; best=u; }
+    }
+    if(!best||(S[curKey]||0)<bc) break;
+    S[curKey]-=bc;
+    (S[store]=S[store]||{})[best.id]=((S[store]||{})[best.id]||0)+1;
+    bought++;
+  }
+  if(bought) recalc();
+  return bought;
+}   // 해금 판정을 먼저. 그래야 열리는 순간 켜진다.
 const AUTO_INTERVAL={gather:0.2,build:0.25,research:0.8,rune:1.2,gear:1.5};
 function runAutomation(dt){
   const m=M(), ch=curChal();
@@ -1900,9 +2001,23 @@ function runAutomation(dt){
     const g=relicGain();
     if(g>=3&&g>=1.5*(S.lastRelicGain||0)) doAscend(true);
   }
-  /* 자동 돌파는 무한까지만. 영원 위로는 손으로 눌러야 한다 —
-     아래 계층을 열 개 모아 바꾸는 결정이라 저절로 일어나면 안 된다. */
-  if(autoOK('inf')&&S.sinceInf>=INF_AUTO_CD&&infUnlocked(0)&&infGain(0)>0){ doInfBreak(0); }
+  /* 첫 돌파는 손으로 해야 한다 — 아래 계층을 통째로 갈아 넣는 결정이기 때문이다.
+     한 번 해 본 뒤로는 그 계층을 자동으로 뚫는다. 위 계층부터 살핀다. */
+  if(S.sinceInf>=INF_AUTO_CD){
+    for(let i=INF_LAYERS.length-1;i>=0;i--){
+      const L=INF_LAYERS[i];
+      const key = i===0 ? 'inf' : 'brk'+L.k;
+      if(!autoOK(key)) continue;
+      if(i>0 && (S[L.k+'Count']||0)<1) continue;   // 아직 손으로 한 번도 안 뚫었다
+      if(!infUnlocked(i)||infGain(i)<=0) continue;
+      doInfBreak(i); break;
+    }
+  }
+  if(autoOK('starup')) autoBuyTree(STAR_UPS,'starUps','star');
+  for(const L of INF_LAYERS){
+    if(!L.ups) continue;
+    if(autoOK('up'+L.k)) autoBuyTree(L.ups(), L.store, L.k);
+  }
   /* 자동 시련이 환생 직후에만 걸려 있었다. 자동 환생을 끄면 영영 발동하지 않는다.
      자동화 고리에서도 직접 걸되, 들어가기 전에 회차를 정산해 손해가 없게 한다. */
   if(autoOK('chal')&&!S.chal&&(S.chalCd||0)<=0){
@@ -1913,19 +2028,15 @@ function runAutomation(dt){
     const g=starGain();
     if(g>=2&&g>=1.5*(S.lastStarGain||0)) doTranscend(true);
   }
-  /* 자동 돌파는 무한까지만. 영원 위로는 손으로 눌러야 한다 —
-     아래 계층을 열 개 모아 바꾸는 결정이라 저절로 일어나면 안 된다. */
-  if(autoOK('inf')&&S.sinceInf>=INF_AUTO_CD&&infUnlocked(0)&&infGain(0)>0){ doInfBreak(0); }
-  if(autoOK('trans')&&S.sinceTrans>300){
-    const g=starGain();
-    if(g>=2&&g>=1.5*(S.lastStarGain||0)) doTranscend(true);
-  }
 }
 
 /* ══════════════ 진행 ══════════════ */
 function tick(dt){
   const m=M(), d=dt*m.speed, ch=curChal();
-  for(let i=PRODUCERS.length-1;i>=1;i--) S.gen[i-1]+=cnt(i)*PRODUCERS[i].rate*m.tUp*d;
+  /* 생성도 로그로 — 곱하는 순간 넘치던 자리가 여기서 풀린다 */
+  for(let i=PRODUCERS.length-1;i>=1;i--)
+    S.genL[i-1]=logAdd(S.genL[i-1], cntLog(i)+numLog(PRODUCERS[i].rate)+m.tUpLog+numLog(d));
+  syncGen();
   addManaLog(manaRateLog()+numLog(d));
   if(S.exploring&&!(ch&&ch.rule.noDungeon)){
     /* 진행도를 절대 피해량으로 쌓으면 깊은 층에서 ∞ 가 된다.
@@ -2176,9 +2287,9 @@ function buildTower(p){
       const m=M(), lock=tierLocked(i);
       const n=S.buyAmt==='max'?Math.max(1,maxAfford(i)):S.buyAmt;
       const cl=costLogOf(i,n);
-      const perL=i===0?manaRateLog():numLog(cnt(i)*pr.rate*m.tUp);
+      const perL=i===0?manaRateLog():cntLog(i)+numLog(pr.rate)+m.tUpLog;
       dt.innerHTML=`${NM(pr.makes)} <b>+${fmtLog(perL)}</b> ${X('/초','/s')}`;
-      own.textContent=X('보유 ','Own ')+fmt(cnt(i))+X(' · 구매 ',' · bought ')+fmt(S.bought[i])+X(' · 생성 ',' · made ')+fmt(S.gen[i]);
+      own.textContent=X('보유 ','Own ')+fmtLog(cntLog(i))+X(' · 구매 ',' · bought ')+fmt(S.bought[i])+X(' · 생성 ',' · made ')+fmtLog(S.genL[i]);
       b.innerHTML=lock?`<span class="c">${X('시련으로 봉인됨','Sealed by trial')}</span>`:`×${fmt(n)} ${X('고용','Hire')}<span class="c">${icHTML('mana')} ${fmtLog(cl)}</span>`;
       const can=!lock&&S.manaL>=cl&&n>0;
       b.disabled=!can; b.classList.toggle('can',can); b.classList.toggle('gold',can);
@@ -2728,6 +2839,15 @@ function mergeState(o){
     if(!Array.isArray(s[k])) s[k]=[];
     while(s[k].length<PRODUCERS.length) s[k].push(0);
     s[k].length=PRODUCERS.length;
+    for(let i=0;i<s[k].length;i++) if(typeof s[k][i]!=='number'||isNaN(s[k][i])) s[k][i]=0;
+  }
+  /* 시설 수도 자릿수 필드가 진실이다. 유한한 자릿수가 실려 있을 때만 그것을 믿고,
+     없거나 망가졌으면(옛 세이브, JSON 이 null 로 적은 -Infinity) 평범한 수에서 다시 만든다. */
+  if(!Array.isArray(s.genL)) s.genL=[];
+  s.genL.length=PRODUCERS.length;
+  for(let i=0;i<PRODUCERS.length;i++){
+    const v=s.genL[i];
+    s.genL[i]=(typeof v==='number'&&isFinite(v))?v:numLog(s.gen[i]);
   }
   s.rebirthEver=Math.max(s.rebirthEver||0, s.rebirths||0);   // 옛 세이브 보정
   s.ascendEver =Math.max(s.ascendEver ||0, s.ascensions||0);
@@ -2746,6 +2866,7 @@ function mergeState(o){
        옛 세이브에는 아예 없고(=newState 의 -Infinity 가 남는다), JSON 은 -Infinity 를 null 로 적는다. */
     s[lk]=(typeof v==='number'&&isFinite(v))?v:numLog(o?o[k]:0);
   }
+  for(let i=0;i<PRODUCERS.length;i++) s.gen[i]=genNum(s.genL[i]);   // 파생값을 자릿수에 맞춘다
   s.auto=Object.assign(newState().auto,o.auto||{});
   s.timers=Object.assign({build:0,research:0,rune:0,gear:0,gather:0},o.timers||{});
   return s;
