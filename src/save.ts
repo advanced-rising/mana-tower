@@ -1,3 +1,4 @@
+import { GEAR, RUNES } from './content'
 import { PRODUCERS } from './producers'
 import { SAVE_KEY, X, icHTML } from './core'
 
@@ -39,8 +40,21 @@ export function load(){
   }
   const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false;
   try{
-    setS(mergeState(dec(raw))); return true;
+    setS(mergeState(dec(raw))); clampToCaps(); return true;
   }catch(e){console.error(e);toast(X('세이브를 읽지 못했습니다',"Could not read the save"));return false}
+}
+/* 새 상한보다 높이 쌓인 레벨을 상한에 맞춘다.
+   상한은 '더 사는 것' 만 막으므로, 상한이 생기기 전에 저장된 룬 2.85e14 레벨 같은
+   값은 그대로 남아 배율도 그대로다 — 프레스티지를 해도 마나가 즉시 꼭대기로
+   돌아오던 것이 그 때문이었다. 불러올 때 한 번 맞춰 준다. */
+export function clampToCaps(){
+  recalc();
+  const rc=Math.floor(M().runeCap), gc=Math.floor(M().gearCap);
+  let n=0;
+  for(const r of RUNES){ const l=S.runes[r.id]||0; if(l>rc){ S.runes[r.id]=rc; n++ } }
+  for(const g of GEAR){ const l=S.gear[g.id]||0; if(l>gc){ S.gear[g.id]=gc; n++ } }
+  if(n) recalc();
+  return n;
 }
 export function mergeState(o){
   const base=newState(), s=Object.assign(base,o);
@@ -163,7 +177,7 @@ export function importSave(txt){
   try{
     const o=dec(txt);
     if(typeof o!=='object'||!('mana' in o)) throw new Error('형식이 다릅니다');
-    setS(mergeState(o)); save(true); render();
+    setS(mergeState(o)); clampToCaps(); save(true); render();
     modal(X('불러오기 완료','Import complete'),X('세이브를 성공적으로 불러왔습니다.','The save was loaded successfully.'));
   }catch(e){modal(X('불러오기 실패','Import failed'),X('올바른 마탑 세이브 파일이 아닙니다.<br>','This is not a valid Tower of the Abyss save.<br>')+'<span class="dim">'+e.message+'</span>')}
 }

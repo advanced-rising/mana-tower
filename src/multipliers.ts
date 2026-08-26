@@ -2,7 +2,7 @@ import { INF_LAYERS } from './layers'
 import { PRODUCERS } from './producers'
 import { CHALLENGES, GEAR, MILESTONES, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS } from './content'
 import { MC, S, setMC } from './state'
-import { L10, achCount, cntLog, curChal, geoSumLog, logAdd, logSub, numLog } from './num'
+import { L10, achCount, capFrom, cntLog, curChal, geoSumLog, logAdd, logSub, numLog } from './num'
 import { cosmosBonus, cosmosBonusLog, floorLoot } from './dungeon'
 import { infBonus, infBonusLog } from './prestige'
 import { log } from './tick'
@@ -111,7 +111,13 @@ export function computeM(){
   if(ch&&ch.rule.drain) st.prodL-=L10(ch.rule.drain);   // 나누기는 로그에서 빼기다
   if(ch&&ch.rule.slow) st.speedL-=L10(ch.rule.slow);
   st.autoSpeedL=Math.max(L10(0.15),st.autoSpeedL);
-  const m={autoMax:st.autoMax,runeCap:st.runeCap,offline:st.offline,
+  /* 룬·장비 최대 레벨은 강화 레벨에 선형으로 붙어 있었다(+200 씩). 강화가 수천
+     레벨이 되면 상한이 수십만이 되고, 한 레벨마다 붙는 고정 배수가 그대로 곱해져
+     배율이 10^600 을 넘는다 — 승천을 해도 그 배율이 남아 한 틱 만에 제자리가 된다.
+     상한도 로그로 묶는다. 강화를 아무리 올려도 몇백 레벨 언저리에 머문다.
+     장비는 상한이 아예 없었다 — 룬과 같은 상한을 쓴다(결정 쪽이 넉넉하니 1.5배). */
+  const rc=capFrom(st.runeCap);
+  const m={autoMax:st.autoMax,runeCap:rc,gearCap:Math.floor(rc*1.5),offline:st.offline,
            floorPctLog:st.floorPctL,floorPct:deriveNum(st.floorPctL),
            gearExp:1+Math.max(0,st.gearPowL)};      // 지수는 자릿수만 실린다
   for(let i=0;i<MUL_FIELDS.length;i++){
@@ -135,15 +141,31 @@ export function M(){ if(!MC) setMC(computeM()); return MC }
 /* 증가율을 덧셈으로 깎으면 하한(1.05)에 금방 막혀 더 사도 아무 일이 없다.
    증가분(g-1) 자체를 곱으로 깎아 계속 줄어들되 1 아래로는 안 가게 한다. */
 export function growth(i){return Math.max(1.0005,1+(PRODUCERS[i].g-1)*M().costMul)}
+/* ── 시설 값을 남은 배율에 묶는다 ──────────────────
+   프레스티지가 마나와 시설을 0 으로 되돌려도, 살아남은 배율이 10^400 이면
+   한 틱 만에 전부 되사진다 — 초기화가 눈속임이 된다. 실제로 승천 직후 시설
+   서른세 개로 생산이 10^414/초였고, 0.4 초 만에 원래 자리로 돌아왔다.
+   값이 생산력을 따라 오르면 다시 오르는 데 걸리는 시간이 회차마다 비슷해진다.
+   지수를 1 보다 조금 작게 두어, 그 차이만큼이 프레스티지의 순이득이 된다. */
+export const COST_ANCHOR=0.8;
+/* 값을 정하는 것은 '이번 회차를 시작할 때 들고 온 배율' 이다. 회차 중에 번 배율까지
+   값에 얹으면 회차 안 진행까지 같이 눌려, 한 시간을 돌려도 제자리였다.
+   들고 온 만큼만 값에 얹으면, 회차 안에서는 예전처럼 뻗어 나가고
+   프레스티지 직후에는 처음처럼 다시 올라야 한다. */
+export function anchorLog(){ const a=S.anchorL; return (typeof a==='number'&&a>0)?a:0 }
+export function setAnchor(){
+  const m=M(), p=(m.prodLog||0)+(m.t0Log||0);
+  S.anchorL = p>0?COST_ANCHOR*p:0;
+}
 /* 비용은 자릿수(log10)로 센다. g^bought 는 금방 1e308 을 넘지만 자릿수는 넘지 않는다. */
 export function costLogOf(i,n){
   const g=growth(i),b=S.bought[i];
-  return numLog(PRODUCERS[i].base)+b*L10(g)+geoSumLog(g,n);
+  return numLog(PRODUCERS[i].base)+anchorLog()+b*L10(g)+geoSumLog(g,n);
 }
 export function costOf(i,n){ const l=costLogOf(i,n); return l<300?Math.pow(10,l):Infinity; }
 export function maxAfford(i){
   const g=growth(i),b=S.bought[i],lg=L10(g);
-  const x=S.manaL-numLog(PRODUCERS[i].base)-b*lg;   // log10(mana / (base*g^bought))
+  const x=S.manaL-numLog(PRODUCERS[i].base)-anchorLog()-b*lg;   // log10(mana / (base*g^bought))
   if(isNaN(x)||x===-Infinity) return 0;
   let n;
   if(x>300){ n=Math.floor((x+L10(g-1))/lg); }       // 10^x 가 넘치는 구간은 근사식으로

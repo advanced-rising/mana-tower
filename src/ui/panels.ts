@@ -96,7 +96,7 @@ export function buildResearch(p){
 }
 
 export function buildDungeon(p){
-  const c=card([X('심연의 던전',"The Abyssal Dungeon"),'sword'],X('원정대의 공격력은 보유한 시설 총합에서 나온다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다.<br><b>환생</b>하면 서 있던 층은 1층으로 돌아가지만 <b class="gold">최심층</b>은 남는다 — 가 본 길은 되밟기만 하면 되므로 훨씬 빠르게 지나간다. <b>승천</b>부터는 최심층까지 지워진다.',"Your party power comes from every building you own. A <b class='bad'>boss</b> waits every 10th floor, and depth permanently raises your mana multiplier.<br><b>Rebirth</b> sends you back to floor 1 but keeps your <b class='gold'>deepest</b> — ground you have already walked is retread far faster. <b>Ascension</b> and above wipe the deepest too."));
+  const c=card([X('심연의 던전',"The Abyssal Dungeon"),'sword'],X('원정대의 공격력은 보유한 시설 총합에서 나온다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다.<br>층수는 <b>어떤 프레스티지로도 초기화되지 않는다</b> — 환생하든 승천하든 서 있던 층에서 그대로 이어 간다.',"Your party power comes from every building you own. A <b class='bad'>boss</b> waits every 10th floor, and depth permanently raises your mana multiplier.<br>Your floor <b>never resets</b> — rebirth, ascension, anything: you carry on from where you stood."));
   const ar=el('div','arena');
   const foe=el('div','foe'); const foeIco=ic(FOES[0].sp,64); foe.appendChild(foeIco);
   const right=el('div');
@@ -161,7 +161,7 @@ export function buildDungeon(p){
        줄을 갈라 놓고 숫자는 짧은 표기로 적는다. */
     ftitle.innerHTML=`<b class="gold">${NM(fo.nm)}</b>${boss?' <span class="tag bad" style="vertical-align:2px">'+X('보스','BOSS')+'</span>':''}`
       +`<div class="dim" style="font-size:12px;margin-top:2px">${X('층','Floor')} <b>${fmt(f)}</b> <span style="opacity:.5">·</span> ${X('최심층','Deepest')} <b>${fmt(S.deepest)}</b>`
-      +(f<(S.deepest||0)?` <span class="tag gold" style="vertical-align:1px">${X('되밟는 중 · 빠름','Retreading · fast')}</span>`:'')+`</div>`;
+      +`</div>`;
     const r=Math.max(0,Math.min(1,S.prog||0));
     const gap=pl-hl, per=gap>=8?1e8:(gap<=-300?0:Math.pow(10,gap));
     hp.querySelector('i').style.width=(r*100).toFixed(1)+'%';
@@ -196,8 +196,9 @@ export function buildGear(p){
     const _goal=b.querySelector('.goal')&&memo(b.querySelector('.goal'));
     b.addEventListener('click',e=>{
       e.preventDefault();
-      const l=S.gear[gr.id]||0;
-      const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
+      const l=S.gear[gr.id]||0, cap=Math.floor(M().gearCap);
+      if(l>=cap) return;
+      const want=Math.min(cap-l,(S.buyAmt==='max')?Infinity:S.buyAmt);
       const {n,costLog}=buyBulkLog(gearCost,l,curL('crystal'),want);
       if(!(n>0)) return;
       spendRes('crystal',costLog); S.gear[gr.id]=l+n; recalc(); refresh();
@@ -205,13 +206,15 @@ export function buildGear(p){
     g2.appendChild(b);
     updaters.push(()=>{
       const l=S.gear[gr.id]||0, pw=M().gearExp;      // 지수는 자릿수만 실린 평범한 수다
-      const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
-      const bb=buyBulkLog(gearCost,l,curL('crystal'),want);
+      const cap=Math.floor(M().gearCap), maxed=l>=cap;
+      const want=Math.min(cap-l,(S.buyAmt==='max')?Infinity:S.buyAmt);
+      const bb=maxed?{n:0,costLog:Infinity}:buyBulkLog(gearCost,l,curL('crystal'),want);
       const n=Math.max(1,bb.n), costL=bb.n>0?bb.costLog:costLogAt(gearCost,l);
-      _t.html=`${NM(gr.nm)} <span class="lv">Lv.${fmt(l)}</span>`;
+      _t.html=`${NM(gr.nm)} <span class="lv">Lv.${fmt(l)} / ${fmt(cap)}</span>`;
       _d.text=gr.d(effLevel(l),pw);
-      _c.html=`${icHTML('crystal')} ${fmtLog(costL)}${n>1?` <span class="dim">×${fmt(n)}</span>`:''}`;
-      b.classList.toggle('afford',curL('crystal')>=costL);
+      _c.html=maxed?`<span class="good">${X('최대','Maxed')}</span>`
+        :`${icHTML('crystal')} ${fmtLog(costL)}${n>1?` <span class="dim">×${fmt(n)}</span>`:''}`;
+      b.classList.toggle('afford',!maxed&&curL('crystal')>=costL);
     });
   });
   c2.appendChild(g2); p.appendChild(c2);
@@ -267,7 +270,7 @@ export function buildRebirth(p){
   const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
   const b=btn('gold big','',()=>{
     if(soulGain()<=0) return;
-    modal(X('환생하시겠습니까?','Rebirth?'),X(`영혼석 <b class="soul">${fmtLog(soulGainLog())}</b> · 오퍼링 <b class="offer">${fmtLog(offerGainLog())}</b>을 얻고<br>마나 · 시설 · 연구가 초기화되고<br>던전은 1층으로 돌아갑니다 (최심층 <b class="gold">${fmt(S.deepest)}</b>층까지는 되밟기라 빠릅니다).`,`You gain <b class="soul">${fmtLog(soulGainLog())}</b> soul shards and <b class="offer">${fmtLog(offerGainLog())}</b> offerings.<br>Mana, buildings and research reset, and the dungeon returns to floor 1 (retreading to <b class="gold">F${fmt(S.deepest)}</b> is fast).`),()=>doRebirth());
+    modal(X('환생하시겠습니까?','Rebirth?'),X(`영혼석 <b class="soul">${fmtLog(soulGainLog())}</b> · 오퍼링 <b class="offer">${fmtLog(offerGainLog())}</b>을 얻고<br>마나 · 시설 · 연구가 초기화됩니다.<br>던전 <b class="gold">${fmt(S.floor)}</b>층은 그대로 유지됩니다.`,`You gain <b class="soul">${fmtLog(soulGainLog())}</b> soul shards and <b class="offer">${fmtLog(offerGainLog())}</b> offerings.<br>Mana, buildings and research reset. You keep dungeon floor <b class="gold">${fmt(S.floor)}</b>.`),()=>doRebirth());
   });
   c.appendChild(b); p.appendChild(c);
   const uc=card([X('영혼 강화',"Soul Upgrades"),'gem'],X('환생해도 유지된다. 승천할 때만 초기화된다.',"Kept through rebirths. Only ascension resets them."));
@@ -306,11 +309,11 @@ export function buildMilestones(p){
   c.appendChild(g); p.appendChild(c);
 }
 export function buildAscend(p){
-  const c=card([X('승천',"Ascension"),'relic'],X(`영혼석·영혼 강화·룬·최심층까지 전부 버리고 <b class="relic">유물</b>을 얻는다. 유물 강화는 <b>영원히</b> 남는다.<br>필요 조건: 이번 주기 누적 영혼석 ${fmt(ASCEND_REQ)}`,`Give up soul shards, soul upgrades, runes and depth for <b class="relic">relics</b>. Relic upgrades last <b>forever</b>.<br>Requires ${fmt(ASCEND_REQ)} soul shards this cycle.`));
+  const c=card([X('승천',"Ascension"),'relic'],X(`영혼석·영혼 강화·룬을 전부 버리고 <b class="relic">유물</b>을 얻는다. 유물 강화는 <b>영원히</b> 남는다.<br>필요 조건: 이번 주기 누적 영혼석 ${fmt(ASCEND_REQ)}`,`Give up soul shards, soul upgrades and runes for <b class="relic">relics</b>. Relic upgrades last <b>forever</b>.<br>Requires ${fmt(ASCEND_REQ)} soul shards this cycle.`));
   const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
   const b=btn('gold big','',()=>{
     if(relicGain()<=0) return;
-    modal(X('승천하시겠습니까?','Ascend?'),X(`유물 <b class="relic">${fmtLog(relicGainLog())}</b>을 얻고<br>영혼석 · 영혼 강화 · 룬 · 최심층이 초기화됩니다.`,`You gain <b class="relic">${fmtLog(relicGainLog())}</b> relics.<br>Soul shards, soul upgrades, runes and depth reset.`),()=>doAscend());
+    modal(X('승천하시겠습니까?','Ascend?'),X(`유물 <b class="relic">${fmtLog(relicGainLog())}</b>을 얻고<br>영혼석 · 영혼 강화 · 룬이 초기화됩니다. 던전 층수는 그대로입니다.`,`You gain <b class="relic">${fmtLog(relicGainLog())}</b> relics.<br>Soul shards, soul upgrades and runes reset. Your dungeon floor stays.`),()=>doAscend());
   });
   c.appendChild(b); p.appendChild(c);
   const uc=card([X('유물 강화',"Relic Upgrades"),'relic'],X('무엇을 해도 사라지지 않는 영구 강화.',"Permanent upgrades that nothing ever takes away."));

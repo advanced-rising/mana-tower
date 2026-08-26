@@ -114,6 +114,14 @@ export const freeRaw=()=>8*((S.relicUps||{}).a5||0)+25*((S.starUps||{}).t9||0)
 export function freeFrom(raw){ return (raw>0&&isFinite(raw))?Math.floor(9*Math.log10(1+raw)):0 }
 export const freeStart=()=>freeFrom(freeRaw());
 
+/* 룬·장비 최대 레벨. 강화가 더해 준 원값(raw)을 로그로 접는다 —
+   25 에서 시작해 원값이 20만이 되어도 350 언저리다. */
+export const CAP_BASE=25;
+export function capFrom(raw){
+  const over=Math.max(0,(typeof raw==='number'&&isFinite(raw)?raw:CAP_BASE)-CAP_BASE);
+  return CAP_BASE+Math.floor(60*Math.log10(1+over));
+}
+
 /* 체력과 공격력을 그대로 곱하면 1e308 에서 ∞ 가 되고 ∞/∞ 가 NaN 이 된다.
    둘 다 '자릿수'(밑 10 로그)로 다룬다. 로그는 층수에 비례해 선형이라 넘치지 않는다. */
 export const L10=Math.log10;

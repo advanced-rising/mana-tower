@@ -160,8 +160,9 @@ export function runAutomation(dt){
     t.gear=0;
     let did=0;
     for(const g of [...GEAR].sort((a,b)=>costLogAt(gearCost,S.gear[a.id]||0)-costLogAt(gearCost,S.gear[b.id]||0))){
-      const l=S.gear[g.id]||0;
-      const {n,costLog}=buyBulkLog(gearCost,l,curL('crystal')-L10(GEAR.length),Infinity);
+      const l=S.gear[g.id]||0; const gcap=Math.floor(m.gearCap);
+      if(l>=gcap) continue;
+      const {n,costLog}=buyBulkLog(gearCost,l,curL('crystal')-L10(GEAR.length),gcap-l);
       if(n>0){ spendRes('crystal',costLog); S.gear[g.id]=l+n; did+=n }
     }
     if(did) recalc()

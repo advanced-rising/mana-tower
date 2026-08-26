@@ -81,7 +81,7 @@
     }
     return false;
   }
-  const STEP=0.2; let t=0, tickErr=0, lastErr='', lastPres=-99;
+  const STEP=0.2; let t=0, tickErr=0, lastErr='', lastPres=-99, bestGain=-Infinity;
   function play(){
     try{
       G.gather(); G.gather();
@@ -92,13 +92,19 @@
       /* 프레스티지도 손으로 한다. 자동 환생은 한참 뒤에나 열리므로 이걸 하지
          않으면 '한 번도 환생하지 않은 회차' 만 재게 된다 — 실제로 환생 뒤 마나가
          제대로 지워지지 않던 버그는 이 경로에서만 드러났다. */
-      if(t-lastPres>25){
-        if(G.transUnlocked&&G.transUnlocked()&&G.starGainLog()>0){ G.doTranscend(); lastPres=t; }
-        else if(G.relicGainLog()>0&&S.soulAscL>=G.numLog(G.ASCEND_REQ)){ G.doAscend(); lastPres=t; }
-        else if(G.soulGain()>0){ G.doRebirth(); lastPres=t; }
+      /* 사람처럼 '이득이 날 때' 만 프레스티지한다. 무조건 25초마다 돌리면 회차가
+         자라지 못해, 브레이크를 조금만 걸어도 한 시간 내내 제자리로 보인다. */
+      if(t-lastPres>20){
+        const gl=G.soulGainLog();
+        if(G.transUnlocked&&G.transUnlocked()&&G.starGainLog()>0){ G.doTranscend(); lastPres=t; bestGain=-Infinity; }
+        else if(G.relicGainLog()>0&&S.soulAscL>=G.numLog(G.ASCEND_REQ)){ G.doAscend(); lastPres=t; bestGain=-Infinity; }
+        else if(gl>bestGain+G.L10(1.5)){ G.doRebirth(); lastPres=t; bestGain=gl; }
       }
       G.tick(STEP);
-    }catch(e){ tickErr++; if(!lastErr) lastErr=e.message+' @ '+(e.stack||'').split('\n')[1] }
+    }catch(e){ tickErr++;
+      if(!lastErr){ lastErr=e.message+' @ '+(e.stack||'').split('\n')[1];
+        bad('틱이 예외로 건너뛰어졌다',lastErr); }   // 한 번이라도 나면 바로 적는다
+    }
     t+=STEP;
   }
 
@@ -168,6 +174,9 @@
       S.starUps=Object.assign(S.starUps||{},{t9:100000});
       S.eterUps=Object.assign(S.eterUps||{},{e13:100000});
       G.recalc();
+      S.floor=Math.max(S.floor||1,7); S.deepest=Math.max(S.deepest||0,S.floor);
+      S.deepestEver=Math.max(S.deepestEver||0,S.deepest);
+      const floorBefore=S.floor, deepBefore=S.deepest||0;
       const before={ach:G.achCount(), auto:JSON.stringify(S.auto),
                     rate:G.manaRateLog(), mana:S.manaL, cnt:G.cntLog(0)};
       const did=act();
@@ -184,7 +193,9 @@
         if(n) bad(name,`${k} 가 ${n}개 남았다`);
       }
       if(Object.keys(S.research||{}).length) bad(name,`연구가 ${Object.keys(S.research).length}개 남았다`);
-      if(S.floor!==1) bad(name,`던전이 ${D(S.floor)}층에서 시작한다`);
+      /* 던전 층수는 어떤 프레스티지로도 지워지지 않는다 */
+      if(S.floor!==floorBefore) bad(name,`던전 층수가 ${D(floorBefore)} → ${D(S.floor)} 로 바뀌었다`);
+      if((S.deepest||0)<deepBefore) bad(name,`최심층이 ${D(deepBefore)} → ${D(S.deepest)} 로 줄었다`);
       /* 정말로 처음으로 돌아갔는가 — 되돌아온 시설과 생산량으로 본다 */
       if(!(G.cntLog(0)<4))
         bad(name,`시설이 통째로 돌아왔다 — 0단계 ${G.fmtLog(G.cntLog(0))}개 (이전 ${G.fmtLog(before.cnt)}개)`);

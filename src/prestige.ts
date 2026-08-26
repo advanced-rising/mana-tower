@@ -6,7 +6,7 @@ import { X, icHTML } from './core'
 import { ACHS, ACH_NOUN, BADGES, ETER_UPS, INF_UPS, ORIGIN_UPS, REAL_UPS, VOID_UPS, achName } from './content'
 import { S } from './state'
 import { L10, fmt, freeStart, gainRes, logAdd, numLog, setRes, startManaLog, syncGen } from './num'
-import { M, recalc } from './multipliers'
+import { M, recalc, setAnchor } from './multipliers'
 import { COSMOS, chapterOf } from './dungeon'
 import { autoEnterChallenge, exitChallenge } from './trials'
 import { log } from './tick'
@@ -37,8 +37,12 @@ export function softReset(){
   S.bought=PRODUCERS.map(()=>0); S.genL=PRODUCERS.map(()=>-Infinity); syncGen();
   for(let i=0;i<5;i++) S.bought[i]=free;
   S.bought[0]=Math.max(1,free);
-  S.research={}; S.floor=1; S.prog=0; S.sinceRebirth=0;
-  recalc();
+  /* 던전 층수는 초기화하지 않는다 — 내려간 깊이는 프레스티지가 가져가지 않는다.
+     서 있던 층에서 그대로 이어 간다. */
+  S.research={}; S.sinceRebirth=0;
+  if(!(S.floor>=1)) S.floor=1;
+  S.anchorL=0; recalc();      // 먼저 풀고 다시 재야 이번 회차가 들고 온 배율이 나온다
+  setAnchor(); recalc();
 }
 export function doRebirth(silent){
   const g=soulGain(), o=offerGain();
@@ -62,10 +66,10 @@ export function doAscend(silent){
   gainRes('relic',rl); S.relicTransL=logAdd(S.relicTransL,rl); S.relicTrans=S.relicTransL<308?Math.pow(10,S.relicTransL):Infinity;
   S.lastRelicGainL=rl; S.lastRelicGain=g; S.ascensions++; S.ascendEver=(S.ascendEver||0)+1;
   setRes('soul',-Infinity); S.soulAsc=0; S.soulAscL=-Infinity; S.soulUps={}; S.runes={};
-  S.rebirths=0; S.deepest=0; setRes('offering',-Infinity); S.lastSoulGain=0; S.lastSoulGainL=-Infinity; S.sinceAscend=0;
+  S.rebirths=0;  setRes('offering',-Infinity); S.lastSoulGain=0; S.lastSoulGainL=-Infinity; S.sinceAscend=0;
   if(S.chal) exitChallenge(false);
   softReset();
-  log(`${icHTML('relic')}<b>${X('승천','Ascension')}</b> · ${X('유물','Relics')} <b class="relic">+${fmt(g)}</b> · ${X('영혼석과 룬이 초기화되었다','soul shards and runes reset')}`,true);
+  log(`${icHTML('relic')}<b>${X('승천','Ascension')}</b> · ${X('유물','Relics')} <b class="relic">+${fmt(g)}</b> · ${X('영혼석과 룬이 초기화되었다 · 던전 층수는 그대로','soul shards and runes reset · dungeon floor kept')}`,true);
   if(!silent) toast(icHTML('relic')+X(` 승천 · 유물 +${fmt(g)}`,` Ascension · Relics +${fmt(g)}`));
   return true;
 }
@@ -131,7 +135,7 @@ export function doInfBreak(i){
   setRes('relic',-Infinity); S.relicTrans=0; S.relicTransL=-Infinity; S.relicUps={};
   setRes('soul',-Infinity); S.soulAsc=0; S.soulAscL=-Infinity; S.soulUps={}; S.runes={}; S.gear={};
   setRes('crystal',-Infinity); setRes('offering',-Infinity); S.manaEver=0; S.manaEverL=-Infinity;
-  S.rebirths=0; S.ascensions=0; S.transcends=0; S.deepest=0;
+  S.rebirths=0; S.ascensions=0; S.transcends=0; 
   if(S.chal) exitChallenge(false);
   softReset();
   log(`${icHTML(L.sp)}<b class="gold">${X(L.ko,L.en)} ${X('돌파','Break')}</b> · <b>+${fmt(g)}</b> · ${i>0?X('모든 것이 처음으로 돌아갔다','everything returned to the beginning'):X('아래 계층이 접혔다 · 별 강화는 남았다','everything below folded away, star upgrades kept')}`,true);
@@ -140,9 +144,15 @@ export function doInfBreak(i){
 }
 /* 무한 계층은 그 자체가 전체 배율이 된다 */
 export function infBonusLog(){
+  /* 돌파 횟수에 자릿수가 선형으로 붙어 있었다. 무한을 4.99e264 번 뚫은 세이브에서는
+     그것만으로 배율이 10^(1.06e264) 이 되어, 룬·장비를 상한에 맞춰도 마나가
+     프레스티지 직후 그대로 꼭대기였다. 다른 곳과 같이 로그로 접는다 —
+     쉰 번 뚫으면 예순 자릿수쯤, 그 위로는 천천히 는다. */
   let v=0;
-  // 배율이 너무 세면 돌파 직후 곧바로 되돌아와 초기화가 체감되지 않는다
-  for(let i=0;i<INF_LAYERS.length;i++) v+=(S[INF_LAYERS[i].k+'Ever']||0)*L10(1.6+i*0.9);
+  for(let i=0;i<INF_LAYERS.length;i++){
+    const n=S[INF_LAYERS[i].k+'Ever']||0;
+    if(n>0&&isFinite(n)) v+=35*(1+i*0.5)*L10(1+n);
+  }
   return v;
 }
 /* 1e120 에서 자르던 천장을 걷었다 — 배율이 자릿수로 다뤄지므로 넘칠 일이 없다 */
@@ -165,7 +175,7 @@ export function doTranscend(silent){
   setRes('relic',-Infinity); S.relicTrans=0; S.relicTransL=-Infinity; S.relicUps={};
   setRes('soul',-Infinity); S.soulAsc=0; S.soulAscL=-Infinity; S.soulUps={}; S.runes={}; S.gear={};
   setRes('crystal',-Infinity); setRes('offering',-Infinity);
-  S.rebirths=0; S.ascensions=0; S.deepest=0;
+  S.rebirths=0; S.ascensions=0; 
   S.lastSoulGain=0; S.lastRelicGain=0; S.sinceAscend=0; S.sinceTrans=0;
   if(S.chal) exitChallenge(false);
   softReset();
