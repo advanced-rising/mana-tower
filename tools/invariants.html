@@ -259,14 +259,21 @@
       S.genL=S.genL.map(()=>-Infinity); G.syncGen();
       S.manaL=-Infinity; G.setRes('crystal',-Infinity); G.recalc();
       const rec=S.deepest, m0=S.manaL, c0=G.curL('crystal');
+      S.lootFloor=Math.max(S.lootFloor||0,rec);   // 그 층까지는 이번 회차에 이미 받았다
       for(let k=0;k<12;k++){
-        S.floor=rec; S.prog=1; S.floorCd=0;      // 이미 깬 층에 서서
-        G.tick(0.2);                              // 한 번 더 깨 본다
+        S.floor=rec; S.prog=1; S.floorCd=0;      // 이번 회차에 이미 받은 층에 서서
+        G.tick(0.2);                              // 되풀이해 캐 본다
       }
       /* 결정으로 판정한다 — 결정은 층을 깨야만 나오므로 전리품인지 아닌지가 분명하다.
          마나는 채집·생산 등 다른 길로도 들어와 섞인다. */
       if(G.curL('crystal')>c0+1e-9)
-        bad('던전',`이미 깬 층(${D(rec)})을 다시 깨서 전리품을 얻었다 — 결정 ${G.fmtLog(c0)} → ${G.fmtLog(G.curL('crystal'))}`);
+        bad('던전',`이번 회차에 이미 받은 층(${D(rec)}, 받은 데까지 ${D(S.lootFloor)})을 되풀이해 캐냈다 — 결정 ${G.fmtLog(c0)} → ${G.fmtLog(G.curL('crystal'))}`);
+      /* 그리고 새 회차에서는 그 층들의 보상을 다시 받아야 한다 — 던전이 초기화되니까 */
+      G.setRes('crystal',-Infinity); const c1=G.curL('crystal');
+      S.lootFloor=0; S.floor=1; S.prog=0; S.floorCd=0; S.exploring=true;
+      for(let i=0;i<200;i++) G.tick(0.2);
+      if(!(G.curL('crystal')>c1))
+        bad('던전','새 회차인데 이미 깬 층에서 보상이 다시 나오지 않는다');
     }
   }catch(e){ bad('던전',e.message) }
 

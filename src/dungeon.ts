@@ -276,13 +276,16 @@ export function syncChapter(force){
    시간에 묶어 두면 깊이가 초당 한 층씩만 자라 고리가 끊긴다. */
 export function clearFloor(show){
   const f=S.floor;
-  /* 되밟는 층에서는 전리품을 쓰지 않는다 — 한 틱에 수천 층을 지나가므로
-     쓰지도 않을 값을 그만큼 계산하면 그대로 프레임을 잡아먹는다. */
-  const l=isRetread(f)?null:floorLoot(f);
-  /* 되밟는 층에서는 아무것도 나오지 않는다 — 보물은 이미 가져갔다.
-     여기서도 전리품을 주면 최심층까지 열두 초 만에 던전 수입이 통째로 돌아와,
-     회차를 지운 보람이 없어진다. 기록이 주는 것은 '빨리 돌아간다' 는 것뿐이다. */
-  const back=!l;
+  /* 보상은 회차마다 층당 한 번이다.
+     던전이 1 층으로 초기화되므로 그 층들의 보상도 다시 받는 것이 맞다 — 그것이
+     새 회차를 굴리는 밑천이다. 다만 ◀ 로 내려갔다 올라오기를 되풀이해 같은 층을
+     계속 캐내면 안 되므로, 이번 회차에 이미 받은 데까지는 다시 주지 않는다.
+     기록보다 깊이 갈 수 없고 기록은 최전선에서 실제 시간에 묶여 있으니,
+     한 회차가 받는 총량은 그 시간만큼으로 저절로 묶인다. */
+  const paid=(S.lootFloor||0);
+  const l=(f>paid)?floorLoot(f):null;
+  if(f>paid) S.lootFloor=f;
+  const back=!l;                     // 이번 회차에 이미 받은 층
   if(l){
     addManaLog(l.manaLog);
     gainRes('crystal',l.crystalLog);
@@ -292,7 +295,7 @@ export function clearFloor(show){
   if(nw){ S.deepest=f; if(f>(S.deepestEver||0)) S.deepestEver=f; syncChapter(); }
   const foe=foeOf(f);
   if(show!==0)
-    log(`${icHTML(foe.sp)}${isBoss(f)?`<b class="bad">${X('보스','BOSS')}</b> `:''}<b>${NM(foe.nm)}</b> ${back?X('지나감','passed'):X('격파','defeated')}${show>1?` <span class="dim">${X(`외 ${show-1}층`,`and ${show-1} more`)}</span>`:''} <span class="dim">${cosmosLabel(f)}</span>${back?` <span class="dim">${X('되밟는 길','retreading')}</span>`:` · ${icHTML('mana')}${fmtLog(l.manaLog)} ${icHTML('crystal')}${fmtLog(l.crystalLog)}${l.offering?' '+icHTML('offering')+fmtLog(l.offeringLog):''}`}`, isBoss(f)&&!back);
+    log(`${icHTML(foe.sp)}${isBoss(f)?`<b class="bad">${X('보스','BOSS')}</b> `:''}<b>${NM(foe.nm)}</b> ${back?X('지나감','passed'):X('격파','defeated')}${show>1?` <span class="dim">${X(`외 ${show-1}층`,`and ${show-1} more`)}</span>`:''} <span class="dim">${cosmosLabel(f)}</span>${back?` <span class="dim">${X('이미 받은 층','already collected')}</span>`:` · ${icHTML('mana')}${fmtLog(l.manaLog)} ${icHTML('crystal')}${fmtLog(l.crystalLog)}${l.offering?' '+icHTML('offering')+fmtLog(l.offeringLog):''}`}`, isBoss(f)&&!back);
   S.floor=f+1;
   /* 쓸어 담는 중간에는 배율을 다시 재지 않는다. computeM 은 강화 백여든 개를
      하나씩 따로 재므로 256 층을 쓸면 256 번 도는 셈이 된다. 마지막에 한 번만. */

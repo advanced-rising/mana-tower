@@ -50,7 +50,7 @@ export function softReset(){
      돌아가는 데 걸리는 시간이 같도록 그 구간만 빠르게 지나간다.
      전리품이 없으니 '한 층씩' 규칙이 막으려던 폭주와는 무관하다. */
   S.research={}; S.sinceRebirth=0;
-  S.floor=1; S.prog=0; S.floorCd=0;
+  S.floor=1; S.prog=0; S.floorCd=0; S.lootFloor=0;   // 보상도 이번 회차에 다시 받는다
   S.anchorL=0; recalc();      // 먼저 풀고 다시 재야 이번 회차가 들고 온 배율이 나온다
   setAnchor(); recalc();
 }
