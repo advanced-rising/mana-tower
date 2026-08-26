@@ -13,14 +13,23 @@ export const isBoss=f=>f%10===0;
    내내 같은 것만 보인다. 한 마리가 보일 만큼 머물게 하고, 깊이가 느려지는 몫은
    아래 sweepCount 가 한 걸음에 여러 층을 쓸어 담아 메운다. */
 export const FLOOR_MIN_TIME=0.28;  // 한 층이 화면에 머무는 최소 시간(초)
-/* 프레스티지는 기록에서 이어 가므로 되밟을 일이 거의 없다. 다만 ◀ 로 손수
-   내려간 자리는 이미 가져간 층이다 — 거기서는 싸우지도, 아무것도 나오지도 않는다. */
-export const FLOOR_RETREAD=0.05;   // 이미 지나온 층을 다시 지나갈 때
-export function floorPace(){ return isRetread(S.floor) ? FLOOR_RETREAD : FLOOR_MIN_TIME }
 /* 이미 깬 층은 1 ~ 최심층이다. f < 최심층 으로 두면 최심층 그 자리만 '새 층' 이
    되어, ◀ 로 한 칸 내려갔다 올라오기를 되풀이하면 같은 층의 전리품을 얼마든지
-   다시 가져갈 수 있었다. 최심층도 이미 깬 층이다. */
+   다시 가져갈 수 있었다. 최심층도 이미 깬 층이다.
+   되밟는 길에서는 싸우지도 않고 아무것도 나오지 않는다. */
 export function isRetread(f){ return f<=(S.deepest||0) }
+export function floorPace(){ return isRetread(S.floor) ? 0 : FLOOR_MIN_TIME }
+/* 되밟기는 기록이 얼마나 깊든 이만큼 걸린다. 한 틱에 한 층씩만 지나가면
+   5,000 층이 몇 분, 50 만 층이면 몇 시간이다 — 그건 등반이 아니라 대기다.
+   한 틱에 지나갈 층수를 기록에서 거꾸로 정해 걸리는 시간을 일정하게 둔다.
+   층수는 여전히 눈에 보이게 올라가고, 전리품이 없으므로 아무것도 불어나지 않는다. */
+export const RETREAD_SECONDS=10;   // 최심층까지 되밟는 데 걸리는 시간
+export const RETREAD_MAX_STEP=4096;
+export function retreadSteps(dt){
+  const rec=S.deepest||0;
+  if(!(rec>0)) return 1;
+  return Math.max(1,Math.min(RETREAD_MAX_STEP,Math.ceil(rec*(dt/RETREAD_SECONDS))));
+}
 
 /* ── 우주 계층 ────────────────────────────────
    실제 천문학의 구조를 그대로 따른다.
@@ -266,12 +275,15 @@ export function syncChapter(force){
    그러면 깊이가 힘에 비례해 늘고 그 층의 보상이 다시 힘이 되어 폭주했다.
    시간에 묶어 두면 깊이가 초당 한 층씩만 자라 고리가 끊긴다. */
 export function clearFloor(show){
-  const f=S.floor,l=floorLoot(f);
+  const f=S.floor;
+  /* 되밟는 층에서는 전리품을 쓰지 않는다 — 한 틱에 수천 층을 지나가므로
+     쓰지도 않을 값을 그만큼 계산하면 그대로 프레임을 잡아먹는다. */
+  const l=isRetread(f)?null:floorLoot(f);
   /* 되밟는 층에서는 아무것도 나오지 않는다 — 보물은 이미 가져갔다.
      여기서도 전리품을 주면 최심층까지 열두 초 만에 던전 수입이 통째로 돌아와,
      회차를 지운 보람이 없어진다. 기록이 주는 것은 '빨리 돌아간다' 는 것뿐이다. */
-  const back=isRetread(f);
-  if(!back){
+  const back=!l;
+  if(l){
     addManaLog(l.manaLog);
     gainRes('crystal',l.crystalLog);
     if(l.offeringLog>-Infinity) gainRes('offering',l.offeringLog);

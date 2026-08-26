@@ -196,10 +196,9 @@
         if(n) bad(name,`${k} 가 ${n}개 남았다`);
       }
       if(Object.keys(S.research||{}).length) bad(name,`연구가 ${Object.keys(S.research).length}개 남았다`);
-      /* 던전은 기록에서 이어 간다 — 깊이는 남고, 경제는 초기화된다 */
+      /* 던전도 1층으로 돌아간다. 최심층(기록) 은 남아 되밟기를 빠르게 만든다 */
       if((S.deepest||0)<deepBefore) bad(name,`최심층 기록이 ${D(deepBefore)} → ${D(S.deepest)} 로 줄었다`);
-      if(S.floor!==Math.max(1,S.deepest||1))
-        bad(name,`던전이 ${D(S.floor)}층에서 시작한다 (기록 ${D(S.deepest)}층에서 이어야 한다)`);
+      if(S.floor!==1) bad(name,`던전이 ${D(S.floor)}층에서 시작한다 (1층이어야 한다)`);
       /* 정말로 처음으로 돌아갔는가 — 되돌아온 시설과 생산량으로 본다 */
       if(!(G.cntLog(0)<4))
         bad(name,`시설이 통째로 돌아왔다 — 0단계 ${G.fmtLog(G.cntLog(0))}개 (이전 ${G.fmtLog(before.cnt)}개)`);
@@ -243,8 +242,13 @@
     if(G.doAscend(true)){
       G.recalc();
       if((S.deepest||0)<d1) bad('던전',`승천이 최심층 기록을 ${D(d1)} → ${D(S.deepest)} 로 줄였다`);
-      if(S.floor<d1) bad('던전',`승천 뒤 ${D(S.floor)}층에서 시작한다 (기록 ${D(d1)}층에서 이어야 한다)`);
+      if(S.floor!==1) bad('던전',`승천 뒤 ${D(S.floor)}층에서 시작한다 (1층이어야 한다)`);
       if(!S.exploring) bad('던전','승천이 탐험을 껐다');
+      /* 되밟기: 기록까지 돌아가는 데 걸리는 시간이 깊이와 무관해야 한다 */
+      let bt=0; while(S.floor<=d1&&bt<400){ G.tick(0.2); bt++ }
+      const secs=bt*0.2;
+      if(S.floor<=d1) bad('던전',`80초를 돌아도 기록 ${D(d1)}층을 못 넘었다 (${D(S.floor)}층)`);
+      else if(secs>25) bad('던전',`기록까지 되밟는 데 ${D(secs)}초 걸렸다 — 깊이에 따라 늘어난다`);
       const f2=S.floor;
       for(let i=0;i<300;i++) G.tick(0.2);
       if(!(S.floor>f2)) bad('던전',`기록 너머로는 더 내려가지 않는다 (${D(f2)}층에서 멈춤)`);

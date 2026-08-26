@@ -7,7 +7,7 @@ import { ACHS } from './content'
 import { LOG, S } from './state'
 import { cntLog, curChal, logAdd, numLog, syncGen } from './num'
 import { M, addManaLog, invalidateM, manaRateLog, mSignature, recalc, syncMana } from './multipliers'
-import { clearFloor, dungeonPowerLog, floorHPLog, floorPace, isRetread } from './dungeon'
+import { clearFloor, dungeonPowerLog, floorHPLog, floorPace, isRetread, retreadSteps } from './dungeon'
 import { autoOK, runAutomation } from './automation'
 
 /* ══════════════ 진행 ══════════════ */
@@ -29,16 +29,23 @@ export function tick(dt){
        프레스티지로 공격력이 0 이 된 채로 다시 싸우게 두면, 되밟기가 아니라
        처음부터 다시 오르는 것이 된다(실제로 90 층 언저리에서 막혔다).
        걸음의 속도만 남기고 전투는 건너뛴다. */
-    if(isRetread(S.floor)) S.prog=1;
-    else{
+    if(isRetread(S.floor)){
+      /* 이미 깬 구간은 싸우지 않고 지나간다. 한 틱에 한 층씩이면 기록이 깊을수록
+         돌아가는 데만 몇 분씩 걸리므로, 이 구간만 걸음을 넓혀 시간을 일정하게 둔다.
+         전리품이 없어 아무것도 불어나지 않는다. */
+      let steps=retreadSteps(dt);
+      while(steps-->0&&isRetread(S.floor)) clearFloor(0);
+      S.prog=0; S.floorCd=0;
+      if(!isRetread(S.floor)) recalc();     // 최전선에 닿았을 때 한 번만 다시 잰다
+    }else{
       const gap=dungeonPowerLog()-floorHPLog(S.floor);
       const per=gap>=8?1e8:(gap<=-300?0:Math.pow(10,gap));   // 초당 채우는 비율
       S.prog=Math.min(1,(S.prog||0)+per*d);
     }
     S.floorCd=Math.max(0,(S.floorCd||0)-dt);
-    if((S.floorCd||0)<=0&&S.prog>=1){
+    if(!isRetread(S.floor)&&(S.floorCd||0)<=0&&S.prog>=1){
       S.prog=0; S.floorCd=floorPace();
-      clearFloor(1);                       // 한 번에 한 층. 깊이는 시간에 묶인다.
+      clearFloor(1);                       // 최전선은 한 번에 한 층.
       /* 예전에는 한 층을 깨면 탐험이 꺼졌다 — '연속 탐험' 자동화를 열기 전까지는
          한 층마다 다시 눌러야 했다. 던전은 층수가 초기화되지 않고 계속 도전하는
          곳이므로, 한 번 내려가기 시작하면 멈추라고 할 때까지 계속 내려간다. */
