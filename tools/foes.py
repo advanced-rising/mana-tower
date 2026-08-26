@@ -29,6 +29,11 @@ AFFIX = {
  'arcane': (['w','x','y'], 'E', 't', ['v','w','x','y'], 'rune'),
  'thunder': (['r','s','t'], 'D', 'f', ['r','s','t','9'], 'spark'),
  'blood'  : (['l','m','n'], 'C', 'o', ['l','m','n','o'], 'gore'),
+ # 새 속성 넷 — 형태 전부에 곱해진다
+ 'gilded' : (['b','c','d'], 'A', 'f', ['b','c','d','e'], 'crown'),
+ 'crystal': (['r','s','9'], 'q', 'f', ['r','s','9','f'], 'prism'),
+ 'plague' : (['h','i','j'], 'g', 'k', ['g','h','i','j'], 'spore'),
+ 'void'   : (['u','v','w'], '0', 'y', ['u','v','w','x'], 'hole'),
 }
 
 def put(c, mask, t, o):
@@ -421,7 +426,126 @@ def firstlight(c,t,o):
     for px_ in m_ellipse(8,8,1.4,1.4): c.px(*px_,t[-1])
     return m,[(8,8)],1.0
 
-BASE={'slug':slug,'mantis':mantis,'boar':boar,'raven':raven,'centipede':centipede,
+
+# ══ 더한 형태들 ═════════════════════════════════
+def toad(c,t,o):                       # 두꺼비 — 넓적하고 낮다
+    m=sm(m_ellipse(8,11,6.4,3.6), m_ellipse(8,7.5,4.2,2.8))
+    put(c,m,t,o)
+    for x in (3,13): c.rect(x,13,x+1,14,o)
+    return m,[(6,7),(10,7)],1.4
+def crow(c,t,o):                       # 큰까마귀 — 접힌 날개
+    m=sm(m_ellipse(8,9,3.2,4.4), m_poly([(2,6),(7,8),(4,12)]), m_poly([(14,6),(9,8),(12,12)]))
+    put(c,m,t,o); c.rect(10,5,12,5,o)
+    return m,[(9,6)],1.5
+def urchin(c,t,o):                     # 성게 — 사방으로 뻗은 가시
+    body=m_ellipse(8,8,3.8,3.8); sp=set()
+    for i in range(10):
+        a=i*math.pi/5
+        sp|=m_line(8+math.cos(a)*3.4,8+math.sin(a)*3.4,8+math.cos(a)*7,8+math.sin(a)*7,1)
+    m=sm(body,sp); put(c,m,t,o)
+    return m,[(8,8)],1.2
+def leech(c,t,o):                      # 거머리 — 마디진 몸
+    m=sm(*[m_ellipse(3+i*2.2,10-i*0.7,2.0,2.4) for i in range(6)])
+    put(c,m,t,o)
+    return m,[(13,6)],1.3
+def stalker(c,t,o):                    # 스토커 — 길쭉한 다리
+    m=sm(m_ellipse(8,6,3.4,2.6), m_line(8,8,5,14,1), m_line(8,8,11,14,1), m_line(8,8,8,13,1))
+    put(c,m,t,o)
+    return m,[(7,6),(10,6)],1.4
+def maggot(c,t,o):                     # 시체벌레 — 통통한 몸통
+    m=sm(m_ellipse(7,10,5.6,3.4), m_ellipse(12,8.5,2.4,2.2))
+    put(c,m,t,o)
+    for x in range(4,11,2): c.rect(x,13,x,13,o)
+    return m,[(12,8)],1.3
+def warlock(c,t,o):                    # 흑마법사 — 후드와 지팡이
+    m=sm(m_poly([(5,14),(11,14),(9,4),(7,4)]), m_ellipse(8,4,2.6,2.4))
+    put(c,m,t,o)
+    st=m_line(13,3,13,14,1)-m; put(c,st,t,o)
+    return m,[(7,5),(9,5)],1.4
+def chimera(c,t,o):                    # 키메라 — 머리 둘
+    m=sm(m_ellipse(8,10,5.2,3.4), m_ellipse(4.5,6,2.4,2.2), m_ellipse(11.5,6,2.4,2.2))
+    put(c,m,t,o); c.rect(4,13,12,14,o)
+    return m,[(4,6),(11,6)],1.3
+def moth(c,t,o):                       # 심연 나방 — 넓은 날개
+    m=sm(m_ellipse(8,9,1.8,4.2), m_ellipse(4,7,3.4,3.0), m_ellipse(12,7,3.4,3.0))
+    put(c,m,t,o); c.px(7,4,o); c.px(9,4,o)
+    return m,[(8,7)],1.3
+def anchorite(c,t,o):                  # 고행자 — 사슬 감긴 형상
+    m=sm(m_ellipse(8,10,3.6,4.4), m_ellipse(8,5,2.4,2.2))
+    put(c,m,t,o)
+    for y in (8,11): 
+        for x in range(4,13,2): c.px(x,y,o)
+    return m,[(7,5),(9,5)],1.3
+def coral(c,t,o):                      # 산호귀 — 가지친 몸
+    m=sm(m_ellipse(8,12,4.4,2.6), m_line(8,12,5,5,1), m_line(8,12,11,5,1), m_line(8,12,8,4,1),
+         m_ellipse(5,5,1.4,1.4), m_ellipse(11,5,1.4,1.4), m_ellipse(8,4,1.4,1.4))
+    put(c,m,t,o)
+    return m,[(8,11)],1.2
+def sentry(c,t,o):                     # 파수 골렘 — 네모난 몸
+    m=sm(m_rect(4,6,12,13), m_rect(6,3,10,6))
+    put(c,m,t,o); c.rect(3,14,13,14,o)
+    return m,[(7,4),(9,4)],1.4
+def colossus(c,t,o):                   # 거상 (보스) — 어깨가 넓다
+    m=sm(m_rect(3,6,13,12), m_rect(6,2,10,6), m_rect(4,12,6,15), m_rect(10,12,12,15))
+    put(c,m,t,o)
+    return m,[(7,3),(9,3)],1.8
+def leviathan(c,t,o):                  # 레비아탄 (보스) — 굽이치는 몸
+    m=sm(*[m_ellipse(2+i*2.4,10-abs(i-2.5)*1.8,2.6,2.6) for i in range(6)])
+    put(c,m,t,o); c.rect(12,3,14,4,o)
+    return m,[(13,5)],1.7
+def pulsarite(c,t,o):                  # 맥동체 (우주)
+    m=sm(m_ellipse(8,8,3.0,3.0))
+    put(c,m,t,o)
+    for i in range(6):
+        a=i*math.pi/3
+        r=m_line(8+math.cos(a)*3.4,8+math.sin(a)*3.4,8+math.cos(a)*6.6,8+math.sin(a)*6.6,1)-m
+        put(c,r,t,o)
+    return m,[(8,8)],1.2
+def voidnet(c,t,o):                    # 공허 그물 (우주)
+    m=set()
+    for x in (3,8,13): m|=m_line(x,2,x,14,1)
+    for y in (4,9,13): m|=m_line(2,y,14,y,1)
+    m=sm(m); put(c,m,t,o)
+    return m,[(8,9)],1.1
+def starcoil(c,t,o):                   # 항성 코일 (우주)
+    m=set()
+    for i in range(16):
+        a=i*0.55; r=1.2+i*0.38
+        m|=m_ellipse(8+math.cos(a)*r,8+math.sin(a)*r,1.1,1.1)
+    m=sm(m); put(c,m,t,o)
+    return m,[(8,8)],1.2
+def gravelord(c,t,o):                  # 중력군주 (우주)
+    m=sm(m_ellipse(8,8,4.6,4.6))
+    put(c,m,t,o)
+    for rr in (6.0,7.4):
+        ring=m_ellipse(8,8,rr,rr*0.4)-m_ellipse(8,8,rr-1,max(0.4,rr*0.4-1))
+        put(c,ring-m,t,o)
+    return m,[(8,8)],1.4
+def unmaker(c,t,o):                    # 해체자 (심층)
+    m=sm(m_poly([(8,1),(14,8),(8,15),(2,8)]))
+    put(c,m,t,o)
+    for px in (m_ellipse(8,8,2.0,2.0)&m): c.px(*px,'0',raw=True)
+    return m,[(8,5)],1.3
+def echoform(c,t,o):                   # 메아리체 (심층)
+    m=set()
+    for i,rr in enumerate((6.4,4.4,2.4)):
+        m|=m_ellipse(8,8,rr,rr)-m_ellipse(8,8,rr-1,rr-1)
+    m=sm(m); put(c,m,t,o)
+    return m,[(8,8)],1.2
+def firstword(c,t,o):                  # 첫 말씀 (최원)
+    m=sm(m_line(8,2,8,14,2), m_line(3,5,13,5,1), m_line(4,10,12,10,1))
+    put(c,m,t,o)
+    return m,[(8,7)],1.2
+def endlessone(c,t,o):                 # 끝없는 것 (최원)
+    m=set()
+    for cx0 in (5.4,10.6): m|=m_ellipse(cx0,8,3.2,3.6)-m_ellipse(cx0,8,1.8,2.2)
+    m=sm(m); put(c,m,t,o)
+    return m,[(5,8),(11,8)],1.2
+
+BASE={'toad':toad,'crow':crow,'urchin':urchin,'leech':leech,'stalker':stalker,
+      'maggot':maggot,'warlock':warlock,'chimera':chimera,'moth':moth,'anchorite':anchorite,
+      'coral':coral,'sentry':sentry,
+      'slug':slug,'mantis':mantis,'boar':boar,'raven':raven,'centipede':centipede,
       'troll':troll,'banshee':banshee,'hornet':hornet,'basilisk':basilisk,'mimic':mimic,
       'ghoul':ghoul,'warden':warden,
       'ooze':ooze,'bat':bat,'beast':beast,'wraith':wraith,'serpent':serpent,'golem':golem,
@@ -502,7 +626,8 @@ def wyrm(c,t,o):
     c.rect(13,3,15,3,o)
     return m,[(12,1)],0.9
 
-BOSS={'skull':skull,'demon':demon,'dragon':dragon,'titan':titan,
+BOSS={'colossus':colossus,'leviathan':leviathan,
+      'skull':skull,'demon':demon,'dragon':dragon,'titan':titan,
       'hydra':hydra,'behemoth':behemoth,'archlich':archlich,'wyrm':wyrm}
 
 
@@ -599,7 +724,8 @@ def sentinel(c,t,o):
     c.rect(5,7,10,7,o)
     return m,[(7,5),(9,5)],1.0
 
-COSMIC={'pulsar':pulsar,'comet':comet,'ringworld':ringworld,'magnetar':magnetar,
+COSMIC={'pulsarite':pulsarite,'voidnet':voidnet,'starcoil':starcoil,'gravelord':gravelord,
+        'pulsar':pulsar,'comet':comet,'ringworld':ringworld,'magnetar':magnetar,
         'probe':probe,'asteroid':asteroid,'nebula':nebula,'stareater':stareater,
         'satellite':satellite,'gravity':gravity,'blackhole':blackhole,'guardian':guardian,
         'rift':rift,'dyson':dyson,'spore':spore,'sentinel':sentinel}
@@ -716,7 +842,8 @@ def circuit(c,t,o):
     bands(c,m_ellipse(8,8,2,2),['d','e','f'],n=3,mode='glow',cx=8,cy=8,r=2.6)
     return m,[],1.0
 
-DEEP={'maw':maw,'helix':helix,'eidolon':eidolon,'cinder':cinder,
+DEEP={'unmaker':unmaker,'echoform':echoform,
+      'maw':maw,'helix':helix,'eidolon':eidolon,'cinder':cinder,
       'swarm':swarm,'tendril':tendril,'legion':legion,'darkmatter':darkmatter,
       'lens':lens,'breaker':breaker,'fracture':fracture,'primeval':primeval,
       'ascendant':ascendant,'wall':wall,'devourer':devourer,'circuit':circuit}
@@ -858,7 +985,8 @@ def theend(c,t,o):
     c.rect(2,7,13,8,t[2])
     return m,[],1.0
 
-FAR={'braid':braid,'veil':veil,'causal':causal,'firstlight':firstlight,
+FAR={'firstword':firstword,'endlessone':endlessone,
+     'braid':braid,'veil':veil,'causal':causal,'firstlight':firstlight,
      'weaver':weaver,'knot':knot,'strand':strand,'lattice':lattice,
      'spinner':spinner,'greatvoid':greatvoid,'pulse':pulse,'shroud':shroud,
      'horizon':horizon,'cosmiclens':cosmiclens,'firstecho':firstecho,'edgeofall':edgeofall,
@@ -897,6 +1025,30 @@ def topline(m,fx):
 
 def part(c, mask, kind, acc):
     x0,y0,x1,y1=bbox(mask); cx=(x0+x1)//2; my=(y0+y1)//2
+    if kind=='crown':                       # 황금 — 머리 위 뿔 세 개
+        ty=topline(mask,cx)
+        if ty is not None and ty>=3:
+            for dx,h in ((-3,2),(0,3),(3,2)):
+                k=m_poly([(cx+dx,ty-h),(cx+dx+1.1,ty),(cx+dx-1.1,ty)])-mask
+                if k: bands(c,k,acc[1:],n=3,mode='axis'); edge(c,k,'A')
+        return
+    if kind=='prism':                       # 수정 — 몸 둘레에 각진 조각
+        for dx,dy in ((-6,-3),(6,-3),(-6,4),(6,4)):
+            q=m_poly([(cx+dx,my+dy-1.6),(cx+dx+1.5,my+dy),(cx+dx,my+dy+1.6),(cx+dx-1.5,my+dy)])-mask
+            if q: bands(c,q,acc[1:],n=3,mode='axis'); edge(c,q,'q')
+        return
+    if kind=='spore':                       # 역병 — 떠다니는 홀씨
+        for dx,dy in ((-5,-4),(4,-5),(-4,5),(6,3),(0,-6)):
+            b=m_ellipse(cx+dx,my+dy,1.2,1.2)-mask
+            if b: bands(c,b,acc[1:],n=3,mode='glow',cx=cx+dx,cy=my+dy,r=2); edge(c,b,'g')
+        return
+    if kind=='hole':                        # 공허 — 몸에 뚫린 구멍
+        for dx,dy in ((-2,-1),(3,2)):
+            h=m_ellipse(cx+dx,my+dy,1.6,1.6)&mask
+            for px in h: c.px(*px,'0',raw=True)
+            for px in (m_ellipse(cx+dx,my+dy,2.2,2.2)-m_ellipse(cx+dx,my+dy,1.6,1.6))&mask:
+                c.px(*px,acc[3],raw=True)
+        return
     if kind=='flame':
         for dx,want in ((-4,3),(-1,4),(2,4),(5,3)):
             fx=cx+dx; ty=topline(mask,fx)

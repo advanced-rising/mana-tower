@@ -112,8 +112,24 @@ export const FOE_AFFIX=[
  ['arcane', '비전의',  "Arcane",    {hp:1.10,loot:1.10,crystal:1.10,offer:1.40}],
  ['thunder','뇌전의',  "Thundering",{hp:1.00,loot:1.25,crystal:1.00,offer:1.15}],
  ['blood',  '피의',    "Bloody",    {hp:1.45,loot:1.15,crystal:1.20,offer:1.00}],
+ ['gilded', '황금빛',  "Gilded",    {hp:1.25,loot:1.45,crystal:1.15,offer:1.00}],
+ ['crystal','수정의',  "Crystalline",{hp:1.35,loot:1.00,crystal:1.55,offer:1.10}],
+ ['plague', '역병의',  "Plagued",   {hp:0.80,loot:1.10,crystal:1.00,offer:1.55}],
+ ['void',   '공허의',  "Void-Touched",{hp:1.70,loot:1.30,crystal:1.30,offer:1.30}],
 ];
 export const FOE_BASE=[
+ ['slug',    '거대 민달팽이',"Great Slug"], ['mantis', '낫사마귀',   "Mantis"],
+ ['boar',    '멧돼지 마수', "Tusked Boar"], ['raven',  '흉조',       "Ill Raven"],
+ ['centipede','지네',       "Centipede"],   ['troll',  '트롤',       "Troll"],
+ ['banshee', '밴시',        "Banshee"],     ['hornet', '거대 말벌',  "Giant Hornet"],
+ ['basilisk','바실리스크',  "Basilisk"],    ['mimic',  '미믹',       "Mimic"],
+ ['ghoul',   '구울',        "Ghoul"],       ['warden', '옥지기',     "Warden"],
+ ['toad',    '늪 두꺼비',  "Mire Toad"],   ['crow',    '큰까마귀',   "Great Crow"],
+ ['urchin',  '가시덩이',   "Spineball"],   ['leech',   '흡혈 거머리',"Blood Leech"],
+ ['stalker', '긴다리 추적자',"Stalker"],   ['maggot',  '시체벌레',   "Carrion Grub"],
+ ['warlock', '흑마법사',   "Warlock"],     ['chimera', '쌍두 키메라',"Chimera"],
+ ['moth',    '심연 나방',  "Abyss Moth"],  ['anchorite','사슬 고행자',"Anchorite"],
+ ['coral',   '산호귀',     "Coral Fiend"], ['sentry',  '파수 골렘',  "Sentry Golem"],
  ['ooze',    '점액 덩어리',"Ooze"],        ['bat',     '심연 박쥐',  "Abyss Bat"],
  ['beast',   '마수',       "Beast"],       ['wraith',  '망령',       "Wraith"],
  ['serpent', '독니 뱀',    "Fanged Serpent"],['golem',  '골렘',       "Golem"],
@@ -128,6 +144,7 @@ export const FOE_BASE=[
  ['hound',   '쌍두견',     "Twin Hound"],  ['knight',  '망령 기사',  "Wraith Knight"],
 ];
 export const BOSS_BASE=[
+ ['colossus','거상',       "Colossus"],    ['leviathan','레비아탄',  "Leviathan"],
  ['skull',   '해골 군주',  "Bone Lord"],   ['demon',   '심연의 마왕',"Abyssal Demon"],
  ['dragon',  '심연룡',     "Abyssal Dragon"],['titan', '거신',       "Titan"],
  ['hydra',   '히드라',     "Hydra"],       ['behemoth','베히모스',   "Behemoth"],
@@ -137,6 +154,10 @@ export const mkFoes = (bases, pre) => FOE_AFFIX.flatMap(([ak,ako,aen,af]) =>
   bases.map(([bk,bko,ben]) => ({sp:`${pre}_${bk}_${ak}`, af,
     nm:{ko:`${ako} ${bko}`, en:`${aen} ${ben}`}})));
 export const COS_BASE=[
+ ['pulsar',  '펄서',        "Pulsar"],      ['comet',  '혜성체',     "Comet"],
+ ['ringworld','고리 세계',  "Ringworld"],   ['magnetar','마그네타',  "Magnetar"],
+ ['pulsarite','맥동체',    "Pulsarite"],   ['voidnet',  '공허 그물',  "Void Net"],
+ ['starcoil', '항성 코일',  "Star Coil"],   ['gravelord','중력군주',   "Gravelord"],
  ['probe',    '탐사정',    "Probe"],        ['asteroid', '소행성체',  "Asteroid"],
  ['nebula',   '성운체',    "Nebula Being"], ['stareater','항성 포식자',"Star Eater"],
  ['satellite','위성 병기',  "War Satellite"],['gravity',  '중력체',    "Gravity Well"],
@@ -152,6 +173,9 @@ export const FOES=mkFoes(FOE_BASE,'foe');
 export const COSFOES=mkFoes(COS_BASE,'cos');
 export const CBOSSES=mkFoes(CBOSS_BASE,'cboss');
 export const DEEP_BASE=[
+ ['maw',     '아가리',      "The Maw"],     ['helix',  '나선체',     "Helix"],
+ ['eidolon', '에이돌론',    "Eidolon"],     ['cinder', '잿불',       "Cinder"],
+ ['unmaker', '해체자',     "Unmaker"],     ['echoform','메아리체',   "Echoform"],
  ['swarm',    '성간 군체',  "Swarm"],       ['tendril',  '은하 촉수',  "Tendril"],
  ['legion',   '항성 군단',  "Star Legion"], ['darkmatter','암흑 물질체',"Dark Matter"],
  ['lens',     '중력 렌즈',  "Gravity Lens"],['breaker',  '은하 파괴자',"Breaker"],
@@ -163,6 +187,9 @@ export const DBOSS_BASE=[
  ['worldeater','세계를 먹는 것',"World Eater"], ['origin','근원의 것',"The Origin"],
 ];
 export const FAR_BASE=[
+ ['braid',   '땋인 실',     "The Braid"],   ['veil',   '장막',       "The Veil"],
+ ['causal',  '인과체',      "Causal"],      ['firstlight','첫 빛',   "First Light"],
+ ['firstword','첫 말씀',   "First Word"],  ['endlessone','끝없는 것',"The Endless"],
  ['weaver',    '짜는 자',      "Weaver"],        ['knot',      '매듭',        "Knot"],
  ['strand',    '가닥',         "Strand"],        ['lattice',   '격자',        "Lattice"],
  ['spinner',   '그물 짜는 것',  "Spinner"],       ['greatvoid', '거대 공동',    "Great Void"],
@@ -178,19 +205,26 @@ export const FBOSS_BASE=[
 
 /* 장(章)마다 나오는 무리가 다르다. 위로 갈수록 형체가 커진다.
    속성이 아니라 생물 종류로 갈라야 계층마다 다르게 보인다. */
+/* 장(章)마다 나오는 무리가 다르다. 위로 갈수록 형체가 커진다.
+   형태를 더할 때마다 슬라이스 번호를 손보면 반드시 한쪽이 치우친다 —
+   표 길이의 몇 분의 몇으로 잘라, 몇 종이 되든 고르게 나뉘게 한다. */
+const part_=(arr,i,n)=>{
+  const a=Math.floor(arr.length*i/n), b=i===n-1?arr.length:Math.floor(arr.length*(i+1)/n);
+  return arr.slice(a,Math.max(a+1,b));
+};
 export const CH_POOL=[
- [FOE_BASE.slice(0,12),  'foe',  BOSS_BASE.slice(0,2),  'boss'],   // 0 지구
- [FOE_BASE.slice(12),    'foe',  BOSS_BASE.slice(2),    'boss'],   // 1 행성
- [COS_BASE.slice(0,4),   'cos',  CBOSS_BASE.slice(0,1), 'cboss'],  // 2 항성계
- [COS_BASE.slice(4,8),   'cos',  CBOSS_BASE.slice(1,2), 'cboss'],  // 3 성단
- [COS_BASE.slice(8),     'cos',  CBOSS_BASE.slice(2,3), 'cboss'],  // 4 은하
- [DEEP_BASE.slice(0,4),  'deep', CBOSS_BASE.slice(3),   'cboss'],  // 5 은하군
- [DEEP_BASE.slice(4,8),  'deep', DBOSS_BASE.slice(0,1), 'dboss'],  // 6 은하단
- [DEEP_BASE.slice(8),    'deep', DBOSS_BASE.slice(1),   'dboss'],  // 7 초은하단
- [FAR_BASE.slice(0,4),   'far',  FBOSS_BASE.slice(0,1), 'fboss'],  // 8 필라멘트
- [FAR_BASE.slice(4,8),   'far',  FBOSS_BASE.slice(1),   'fboss'],  // 9 우주 거대구조
- [FAR_BASE.slice(8,12),  'far',  FBOSS_BASE,            'fboss'],  // 10 관측 가능한 우주
- [FAR_BASE.slice(12),    'far',  FBOSS_BASE,            'fboss'],  // 11 다중우주
+ [part_(FOE_BASE,0,2), 'foe',  part_(BOSS_BASE,0,2), 'boss'],   // 0 지구
+ [part_(FOE_BASE,1,2), 'foe',  part_(BOSS_BASE,1,2), 'boss'],   // 1 행성
+ [part_(COS_BASE,0,3), 'cos',  part_(CBOSS_BASE,0,4),'cboss'],  // 2 항성계
+ [part_(COS_BASE,1,3), 'cos',  part_(CBOSS_BASE,1,4),'cboss'],  // 3 성단
+ [part_(COS_BASE,2,3), 'cos',  part_(CBOSS_BASE,2,4),'cboss'],  // 4 은하
+ [part_(DEEP_BASE,0,3),'deep', part_(CBOSS_BASE,3,4),'cboss'],  // 5 은하군
+ [part_(DEEP_BASE,1,3),'deep', part_(DBOSS_BASE,0,2),'dboss'],  // 6 은하단
+ [part_(DEEP_BASE,2,3),'deep', part_(DBOSS_BASE,1,2),'dboss'],  // 7 초은하단
+ [part_(FAR_BASE,0,4), 'far',  part_(FBOSS_BASE,0,2),'fboss'],  // 8 필라멘트
+ [part_(FAR_BASE,1,4), 'far',  part_(FBOSS_BASE,1,2),'fboss'],  // 9 우주 거대구조
+ [part_(FAR_BASE,2,4), 'far',  FBOSS_BASE,           'fboss'],  // 10 관측 가능한 우주
+ [part_(FAR_BASE,3,4), 'far',  FBOSS_BASE,           'fboss'],  // 11 다중우주
 ];
 export const _poolCache={};
 export function poolsFor(ch){
