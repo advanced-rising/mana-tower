@@ -33,9 +33,14 @@ export function fmtLog(l){
   }
   const tier=Math.floor(l/3);
   if(tier<=SUF_MAX_TIER) return headNum(Math.pow(10,l-tier*3))+suffixOf(tier);
+  /* 층을 너무 일찍 쌓으면 큰 값이 전부 같은 글자로 보인다 — e1e8 에서 90% 를
+     써도 ee8.00 → ee8.00 이라 아무 일도 안 일어난 것처럼 읽혔다.
+     자릿수를 쉼표로 그대로 적을 수 있는 데까지(1e15) 한 겹으로 두고,
+     그 위로 층을 쌓을 때도 소수 넷째 자리까지 적어 변화를 잃지 않는다. */
   let layer=1, v=l;
-  while(v>=1e6&&layer<1e9){ v=L10(v); layer++; }   // 1e6 아래는 e 한 겹으로 읽힌다 (e54,771)
-  const h=v>=1000?Math.round(v).toLocaleString():v>=100?v.toFixed(1):v.toFixed(2);
+  while(v>=1e15&&layer<1e9){ v=L10(v); layer++; }
+  const h = layer===1 ? Math.round(v).toLocaleString()
+          : v>=1000 ? v.toFixed(2) : v>=100 ? v.toFixed(3) : v.toFixed(4);
   return layer<=4?'e'.repeat(layer)+h:'(e^'+layer+')'+h;
 }
 /* 설명 문구도 자릿수로 적는다. b^e 는 e 가 조금만 커져도 ∞ 가 되어
@@ -131,8 +136,8 @@ export function layerTxt(LL){          // 값의 자릿수가 10^LL 일 때 그 
   if(!isFinite(LL)) return LL>0?'∞':'1';
   if(LL<300) return fmtLog(Math.pow(10,LL));
   let layer=2, v=LL;
-  while(v>=1e6&&layer<1e9){ v=L10(v); layer++; }
-  const h=v>=1000?Math.round(v).toLocaleString():v>=100?v.toFixed(1):v.toFixed(2);
+  while(v>=1e15&&layer<1e9){ v=L10(v); layer++; }
+  const h = v>=1000 ? v.toFixed(2) : v>=100 ? v.toFixed(3) : v.toFixed(4);
   return layer<=4?'e'.repeat(layer)+h:'(e^'+layer+')'+h;
 }
 /* b^(l·p) · p 는 10^pLog */
