@@ -25,10 +25,18 @@ export function crumb(where){
 export function lastCrumb(){
   try{ return localStorage.getItem('manaTowerBoot')||'' }catch(e){ return '' }
 }
+/* 안전 모드에서 건너뛴 세이브를 그대로 들고 있는다 — 내보내기가 새 게임이 아니라
+   원래 진행을 파일로 써야 하기 때문이다. 안 그러면 구하러 들어가서 빈 파일을 얻는다. */
+let skipped='';
+export function safeMode(){ try{ return /[?&]safe=1/.test(location.search) }catch(e){ return false } }
+export function skippedSave(){ return skipped }
 export function load(){
   /* ?safe=1 로 열면 세이브를 건드리지 않는다. 세이브가 게임을 멈추게 만들 때
      들어가서 내보내기라도 할 수 있는 유일한 문이다. */
-  try{ if(/[?&]safe=1/.test(location.search)) return false }catch(e){}
+  if(safeMode()){
+    try{ skipped=localStorage.getItem(SAVE_KEY)||'' }catch(e){ skipped='' }
+    return false;
+  }
   const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false;
   try{
     setS(mergeState(dec(raw))); return true;
@@ -141,7 +149,9 @@ export function offlineCatchUp(){
   `);
 }
 export function exportSave(){
-  const blob=new Blob([enc(S)],{type:'text/plain'});
+  /* 안전 모드에서는 화면에 보이는 새 게임이 아니라, 건너뛴 원래 세이브를 내보낸다 */
+  const body=(safeMode()&&skipped)?skipped:enc(S);
+  const blob=new Blob([body],{type:'text/plain'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   const t=new Date(),p=n=>String(n).padStart(2,'0');

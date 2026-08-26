@@ -13,7 +13,7 @@ import { $, modal, modalOpen } from './ui/dom'
 import { TABS, TAB_KEYS, buildTabs, ensureTabs, switchTab, tabByKey, tabKeyOf, updaters } from './ui/tabs'
 import { buildRes } from './ui/resbar'
 import { refresh, render } from './ui/render'
-import { crumb, importSave, lastCrumb, load, offlineCatchUp, save } from './save'
+import { crumb, dec, enc, exportSave, importSave, lastCrumb, load, mergeState, offlineCatchUp, safeMode, save, skippedSave } from './save'
 
 /* ══════════════ 루프 & 입력 ══════════════ */
 export let lastFrame=Date.now();
@@ -91,6 +91,7 @@ document.title=X('무한의 탑','Tower of Infinity');
   achCount, runeTotal, gearTotal, chalTotal, chapterSeen, chapterOf, cosmos, cosmosBonusLog, infBonusLog, gatherAmountLog, manaRateLog,
   transUnlocked, starGain, starGainLog, relicGain, relicGainLog, soulGain, TRANS_REQ, ASCEND_REQ,
   gather, addManaLog, syncMana, effLevel, softReset, checkAchs, MILESTONES, RESEARCH_ALL: RESEARCH,
+  importSave, mergeState, load, offlineCatchUp, dec, enc, crumb, lastCrumb, exportSave, safeMode, skippedSave,
 }
 
 /* 부팅이 어디서 터지든 남는 것은 흰 화면뿐이었다 — 무엇이 잘못됐는지도,
@@ -146,7 +147,7 @@ const prevCrumb=lastCrumb();                                 // 지우기 전에
 try{ localStorage.removeItem('manaTowerBoot') }catch(e){}    // 무사히 떴으니 지운다
 if(/[?&]safe=1/.test(location.search))
   modal('안전 모드', '세이브를 읽지 않고 열었습니다. 지금 보이는 진행은 새 게임입니다.<br>'
-    +'설정 탭의 <b>세이브 내보내기</b>로 원래 세이브를 파일로 꺼낼 수 있습니다.<br><br>'
+    +'설정 탭의 <b>세이브 내보내기</b>를 누르면 화면에 보이는 새 게임이 아니라 <b>원래 세이브</b>가 파일로 나갑니다.<br><br>'
     +'<span class="dim">직전 부팅이 멈춘 지점: <b>'+(prevCrumb||'기록 없음')+'</b></span>');
 }catch(e){ bootFail(e) }
 

@@ -175,6 +175,38 @@
     }
   }catch(e){ bad('지출',e.message) }
 
+  /* ── 4.5 터무니없는 값에서도 멎지 않는가 ────────
+     실제 세이브 하나가 마나 자릿수 1e264, 시설 1e15개, 룬 1e14 레벨을 담고
+     있었다. 묶음 비용이 항을 하나씩 더하다 배정도가 바닥나 항이 줄지 않게 되면
+     n 번(1e130 번)을 다 돌았고, 브라우저가 통째로 멈췄다. 화면도 콘솔도
+     아무 말을 못 하는 종류의 고장이라, 여기서 붙잡아 둔다. */
+  try{
+    const big=1e264;
+    for(const [fn,args] of [
+      [G.bulkCostLog,[G.RUNES[0]&&(l=>2*Math.pow(1.7,l)), 1e14, 1e12]],
+      [G.bulkCostLog,[l=>2*Math.pow(1.05,l), 1e15, 1e30]],
+      [G.bulkMaxLog, [l=>2*Math.pow(1.7,l), 0, big]],
+      [G.bulkMaxLog, [l=>2*Math.pow(1.05,l), 1e14, big]],
+      [G.costLogAt,  [l=>2*Math.pow(1.7,l), 1e14]],
+    ]){
+      const v=fn.apply(null,args);
+      if(typeof v!=='number'||isNaN(v)) bad('극단값',`${fn.name||'함수'}(${args.slice(1)}) → ${D(v)}`);
+    }
+    /* 자원을 터무니없이 불려 놓고 자동화를 한 바퀴 돌린다 */
+    const keep={};
+    for(const k of ['manaL','crystalL','offeringL','soulL','relicL','starL']) keep[k]=S[k];
+    for(const k of ['manaL','crystalL','offeringL','soulL','relicL','starL']) S[k]=big;
+    S.manaEverL=big; S.manaPeakL=big;
+    for(const r of G.RUNES) S.runes[r.id]=1e14;
+    for(const g of G.GEAR) S.gear[g.id]=1e14;
+    for(let i=0;i<S.bought.length;i++) S.bought[i]=1e15;
+    G.recalc();
+    for(let i=0;i<20;i++) G.tick(0.2);          // 여기서 멎으면 하네스가 DONE 을 못 찍는다
+    check('극단값 20틱');
+    for(const k in keep) S[k]=keep[k];
+    G.recalc();
+  }catch(e){ bad('극단값',e.message) }
+
   /* ── 5. 표기 ───────────────────────────────── */
   try{
     for(const l of [-Infinity,0,1,2.5,5.999,6,15,100,2039,2041,54767,54769,1e6,1e9,Infinity,NaN]){

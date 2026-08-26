@@ -219,13 +219,23 @@ export function bulkCostLog(costFn,l,n){
   const at=(x)=>c0+x*lg+K*x*x;
   const top=at(l+n-1);
   if(n===1) return top;
-  /* 위에서부터 내려오며 더한다. 항이 초지수로 줄어들어 금세 무시할 만해지므로
-     스무 항 남짓이면 배정도 정밀도를 다 쓴다 — n 이 아무리 커도 걸음 수는 같다.
-     예전에는 맨 윗 두 항의 비율로 등비합 근사를 했는데, 곡선이 등비가 아니라
-     아래 항들을 너무 크게 잡아 적은 수량에서 25% 나 비싸게 물렸다. */
+  /* 합은 맨 윗 항이 지배한다. 얼마나 빨리 지배하는지는 위 두 항의 차이가 말해 준다. */
+  const step=top-at(l+n-2);
+  /* 차이가 0 이면 항이 줄지 않는다 — 배정도가 바닥난 것이다. 위 항이 n 개 있는 셈.
+     예전에는 이 경우에 break 가 영영 걸리지 않아 n 번을 다 돌았고, n 이 1e130 쯤
+     되는 세이브 하나가 브라우저를 통째로 멈춰 세웠다. */
+  if(!(step>1e-12)) return top+L10(n);
+  /* 열여덟 자리 아래로 떨어지기까지 필요한 걸음 수. 이만큼만 실제로 더하면 정확하다. */
+  const need=Math.ceil(18/step)+2;
+  if(need>4096){
+    /* 너무 천천히 줄어든다 — 항별로 더하면 걸음이 수천을 넘는다.
+       이 구간에서는 곡선이 사실상 등비여서 닫힌식이 정확하다. */
+    const tail=step*n>300?0:Math.pow(10,-step*n);
+    return top+L10((1-tail)/(1-Math.pow(10,-step)));
+  }
   let acc=0;
-  for(let i=n-1;i>=0;i--){
-    const d=at(l+i)-top;
+  for(let k=0;k<need&&k<n;k++){
+    const d=at(l+n-1-k)-top;
     if(d<-18) break;                 // 남은 항을 다 더해도 끝자리 아래다
     acc+=Math.pow(10,d);
   }
@@ -247,6 +257,7 @@ export function bulkMaxLog(costFn,l,budgetLog){
      자원이 그대로이던 것이 이 자리였다. 0 에서 시작해 아래 걸음으로 올려 본다. */
   let n=isFinite(m)?Math.floor(m-l+1):0;
   if(!(n>0)) n=0;
+  n=Math.min(n,1e12);                // 한 번에 살 수 있는 개수를 묶어 둔다
   /* 이차식 몫은 맨 윗 항만 본 어림이라 한두 걸음 어긋난다. 여덟 걸음만 맞추던
      때는 천팔백 조합 중 열일곱 자리에서 살 수 있는데도 덜 샀다 — 넉넉히 걷는다. */
   let k=0;
