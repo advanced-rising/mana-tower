@@ -37,7 +37,7 @@ export const RESEARCH=[
 export const RUNES=[
  {id:'speed', sp:'rune_speed', nm:{ko:'신속의 룬',en:"Rune of Haste"}, d:l=>`${X('게임 속도',"Game speed")} +${pctTxt(1.5*l)}% → +${pctTxt(1.5*(l+1))}%`,        apply:(m,l)=>m.speed*=1+0.015*l},
  {id:'wealth',sp:'rune_wealth',nm:{ko:'풍요의 룬',en:"Rune of Plenty"}, d:l=>`${X('마나 생산',"Mana output")} ×${powTxt(1.06,l)} → ×${powTxt(1.06,l+1)}`,      apply:(m,l)=>m.prod*=Math.pow(1.06,l)},
- {id:'wisdom',sp:'rune_wisdom',nm:{ko:'지혜의 룬',en:"Rune of Wisdom"}, d:l=>`${X('오퍼링 획득',"Offerings")} +${(8*l)}% → +${(8*(l+1))}%`,                   apply:(m,l)=>m.offer*=1+0.08*l},
+ {id:'wisdom',sp:'rune_wisdom',nm:{ko:'지혜의 룬',en:"Rune of Wisdom"}, d:l=>`${X('오퍼링 획득',"Offerings")} +${fmt((8*l))}% → +${fmt((8*(l+1)))}%`,                   apply:(m,l)=>m.offer*=1+0.08*l},
  {id:'guard', sp:'rune_guard', nm:{ko:'수호의 룬',en:"Rune of Warding"}, d:l=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(1.12,l)} → ×${powTxt(1.12,l+1)}`,    apply:(m,l)=>m.dungeon*=Math.pow(1.12,l)},
  {id:'abyss', sp:'rune_abyss', nm:{ko:'심연의 룬',en:"Rune of the Abyss"}, d:l=>`${X('영혼석 획득',"Soul Shards")} ×${powTxt(1.08,l)} → ×${powTxt(1.08,l+1)}`,    apply:(m,l)=>m.soul*=Math.pow(1.08,l)},
 ];
@@ -73,7 +73,7 @@ GEAR.push(
  {id:'ring',   sp:'ring',    nm:{ko:'현자의 반지',en:"Sage Ring"},
   /* 상한을 장비 지수에 비례시키면 고리가 돈다 — 상한이 오르면 담금질 룬을 더 올릴 수 있고,
      그 룬이 다시 지수를 올린다. 지수가 1e70 까지 뛴 것이 이 고리 때문이었다. 끊는다. */
-  d:(l,p)=>`${X('룬 최대 레벨',"Rune level cap")} +${2*l} → +${2*(l+1)}`, apply:(m,l)=>m.runeCap+=2*l},
+  d:(l,p)=>`${X('룬 최대 레벨',"Rune level cap")} +${fmt(2*l)} → +${fmt(2*(l+1))}`, apply:(m,l)=>m.runeCap+=2*l},
  {id:'robe',   sp:'robe',    nm:{ko:'별빛 로브',en:"Starlit Robe"},
   d:(l,p)=>`${X('영혼석 획득',"Soul Shards")} ×${powTxtL(1.16,l,p)} → ×${powTxtL(1.16,l+1,p)}`, apply:(m,l)=>m.soul*=Math.pow(1.16,l*m.gearPow)},
  {id:'crown',  sp:'crown16', nm:{ko:'왕관',en:"Crown"},
@@ -127,9 +127,9 @@ export const SOUL_UPS=[
  {id:'s3', sp:'fastfwd',  nm:{ko:'신속한 손길',en:"Swift Hands"},max:Infinity,c:l=>10*Math.pow(2.1,l), d:l=>`${X('자동화 주기',"Automation interval")} ${pctTxt(Math.pow(0.88,l)*100)}% → ${pctTxt(Math.pow(0.88,l+1)*100)}%`, apply:(m,l)=>m.autoSpeed*=Math.pow(0.88,l)},
  {id:'s4', sp:'sparkle',  nm:{ko:'영혼 공명',en:"Soul Resonance"},  max:Infinity,c:l=>14*Math.pow(2.2,l), d:l=>`${X('영혼석 획득',"Soul Shards")} ×${powTxt(1.3,l)} → ×${powTxt(1.3,l+1)}`, apply:(m,l)=>m.soul*=Math.pow(1.3,l)},
  {id:'s5', sp:'mastery',  nm:{ko:'던전 숙련',en:"Dungeon Mastery"},  max:Infinity,c:l=>9*Math.pow(1.95,l), d:l=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(1.35,l)} → ×${powTxt(1.35,l+1)}`, apply:(m,l)=>m.dungeon*=Math.pow(1.35,l)},
- {id:'s6', sp:'moon',     nm:{ko:'오프라인 계약',en:"Offline Pact"},max:Infinity,    c:l=>18*Math.pow(1.8,l), d:l=>`${X('오프라인 상한',"Offline cap")} ${4+2*l}${X("시간","h")} → ${6+2*l}${X("시간","h")}`, apply:(m,l)=>m.offline=4+2*l},
+ {id:'s6', sp:'moon',     nm:{ko:'오프라인 계약',en:"Offline Pact"},max:Infinity,    c:l=>18*Math.pow(1.8,l), d:l=>`${X('오프라인 상한',"Offline cap")} ${fmt(4+2*l)}${X("시간","h")} → ${fmt(6+2*l)}${X("시간","h")}`, apply:(m,l)=>m.offline=4+2*l},
  {id:'s7', sp:'gift',     nm:{ko:'시작 지원금',en:"Starting Grant"},max:Infinity,c:l=>22*Math.pow(2.6,l), d:l=>`${X('환생 직후 마나',"Mana right after rebirth")} ${fmtLog(startManaLog(l))} → ${fmtLog(startManaLog(l+1))}`, apply:()=>{}},
- {id:'s8', sp:'runering',nm:{ko:'룬 친화',en:"Rune Affinity"}, max:Infinity,       c:l=>25*Math.pow(2.4,l), d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${5*l} → +${5*(l+1)}`, apply:(m,l)=>m.runeCap+=5*l},
+ {id:'s8', sp:'runering',nm:{ko:'룬 친화',en:"Rune Affinity"}, max:Infinity,       c:l=>25*Math.pow(2.4,l), d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${fmt(5*l)} → +${fmt(5*(l+1))}`, apply:(m,l)=>m.runeCap+=5*l},
  {id:'s9', sp:'chisel',  nm:{ko:'결정 세공',en:"Crystal Cutting"},  max:Infinity,c:l=>16*Math.pow(2.3,l), d:l=>`${X('결정 획득',"Crystals")} ×${powTxt(1.5,l)} → ×${powTxt(1.5,l+1)}`, apply:(m,l)=>m.crystal*=Math.pow(1.5,l)},
  {id:'s10',sp:'chalice', nm:{ko:'봉헌의 축복',en:"Blessing of Offering"},max:Infinity,c:l=>20*Math.pow(2.35,l),d:l=>`${X('오퍼링 획득',"Offerings")} ×${powTxt(1.4,l)} → ×${powTxt(1.4,l+1)}`, apply:(m,l)=>m.offer*=Math.pow(1.4,l)},
 ];
@@ -154,11 +154,11 @@ SOUL_UPS.push(
 export const RELIC_UPS=[
  {id:'a1', sp:'idol',    nm:{ko:'고대 유물',en:"Ancient Relic"},  max:Infinity,c:l=>1*Math.pow(3,l),    d:l=>`${X('마나 생산',"Mana output")} ×${powTxt(2,l)} → ×${powTxt(2,l+1)}`, apply:(m,l)=>m.prod*=Math.pow(2,l)},
  {id:'a2', sp:'pickaxe',  nm:{ko:'영혼 광맥',en:"Soul Vein"},  max:Infinity,c:l=>2*Math.pow(3.2,l),  d:l=>`${X('영혼석 획득',"Soul Shards")} ×${powTxt(2.5,l)} → ×${powTxt(2.5,l+1)}`, apply:(m,l)=>m.soul*=Math.pow(2.5,l)},
- {id:'a3', sp:'clock',nm:{ko:'시간 가속',en:"Time Acceleration"},  max:Infinity,      c:l=>3*Math.pow(4,l),    d:l=>`${X('게임 속도',"Game speed")} +${12*l}% → +${12*(l+1)}%`, apply:(m,l)=>m.speed*=1+0.12*l},
+ {id:'a3', sp:'clock',nm:{ko:'시간 가속',en:"Time Acceleration"},  max:Infinity,      c:l=>3*Math.pow(4,l),    d:l=>`${X('게임 속도',"Game speed")} +${fmt(12*l)}% → +${fmt(12*(l+1))}%`, apply:(m,l)=>m.speed*=1+0.12*l},
  {id:'a4', sp:'voyage',  nm:{ko:'심연 항해',en:"Abyssal Voyage"},  max:Infinity,c:l=>4*Math.pow(3.4,l),  d:l=>`${X('던전 보상',"Dungeon rewards")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`, apply:(m,l)=>m.floorLoot*=Math.pow(3,l)},
- {id:'a5', sp:'blessing',  nm:{ko:'왕국의 축복',en:"Kingdom's Blessing"},max:Infinity,c:l=>5*Math.pow(3.5,l),  d:l=>X(`환생 후 각 시설 ${8*l}개 → ${8*(l+1)}개 무료`,`Free buildings after rebirth: ${8*l} → ${8*(l+1)}`), apply:()=>{}},
- {id:'a6', sp:'banner',      nm:{ko:'심연의 지도',en:"Map of the Abyss"},max:Infinity,c:l=>6*Math.pow(3.8,l),  d:l=>`${X('층당 배율',"Depth bonus")} +${2*l}%p → +${2*(l+1)}%p`, apply:(m,l)=>m.floorPct+=0.02*l},
- {id:'a7', sp:'engrave',nm:{ko:'룬 각인술',en:"Rune Inscription"}, max:Infinity,       c:l=>10*Math.pow(4.5,l), d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${10*l} → +${10*(l+1)}`, apply:(m,l)=>m.runeCap+=10*l},
+ {id:'a5', sp:'blessing',  nm:{ko:'왕국의 축복',en:"Kingdom's Blessing"},max:Infinity,c:l=>5*Math.pow(3.5,l),  d:l=>X(`환생 후 각 시설 ${fmt(8*l)}개 → ${fmt(8*(l+1))}개 무료`,`Free buildings after rebirth: ${fmt(8*l)} → ${fmt(8*(l+1))}`), apply:()=>{}},
+ {id:'a6', sp:'banner',      nm:{ko:'심연의 지도',en:"Map of the Abyss"},max:Infinity,c:l=>6*Math.pow(3.8,l),  d:l=>`${X('층당 배율',"Depth bonus")} +${fmt(2*l)}%p → +${fmt(2*(l+1))}%p`, apply:(m,l)=>m.floorPct+=0.02*l},
+ {id:'a7', sp:'engrave',nm:{ko:'룬 각인술',en:"Rune Inscription"}, max:Infinity,       c:l=>10*Math.pow(4.5,l), d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${fmt(10*l)} → +${fmt(10*(l+1))}`, apply:(m,l)=>m.runeCap+=10*l},
  {id:'a8', sp:'treasure',      nm:{ko:'보물 감식',en:"Treasure Appraisal"},  max:Infinity,c:l=>8*Math.pow(3.6,l),  d:l=>`${X('결정 획득',"Crystals")} ×${powTxt(2,l)} → ×${powTxt(2,l+1)}`, apply:(m,l)=>m.crystal*=Math.pow(2,l)},
  {id:'a9', sp:'chain',    nm:{ko:'시련의 인장',en:"Seal of Trials"},max:Infinity,c:l=>12*Math.pow(4,l),   d:l=>`${X('도전 보상',"Trial rewards")} ×${powTxt(1.5,l)} → ×${powTxt(1.5,l+1)}`, apply:(m,l)=>m.chalPow*=Math.pow(1.5,l)},
  {id:'a10',sp:'seed',     nm:{ko:'초월의 씨앗',en:"Seed of Transcendence"},max:Infinity,c:l=>20*Math.pow(5,l),   d:l=>`${X('모든 생산·획득',"All output")} ×${powTxt(1.35,l)} → ×${powTxt(1.35,l+1)}`, apply:(m,l)=>{const v=Math.pow(1.35,l);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
@@ -178,7 +178,7 @@ RELIC_UPS.push(
   d:l=>`${X('보스 보상',"Boss rewards")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`,
   apply:(m,l)=>m.boss*=Math.pow(3,l)},
  {id:'a15',sp:'nosleep',    nm:{ko:'잠들지 않는 탑',en:"Sleepless Tower"}, max:Infinity,c:l=>10*Math.pow(3.2,l),
-  d:l=>`${X('오프라인 상한',"Offline cap")} +${4*l}${X('시간','h')} → +${4*(l+1)}${X('시간','h')}`,
+  d:l=>`${X('오프라인 상한',"Offline cap")} +${fmt(4*l)}${X('시간','h')} → +${fmt(4*(l+1))}${X('시간','h')}`,
   apply:(m,l)=>m.offline+=4*l},
  {id:'a16',sp:'relicheart',     nm:{ko:'유물의 심장',en:"Heart of Relics"}, max:Infinity,c:l=>16*Math.pow(4.6,l),
   d:l=>`${X('승천 유물 획득',"Relics on ascension")} ×${powTxt(1.6,l)} → ×${powTxt(1.6,l+1)}`,
@@ -221,7 +221,7 @@ export const STAR_UPS=[
   d:l=>`${X('마나 생산',"Mana output")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`,
   apply:(m,l)=>m.prod*=Math.pow(3,l)},
  {id:'t3', sp:'riverclock',nm:{ko:'시간의 강',en:"River of Time"},  max:Infinity, c:l=>3*Math.pow(5,l),
-  d:l=>`${X('게임 속도',"Game speed")} +${20*l}% → +${20*(l+1)}%`, apply:(m,l)=>m.speed*=1+0.20*l},
+  d:l=>`${X('게임 속도',"Game speed")} +${fmt(20*l)}% → +${fmt(20*(l+1))}%`, apply:(m,l)=>m.speed*=1+0.20*l},
  {id:'t4', sp:'soul',     nm:{ko:'영혼의 대양',en:"Sea of Souls"}, max:Infinity,c:l=>3*Math.pow(3.6,l),
   d:l=>`${X('영혼석 획득',"Soul Shards")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`,
   apply:(m,l)=>m.soul*=Math.pow(3,l)},
@@ -238,10 +238,10 @@ export const STAR_UPS=[
   d:l=>`${X('결정 획득',"Crystals")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`,
   apply:(m,l)=>m.crystal*=Math.pow(3,l)},
  {id:'t9', sp:'touch',  nm:{ko:'초월의 손길',en:"Transcendent Touch"},max:Infinity,c:l=>6*Math.pow(4.2,l),
-  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${25*l} → ${25*(l+1)}${X('개 무료',' free')}`,
+  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${fmt(25*l)} → ${fmt(25*(l+1))}${X('개 무료',' free')}`,
   apply:()=>{}},
  {id:'t10',sp:'starcrown', nm:{ko:'별의 왕관',en:"Crown of Stars"}, max:Infinity,  c:l=>8*Math.pow(5,l),
-  d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${25*l} → +${25*(l+1)}`, apply:(m,l)=>m.runeCap+=25*l},
+  d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${fmt(25*l)} → +${fmt(25*(l+1))}`, apply:(m,l)=>m.runeCap+=25*l},
 ];
 
 STAR_UPS.push(
@@ -256,7 +256,7 @@ STAR_UPS.push(
  {id:'t15',sp:'library',    nm:{ko:'무한 서고 확장',en:"Library Expansion"}, max:Infinity,c:l=>11*Math.pow(4.3,l),
   d:l=>`${X('아래 두 단계 효율',"Bottom two tiers")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`, apply:(m,l)=>m.t0*=Math.pow(3,l)},
  {id:'t16',sp:'night',    nm:{ko:'영원한 밤',en:"Endless Night"}, max:Infinity,c:l=>14*Math.pow(4.0,l),
-  d:l=>`${X('오프라인 상한',"Offline cap")} +${8*l}${X('시간','h')} → +${8*(l+1)}${X('시간','h')}`, apply:(m,l)=>m.offline+=8*l},
+  d:l=>`${X('오프라인 상한',"Offline cap")} +${fmt(8*l)}${X('시간','h')} → +${fmt(8*(l+1))}${X('시간','h')}`, apply:(m,l)=>m.offline+=8*l},
 );
 
 /* 영원 강화 · 영원으로만 산다. 계층을 통째로 갈아 넣고 얻는 것이라 효과가 크다.
@@ -278,12 +278,12 @@ export const ETER_UPS=[
   d:l=>`${X('장비 효과 지수',"Gear exponent")} ×${powTxt(2,l)} → ×${powTxt(2,l+1)}`,
   apply:(m,l)=>m.gearPow*=Math.pow(2,l)},
  {id:'e6', sp:'etercrown',nm:{ko:'영원의 왕관',en:"Eternal Crown"}, max:Infinity,c:l=>4*Math.pow(3.2,l),
-  d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${200*l} → +${200*(l+1)}`, apply:(m,l)=>m.runeCap+=200*l},
+  d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${fmt(200*l)} → +${fmt(200*(l+1))}`, apply:(m,l)=>m.runeCap+=200*l},
  {id:'e7', sp:'nulleconomy',   nm:{ko:'무의 경제',en:"Economy of Nothing"}, max:Infinity,c:l=>5*Math.pow(3.6,l),
   d:l=>`${X('남는 시설 비용',"Building cost left")} ${cutTxt(0.7,l)} → ${cutTxt(0.7,l+1)}`,
   apply:(m,l)=>m.costMul*=Math.pow(0.7,l)},
  {id:'e8', sp:'eternight',    nm:{ko:'잠들지 않는 영원',en:"Sleepless Eternity"}, max:Infinity,c:l=>3*Math.pow(2.6,l),
-  d:l=>`${X('오프라인 상한',"Offline cap")} +${24*l}${X('시간','h')} → +${24*(l+1)}${X('시간','h')}`,
+  d:l=>`${X('오프라인 상한',"Offline cap")} +${fmt(24*l)}${X('시간','h')} → +${fmt(24*(l+1))}${X('시간','h')}`,
   apply:(m,l)=>m.offline+=24*l},
 ];
 ETER_UPS.push(
@@ -300,7 +300,7 @@ ETER_UPS.push(
   d:l=>`${X('영혼석·오퍼링 획득',"Soul Shards & Offerings")} ×${powTxt(12,l)} → ×${powTxt(12,l+1)}`,
   apply:(m,l)=>{const v=Math.pow(12,l);m.soul*=v;m.offer*=v;}},
  {id:'e13',sp:'formless',  nm:{ko:'무형의 손',en:"Formless Hand"}, max:Infinity,c:l=>7*Math.pow(3.6,l),
-  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${500*l} → ${500*(l+1)}${X('개 무료',' free')}`,
+  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${fmt(500*l)} → ${fmt(500*(l+1))}${X('개 무료',' free')}`,
   apply:()=>{}},
  {id:'e14',sp:'scythe',    nm:{ko:'종언의 낫',en:"Scythe of Ending"}, max:Infinity,c:l=>6*Math.pow(3.3,l),
   d:l=>`${X('보스 보상',"Boss rewards")} ×${powTxt(15,l)} → ×${powTxt(15,l+1)}`,
@@ -339,7 +339,7 @@ export const INF_UPS=[
   d:l=>`${X('남는 시설 비용',"Building cost left")} ${cutTxt(0.8,l)} → ${cutTxt(0.8,l+1)}`,
   apply:(m,l)=>m.costMul*=Math.pow(0.8,l)},
  {id:'i10',sp:'inf_twin',  nm:{ko:'쌍둥이 고리',en:"Twin Rings"}, max:Infinity,c:l=>5*Math.pow(3.2,l),
-  d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${50*l} → +${50*(l+1)}`, apply:(m,l)=>m.runeCap+=50*l},
+  d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${fmt(50*l)} → +${fmt(50*(l+1))}`, apply:(m,l)=>m.runeCap+=50*l},
 ];
 export const REAL_UPS=[
  {id:'r1', sp:'real_gate',  nm:{ko:'현실의 문',en:"Gate of Reality"}, max:Infinity,c:l=>1*Math.pow(2.6,l),
@@ -361,7 +361,7 @@ export const REAL_UPS=[
  {id:'r8', sp:'real_net',   nm:{ko:'인과의 그물',en:"Net of Causes"}, max:Infinity,c:l=>5*Math.pow(3.3,l),
   d:l=>`${X('도전 보상',"Trial rewards")} ×${powTxt(4,l)} → ×${powTxt(4,l+1)}`, apply:(m,l)=>m.chalPow*=Math.pow(4,l)},
  {id:'r9', sp:'real_bloom', nm:{ko:'만개하는 세계',en:"Blooming World"}, max:Infinity,c:l=>5*Math.pow(3.4,l),
-  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${5000*l} → ${5000*(l+1)}${X('개 무료',' free')}`, apply:()=>{}},
+  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${fmt(5000*l)} → ${fmt(5000*(l+1))}${X('개 무료',' free')}`, apply:()=>{}},
  {id:'r10',sp:'real_key',   nm:{ko:'현실의 열쇠',en:"Key of Reality"}, max:Infinity,c:l=>6*Math.pow(3.6,l),
   d:l=>`${X('승천 유물 획득',"Relics on ascension")} ×${powTxt(10,l)} → ×${powTxt(10,l+1)}`, apply:(m,l)=>m.relic*=Math.pow(10,l)},
 ];
@@ -383,7 +383,7 @@ export const VOID_UPS=[
  {id:'v7', sp:'void_gate',  nm:{ko:'없음의 문',en:"Door of Nothing"}, max:Infinity,c:l=>4*Math.pow(3.6,l),
   d:l=>`${X('게임 속도',"Game speed")} ×${powTxt(5,l)} → ×${powTxt(5,l+1)}`, apply:(m,l)=>m.speed*=Math.pow(5,l)},
  {id:'v8', sp:'void_tear',  nm:{ko:'공허의 눈물',en:"Tear of the Void"}, max:Infinity,c:l=>5*Math.pow(3.8,l),
-  d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${2000*l} → +${2000*(l+1)}`, apply:(m,l)=>m.runeCap+=2000*l},
+  d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${fmt(2000*l)} → +${fmt(2000*(l+1))}`, apply:(m,l)=>m.runeCap+=2000*l},
 ];
 export const ORIGIN_UPS=[
  {id:'o1', sp:'orig_seed',  nm:{ko:'근원의 씨',en:"Seed of Origin"}, max:Infinity,c:l=>1*Math.pow(3.5,l),
@@ -419,7 +419,7 @@ export const CHALLENGES=[
 CHALLENGES.push(
  {id:'c7',sp:'torpor',nm:{ko:'무기력의 시련',en:"Trial of Torpor"}, rule:{noAuto:1,drain:100}, base:1e11, max:100,
   desc:()=>X('자동화가 멈추고 마나 생산이 100분의 1이 된다',"No automation, and mana output cut to 1/100"),
-  rw:c=>`${X('게임 속도',"Game speed")} +${(6*c)}%`, apply:(m,c)=>m.speed*=1+0.06*c},
+  rw:c=>`${X('게임 속도',"Game speed")} +${fmt((6*c))}%`, apply:(m,c)=>m.speed*=1+0.06*c},
  {id:'c8',sp:'narrow',nm:{ko:'좁은 길의 시련',en:"Trial of the Narrow Path"}, rule:{maxTier:1}, base:1e7, max:100,
   desc:()=>X('견습 마법사와 공방만 지을 수 있다',"Only the two lowest buildings can be built"),
   rw:c=>`${X('아래 두 단계 효율',"Bottom two tiers")} ×${powTxt(2.2,c)}`, apply:(m,c)=>m.t0*=Math.pow(2.2,c)},
@@ -543,14 +543,14 @@ export const BADGE_FRAME=['disc','ring','shield','hex','gem','burst'];
 export const BADGE_PAL=['gold','steel','wood','blue','lilac','moss','rust','void'];
 export const BADGE_EMB=['dot','cross','chev','moon','flame','eye','spiral','bolt','tri','ring','bar','crown'];
 export const BADGES=[];
-for(const f of BADGE_FRAME) for(const c of BADGE_PAL) for(const e of BADGE_EMB) BADGES.push(`badge_${f}_${c}_${e}`);
+for(const f of BADGE_FRAME) for(const c of BADGE_PAL) for(const e of BADGE_EMB) BADGES.push(`badge_${f}_${fmt(c)}_${e}`);
 export const ACHS=[
  {id:'h1', sp:'apprentice', nm:{ko:'첫 걸음',en:"First Step"},      d:()=>X('견습 마법사 고용',"Hire an Apprentice Mage"),      f:()=>S.bought[0]>=1},
  {id:'h2', sp:'coinpurse', nm:{ko:'소규모 길드',en:"Small Guild"},  d:()=>X('마나 1,000',"1,000 mana"),            f:()=>S.manaPeakL>=3},
- {id:'h3', sp:'treasure', nm:{ko:'마나 부자',en:"Mana Rich"},    d:()=>X('마나 1e6',"1e6 mana"),              f:()=>S.manaPeakL>=6},
- {id:'h4', sp:'vault', nm:{ko:'대부호',en:"Magnate"},       d:()=>X('마나 1e12',"1e12 mana"),             f:()=>S.manaPeakL>=12},
- {id:'h5', sp:'starcompass', nm:{ko:'천문학자',en:"Astronomer"},     d:()=>X('마나 1e20',"1e20 mana"),             f:()=>S.manaPeakL>=20},
- {id:'h6', sp:'inf_frame', nm:{ko:'무한의 문턱',en:"Brink of Infinity"},  d:()=>X('마나 1e40',"1e40 mana"),             f:()=>S.manaPeakL>=40},
+ {id:'h3', sp:'treasure', nm:{ko:'마나 부자',en:"Mana Rich"},    d:()=>X(`마나 ${fmtLog(6)}`,`${fmtLog(6)} mana`),              f:()=>S.manaPeakL>=6},
+ {id:'h4', sp:'vault', nm:{ko:'대부호',en:"Magnate"},       d:()=>X(`마나 ${fmtLog(12)}`,`${fmtLog(12)} mana`),             f:()=>S.manaPeakL>=12},
+ {id:'h5', sp:'starcompass', nm:{ko:'천문학자',en:"Astronomer"},     d:()=>X(`마나 ${fmtLog(20)}`,`${fmtLog(20)} mana`),             f:()=>S.manaPeakL>=20},
+ {id:'h6', sp:'inf_frame', nm:{ko:'무한의 문턱',en:"Brink of Infinity"},  d:()=>X(`마나 ${fmtLog(40)}`,`${fmtLog(40)} mana`),             f:()=>S.manaPeakL>=40},
  {id:'h7', sp:'workshop', nm:{ko:'공방장',en:"Workshop Master"},       d:()=>X('마법 공방 25개',"25 Arcane Workshops"),        f:()=>cnt(1)>=25},
  {id:'h8', sp:'tower', nm:{ko:'탑주',en:"Tower Lord"},         d:()=>X('마탑 25개',"25 Mage Towers"),             f:()=>cnt(2)>=25},
  {id:'h9', sp:'academy', nm:{ko:'학장',en:"Dean"},         d:()=>X('아카데미 25개',"25 Academies"),         f:()=>cnt(3)>=25},
@@ -574,7 +574,7 @@ export const ACHS=[
  {id:'h27', sp:'chain',nm:{ko:'도전자',en:"Challenger"},       d:()=>X('도전 1회 완료',"Clear 1 trial stage"),         f:()=>chalTotal()>=1},
  {id:'h28', sp:'trialcrown',nm:{ko:'시련의 주인',en:"Master of Trials"},  d:()=>X('도전 15회 완료',"Clear 15 trial stages"),        f:()=>chalTotal()>=15},
  {id:'h29', sp:'relicheart',nm:{ko:'유물 사냥꾼',en:"Relic Hunter"},  d:()=>X('유물 50개 획득',"Earn 50 relics"),        f:()=>S.relicEver>=50},
- {id:'h30', sp:'throne',nm:{ko:'왕국의 지배자',en:"Ruler of the Kingdom"},d:()=>X('전체 배율 1e6 돌파',"Total multiplier past 1e6"),    f:()=>M().prod>=1e6},
+ {id:'h30', sp:'throne',nm:{ko:'왕국의 지배자',en:"Ruler of the Kingdom"},d:()=>X(`전체 배율 ${fmtLog(6)} 돌파`,"Total multiplier past 1e6"),    f:()=>M().prod>=1e6},
 ];
 
 export const _ac={mx:0,dx:0,rx:0,ax:0,tx:0,ix:0};
@@ -583,7 +583,7 @@ export const _ac={mx:0,dx:0,rx:0,ax:0,tx:0,ix:0};
 for(let e=25;e<=300;e+=3){
   const v=Math.pow(10,e);
   ACHS.push({id:'mx'+e, nm:achName('mx',_ac.mx++),
-    d:()=>X(`누적 마나 1e${e}`,`1e${e} total mana`), f:()=>S.manaPeakL>=e});
+    d:()=>X(`누적 마나 ${fmtLog(e)}`,`${fmtLog(e)} total mana`), f:()=>S.manaPeakL>=e});
 }
 for(let f=100;f<=3000;f+=50){
   ACHS.push({id:'dx'+f, nm:achName('dx',_ac.dx++),

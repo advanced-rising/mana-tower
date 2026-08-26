@@ -215,8 +215,8 @@ export function buildGear(p){
     });
   });
   c2.appendChild(g2); p.appendChild(c2);
-  updaters.push(()=>{info2.innerHTML=`<span class="tag">${icHTML('crystal')} ${X('보유','Held')} <b>${fmt(S.crystal)}</b></span>
-    <span class="tag">${X('합계 레벨',"Total level")} <b>${gearTotal()}</b></span>
+  updaters.push(()=>{info2.innerHTML=`<span class="tag">${icHTML('crystal')} ${X('보유','Held')} <b>${fmtLog(curL('crystal'))}</b></span>
+    <span class="tag">${X('합계 레벨',"Total level")} <b>${fmt(gearTotal())}</b></span>
     <span class="tag">${X('효과 지수',"Effect exponent")} <b>×${fmtLog(M().gearPowLog)}</b></span>`});
 
 }
@@ -248,7 +248,7 @@ export function buildRelics(p){
       const want2=(S.buyAmt==='max')?Infinity:S.buyAmt;
       const n=Math.max(1,Math.min(buyBulkLog(runeCost,l,curL('offering'),want2).n,Math.max(0,cap-l)));
       const costL=bulkCostLog(runeCost,l,n);
-      _t.html=`${NM(r.nm)} <span class="lv">Lv.${l} / ${cap}</span>`;
+      _t.html=`${NM(r.nm)} <span class="lv">Lv.${fmt(l)} / ${fmt(cap)}</span>`;
       _d.text=r.d(l);
       _c.html=maxed?`<span class="good">${X('최대 레벨','Max level')}</span>`
         :`${icHTML('offering')} ${fmtLog(costL)}${n>1?` <span class="dim">×${fmt(n)}</span>`:''}`;
@@ -256,9 +256,9 @@ export function buildRelics(p){
     });
   });
   c.appendChild(g); p.appendChild(c);
-  updaters.push(()=>{info.innerHTML=`<span class="tag">${icHTML('offering')} ${X('보유','Held')} <b>${fmt(S.offering)}</b></span>
-    <span class="tag">${X('합계 레벨',"Total level")} <b>${runeTotal()}</b></span>
-    <span class="tag">${X('최대 레벨',"Level cap")} <b>${Math.floor(M().runeCap)}</b></span>`});
+  updaters.push(()=>{info.innerHTML=`<span class="tag">${icHTML('offering')} ${X('보유','Held')} <b>${fmtLog(curL('offering'))}</b></span>
+    <span class="tag">${X('합계 레벨',"Total level")} <b>${fmt(runeTotal())}</b></span>
+    <span class="tag">${X('최대 레벨',"Level cap")} <b>${fmt(Math.floor(M().runeCap))}</b></span>`});
 
 }
 
@@ -279,7 +279,7 @@ export function buildRebirth(p){
       <span class="tag">${X('획득 예정',"You gain")} ${icHTML('soul')}<b class="soul">${fmt(g)}</b></span>
       <span class="tag">${icHTML('offering')}<b class="offer">${fmt(offerGain())}</b></span>
       <span class="tag">${X('영혼석 배율',"Shard multiplier")} <b>×${fmtLog(M().soulLog)}</b></span>
-      <span class="tag">${X(`환생 <b>${S.rebirths}</b>회 · 생산 +${5*S.rebirths}%`,`<b>${S.rebirths}</b> rebirths · output +${5*S.rebirths}%`)}</span>`;
+      <span class="tag">${X(`환생 <b>${fmt(S.rebirths)}</b>회 · 생산 +${5*S.rebirths}%`,`<b>${fmt(S.rebirths)}</b> rebirths · output +${5*S.rebirths}%`)}</span>`;
     b.disabled=g<=0;
     b.innerHTML=icHTML('soul',24)+' '+(g>0?X(`환생하여 영혼석 ${fmt(g)} 획득`,`Rebirth for ${fmt(g)} soul shards`)
       :X(`누적 마나 ${fmt(REBIRTH_REQ)} 필요`,`Needs ${fmt(REBIRTH_REQ)} total mana`));
@@ -320,7 +320,7 @@ export function buildAscend(p){
     const g=relicGain();
     info.innerHTML=`<span class="tag">${X('주기 누적',"Cycle total")} ${icHTML('soul')}<b>${fmt(S.soulAsc)}</b></span>
       <span class="tag">${X('획득 예정',"You gain")} ${icHTML('relic')}<b class="relic">${fmt(g)}</b></span>
-      <span class="tag">${X(`승천 <b>${S.ascensions}</b>회`,`<b>${S.ascensions}</b> ascensions`)}</span>`;
+      <span class="tag">${X(`승천 <b>${fmt(S.ascensions)}</b>회`,`<b>${fmt(S.ascensions)}</b> ascensions`)}</span>`;
     b.disabled=g<=0;
     b.innerHTML=icHTML('relic',24)+' '+(g>0?X(`승천하여 유물 ${fmt(g)} 획득`,`Ascend for ${fmt(g)} relics`)
       :X(`누적 영혼석 ${fmt(ASCEND_REQ)} 필요`,`Needs ${fmt(ASCEND_REQ)} soul shards`));
@@ -342,7 +342,7 @@ export function buildTrans(p){
     const g=starGain();
     info.innerHTML=`<span class="tag">${X('주기 누적',"Cycle total")} ${icHTML('relic')}<b class="relic">${fmt(S.relicTrans)}</b></span>
       <span class="tag">${X('획득 예정',"You gain")} ${icHTML('star')}<b class="gold">${fmt(g)}</b></span>
-      <span class="tag">${X(`초월 <b>${S.transcends}</b>회`,`<b>${S.transcends}</b> transcends`)}</span>`;
+      <span class="tag">${X(`초월 <b>${fmt(S.transcends)}</b>회`,`<b>${fmt(S.transcends)}</b> transcends`)}</span>`;
     b.disabled=g<=0;
     b.innerHTML=icHTML('star',16)+' '+(g>0?X(`초월하여 별가루 ${fmt(g)} 획득`,`Transcend for ${fmt(g)} stardust`)
       :X(`누적 유물 ${fmt(TRANS_REQ)} 필요`,`Needs ${fmt(TRANS_REQ)} relics`));
@@ -350,7 +350,7 @@ export function buildTrans(p){
 }
 
 export function buildInf(p){
-  const c=card([X('무한',"Infinity"),'infinity'],X(`수가 <b>1e300</b> 을 넘길 지경이 되면 그 자체가 관문이 된다. 한 칸 위로 올라가고 아래가 접힌다. <b class="gold">별가루와 별 강화는 남는다.</b> 칸을 넘길 때마다 모든 생산에 큰 배율이 영구히 붙는다.<br>칸은 <b>${INF_LAYERS.length}</b> 개가 준비돼 있고, 더 이어 붙일 수 있다.`,`When a number is about to overflow past <b>1e300</b>, that ceiling becomes a door. You rise one rung and everything below folds away — <b class="gold">stardust and star upgrades stay</b> — leaving a permanent multiplier.`));
+  const c=card([X('무한',"Infinity"),'infinity'],X(`수가 <b>${fmtLog(300)}</b> 을 넘길 지경이 되면 그 자체가 관문이 된다. 한 칸 위로 올라가고 아래가 접힌다. <b class="gold">별가루와 별 강화는 남는다.</b> 칸을 넘길 때마다 모든 생산에 큰 배율이 영구히 붙는다.<br>칸은 <b>${INF_LAYERS.length}</b> 개가 준비돼 있고, 더 이어 붙일 수 있다.`,`When a number is about to overflow past <b>${fmtLog(300)}</b>, that ceiling becomes a door. You rise one rung and everything below folds away — <b class="gold">stardust and star upgrades stay</b> — leaving a permanent multiplier.`));
   p.appendChild(c);
   INF_LAYERS.forEach((L,i)=>{
     const lc=card([X(L.ko,L.en),L.sp]);
@@ -418,7 +418,7 @@ export function buildChal(p){
   c.appendChild(g); p.appendChild(c);
   updaters.push(()=>{
     const ch=curChal();
-    info.innerHTML=`<span class="tag">${X('완료',"Cleared")} <b>${chalTotal()}</b> / ${CHALLENGES.reduce((a,c2)=>a+c2.max,0)}</span>
+    info.innerHTML=`<span class="tag">${X('완료',"Cleared")} <b>${fmt(chalTotal())}</b> / ${CHALLENGES.reduce((a,c2)=>a+c2.max,0)}</span>
       <span class="tag">${X('보상 지수',"Reward exponent")} <b>×${fmtLog(M().chalPowLog)}</b></span>
       ${ch?`<span class="tag bad">${X('진행 중','In trial')}: <b>${NM(ch.nm)}</b> · ${icHTML('mana')}${fmtLog(S.manaRunL)} / ${fmt(chalGoal(ch,S.chalDone[ch.id]||0))}</span>`:''}`;
   });
@@ -461,7 +461,7 @@ export function buildAch(p){
     }
   });
   c.appendChild(g); p.appendChild(c);
-  updaters.push(()=>{sub.innerHTML=X(`달성 <b class="gold">${achCount()}</b> / ${ACHS.length} · 하나당 마나 생산 <b>+2%</b> (현재 +${2*achCount()}%)`,`<b class="gold">${achCount()}</b> / ${ACHS.length} unlocked · <b>+2%</b> mana output each (now +${2*achCount()}%)`)});
+  updaters.push(()=>{sub.innerHTML=X(`달성 <b class="gold">${fmt(achCount())}</b> / ${ACHS.length} · 하나당 마나 생산 <b>+2%</b> (현재 +${2*achCount()}%)`,`<b class="gold">${fmt(achCount())}</b> / ${ACHS.length} unlocked · <b>+2%</b> mana output each (now +${2*achCount()}%)`)});
 }
 
 export function buildAuto(p){
@@ -521,12 +521,12 @@ export function buildSettings(p){
     st.innerHTML=X(
       `플레이 시간 <b>${fmtTime(S.playtime)}</b> · 채집 <b>${fmt(S.clicks)}</b>회<br>
        누적 ${tot}<br>
-       환생 <b>${S.rebirths}</b>회 · 승천 <b>${S.ascensions}</b>회 · 최심층 <b class="gold">${S.deepest}층</b> · 시련 <b>${chalTotal()}</b>단계<br>
+       환생 <b>${fmt(S.rebirths)}</b>회 · 승천 <b>${fmt(S.ascensions)}</b>회 · 최심층 <b class="gold">${fmt(S.deepest)}층</b> · 시련 <b>${fmt(chalTotal())}</b>단계<br>
        마나 배율 <b class="gold">×${fmtLog(m.prodLog)}</b> · 게임 속도 <b>×${m.speed.toFixed(2)}</b> · 던전 배율 <b>×${fmtLog(m.dungeonLog)}</b><br>
        오프라인 상한 <b>${m.offline}시간</b> · 버전 <b>v${VERSION}</b>`,
       `Playtime <b>${fmtTime(S.playtime)}</b> · <b>${fmt(S.clicks)}</b> gathers<br>
        Lifetime ${tot}<br>
-       <b>${S.rebirths}</b> rebirths · <b>${S.ascensions}</b> ascensions · deepest <b class="gold">F${S.deepest}</b> · <b>${chalTotal()}</b> trial stages<br>
+       <b>${fmt(S.rebirths)}</b> rebirths · <b>${fmt(S.ascensions)}</b> ascensions · deepest <b class="gold">F${fmt(S.deepest)}</b> · <b>${fmt(chalTotal())}</b> trial stages<br>
        Mana <b class="gold">×${fmtLog(m.prodLog)}</b> · speed <b>×${m.speed.toFixed(2)}</b> · dungeon <b>×${fmtLog(m.dungeonLog)}</b><br>
        Offline cap <b>${m.offline}h</b> · version <b>v${VERSION}</b>`);
   });

@@ -1,0 +1,57 @@
+<pre id="TESTOUT" style="position:fixed;left:-9999px"></pre>
+<script>
+window.__errs=[]; window.addEventListener('error',e=>__errs.push(String(e.message)));
+function out(l){document.getElementById('TESTOUT').textContent+=l+'\n';}
+/* 축약되지 않은 숫자 = 쉼표 없는 일곱 자리 이상 연속 숫자, 또는 지수 표기가 샌 것 */
+const RAW=/(?<![\d,.])\d{7,}(?![\d,])|\d+\.?\d*e[+-]?\d+|∞|NaN|undefined/;
+setTimeout(()=>{try{
+const G=window.__game, S=G.S;
+const found=[];
+const chk=(where,s)=>{ if(typeof s!=='string') return;
+  const t=s.replace(/<[^>]*>/g,'');
+  const m=t.match(RAW); if(m) found.push(where+' → '+t.trim().slice(0,72)); };
+
+const LV=[0,1,50,1234,4.9e13];
+const TREES=[['SOUL_UPS',G.SOUL_UPS],['RELIC_UPS',G.RELIC_UPS],['STAR_UPS',G.STAR_UPS],
+  ['INF_UPS',G.INF_UPS],['ETER_UPS',G.ETER_UPS],['REAL_UPS',G.REAL_UPS],
+  ['VOID_UPS',G.VOID_UPS],['ORIGIN_UPS',G.ORIGIN_UPS]];
+for(const [nm,defs] of TREES) for(const u of defs) for(const l of LV) chk(nm+'/'+u.id+' Lv'+l, u.d(l));
+for(const r of G.RUNES) for(const l of LV) chk('RUNE/'+r.id+' Lv'+l, r.d(l));
+for(const g of G.GEAR) for(const l of LV) for(const p of [0,40,1e6]) chk('GEAR/'+g.id+' Lv'+l+' p'+p, g.d(l,p));
+for(const r of G.RESEARCH) chk('RESEARCH/'+r.id, G.DS(r));
+for(const c of G.CHALLENGES) for(const n of [0,7,100]) chk('CHAL/'+c.id+' '+n, c.rw(n));
+for(const a of G.ACHS.slice(0,80)) chk('ACH/'+a.id, G.DS(a));
+
+out('== 콘텐츠 설명 ==');
+out('  검사한 문구 수천 개 · 축약 안 된 것 '+found.length+'건');
+found.slice(0,14).forEach(f=>out('   [!] '+f));
+
+/* 화면에 실제로 그려진 글자도 훑는다 */
+out('');
+out('== 화면 ==');
+G.TABS.forEach(t=>{t.open=()=>true});
+['soul','relic','star','crystal','offering'].forEach(k=>{ S[k+'L']=13.7; G.syncRes(k); S[k+'EverL']=13.7 });
+S.offerEverL=13.7; S.crystalEverL=13.7;
+G.RUNES.forEach(r=>S.runes[r.id]=4.9e13); G.GEAR.forEach(g=>S.gear[g.id]=6.3e13);
+G.SOUL_UPS.forEach(u=>S.soulUps[u.id]=1234); S.deepest=1e12; S.deepestEver=1e12; S.manaPeakL=1e5;
+S.rebirths=183; S.ascensions=44; S.transcends=9; G.recalc(); G.buildTabs();
+const ids=G.TABS.map(t=>t.id); let k=0;
+(function step(){
+  if(k>=ids.length){
+    out('오류 '+__errs.length+'건'); out('DONE'); return;
+  }
+  const id=ids[k++]; G.switchTab(id);
+  setTimeout(()=>{
+    G.refresh();
+    const bad=[];
+    document.querySelectorAll('#main *, #res *, #sidestat *').forEach(e=>{
+      if(e.childElementCount) return;
+      const t=(e.textContent||'').trim();
+      if(t&&RAW.test(t)) bad.push(t.slice(0,60));
+    });
+    out(id.padEnd(9)+' 축약 안 된 글자 '+String(bad.length).padStart(3)+(bad.length?'  예: '+bad.slice(0,2).join(' | '):''));
+    step();
+  },260);
+})();
+}catch(e){out('EXCEPTION: '+e.message+'\n'+e.stack);}},900);
+</script>

@@ -4,7 +4,7 @@ import { cosmosLabel, floorHP, foeOf } from '../dungeon'
 import { AUTO_DEFS } from '../automation'
 import { DSF, NM, X, ic, icHTML } from '../core'
 import { S } from '../state'
-import { curChal, fmt, fmtLog, gearTotal, numLog, pctTxt, runeTotal } from '../num'
+import { curChal, curL, fmt, fmtLog, gearTotal, numLog, pctTxt, runeTotal } from '../num'
 import { M, manaRateLog } from '../multipliers'
 import { infUnlocked, transUnlocked } from '../prestige'
 
@@ -17,18 +17,18 @@ export function RES_LIST(){ return _res||(_res=[
  {id:'mana',   sp:'mana',   nm:{ko:'마나',en:"Mana"},   cls:'mana',   show:()=>true,
   val:()=>fmtLog(S.manaL), sub:()=>'+'+fmtLog(manaRateLog())+X(' /초',' /s')},
  {id:'offer',  sp:'offering',nm:{ko:'오퍼링',en:"Offerings"},cls:'offer',  show:()=>S.offerEver>0,
-  val:()=>fmt(S.offering), sub:()=>X('룬 합계 Lv.','Runes Lv.')+runeTotal()},
+  val:()=>fmtLog(curL('offering')), sub:()=>X('룬 합계 Lv.','Runes Lv.')+fmt(runeTotal())},
  {id:'crystal',sp:'crystal',nm:{ko:'결정',en:"Crystals"},   cls:'crystal',show:()=>S.crystalEver>0,
-  val:()=>fmt(S.crystal), sub:()=>X('장비 합계 Lv.','Gear Lv.')+gearTotal()},
+  val:()=>fmtLog(curL('crystal')), sub:()=>X('장비 합계 Lv.','Gear Lv.')+fmt(gearTotal())},
  {id:'soul',   sp:'soul',   nm:{ko:'영혼석',en:"Soul Shards"}, cls:'soul',   show:()=>S.soulEver>0||(S.rebirthEver||S.rebirths)>0,
-  val:()=>fmt(S.soul), sub:()=>X('환생 ','Rebirths ')+S.rebirths+X(' · 주기 ',' · cycle ')+fmt(S.soulAsc)},
+  val:()=>fmtLog(curL('soul')), sub:()=>X('환생 ','Rebirths ')+fmt(S.rebirths)+X(' · 주기 ',' · cycle ')+fmtLog(S.soulAscL)},
  {id:'relic',  sp:'relic',  nm:{ko:'유물',en:"Relics"},   cls:'relic',  show:()=>S.relicEver>0||(S.ascendEver||S.ascensions)>0,
-  val:()=>fmt(S.relic), sub:()=>X('승천 ','Ascensions ')+S.ascensions},
+  val:()=>fmtLog(curL('relic')), sub:()=>X('승천 ','Ascensions ')+fmt(S.ascensions)},
  {id:'star',   sp:'star',   nm:{ko:'별가루',en:"Stardust"}, cls:'gold',   show:()=>S.starEver>0||transUnlocked(),
-  val:()=>fmt(S.star), sub:()=>X('초월 ','Transcends ')+S.transcends},
+  val:()=>fmtLog(curL('star')), sub:()=>X('초월 ','Transcends ')+fmt(S.transcends)},
  ...INF_LAYERS.map((L,i)=>({id:L.k, sp:L.sp, nm:{ko:L.ko,en:L.en}, cls:'gold',
    show:()=>(S[L.k+'Ever']||0)>0||infUnlocked(i),
-   val:()=>fmt(S[L.k]||0), sub:()=>X(`돌파 ${S[L.k+'Count']||0}회`,`${S[L.k+'Count']||0} breaks`)})),
+   val:()=>fmt(S[L.k]||0), sub:()=>X(`돌파 ${fmt(S[L.k+'Count']||0)}회`,`${fmt(S[L.k+'Count']||0)} breaks`)})),
  {id:'floor',  sp:'sword',  nm:{ko:'탐사 깊이',en:"Depth"}, cls:'floor',  show:()=>S.manaPeakL>=numLog(5e3),
   val:()=>fmt(S.deepest), sub:()=>cosmosLabel(S.deepest||1)},
 ]) }

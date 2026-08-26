@@ -126,7 +126,7 @@ export function offlineCatchUp(){
     ${icHTML('mana')} ${X('마나','Mana')} <b class="mana">+${fmtLog(logSub(S.manaL,b.manaL))}</b><br>
     ${icHTML('crystal')} ${X('결정','Crystals')} <b class="crystal">+${fmt(S.crystalEver-b.cry)}</b><br>
     ${icHTML('soul')} ${X('영혼석','Soul Shards')} <b class="soul">+${fmt(S.soulEver-b.soul)}</b> <span class="dim">(${X(`환생 ${S.rebirths-b.reb}회`,`${S.rebirths-b.reb} rebirths`)})</span><br>
-    ${S.deepest>b.deep?`${icHTML('sword')} ${X('최심층','Deepest')} <b class="gold">${X(b.deep+'층 → '+S.deepest+'층','F'+b.deep+' → F'+S.deepest)}</b>`:''}
+    ${S.deepest>b.deep?`${icHTML('sword')} ${X('최심층','Deepest')} <b class="gold">${X(fmt(b.deep)+'층 → '+fmt(S.deepest)+'층','F'+fmt(b.deep)+' → F'+fmt(S.deepest))}</b>`:''}
   `);
 }
 export function exportSave(){

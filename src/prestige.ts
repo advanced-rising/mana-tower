@@ -78,8 +78,14 @@ export const INF_CAP=1e300;
 export const INF_AUTO_CD=60;                  // 자동 돌파는 60초에 한 번까지
 /* 무한만 마나가 넘칠 때 열린다. 그 위로는 아래 계층을 열 개 모아야 한 칸 오른다. */
 export const INF_STACK=10;
-export const infUnlocked=i=>i===0 ? S.manaEver>=INF_CAP/1e40 || S.inf>0
-                           : (S[INF_LAYERS[i-1].k+'Ever']||0)>=INF_STACK;
+/* 차례는 환생 → 승천 → 초월 → 무한 이다. 무한이 마나만 보고 열려 있어서
+   초월을 한 번도 하지 않았는데 무한 돌파가 먼저 일어나고, 그 돌파가 회차를
+   갈아엎어 초월에 필요한 유물이 다시 쌓이지 않는 앞뒤가 바뀐 상태가 되었다.
+   앞 칸을 밟았을 때만 다음 칸이 열린다. 마나도 회차마다 초기화되는 manaEver
+   대신 줄지 않는 최고 기록을 본다. */
+export const infUnlocked=i=>i===0
+  ? (S.inf>0 || ((S.transEver||S.transcends)>0 && S.manaPeakL>=numLog(INF_CAP/1e40)))
+  : (S[INF_LAYERS[i-1].k+'Ever']||0)>=INF_STACK;
 /* 돌파 요구치는 돌파할수록 오른다 — 1e300 → 1e303 → 1e306 … (돌파 1회마다 1000배).
    1e308 을 넘어가면 double 로는 못 적으므로 지수(로그) 로 다룬다. */
 export function reqLog(i){ return 300+3*(S[INF_LAYERS[i].k+'Count']||0); }
