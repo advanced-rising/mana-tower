@@ -5,7 +5,7 @@ import { autoOK } from './automation'
 import { X, icHTML } from './core'
 import { ACHS, ACH_NOUN, BADGES, ETER_UPS, INF_UPS, ORIGIN_UPS, REAL_UPS, VOID_UPS, achName } from './content'
 import { S } from './state'
-import { L10, fmt, freeStart, gainRes, logAdd, numLog, setRes, startManaLog, syncGen } from './num'
+import { L10, fmt, fmtLog, freeStart, gainRes, logAdd, numLog, setRes, startManaLog, syncGen } from './num'
 import { M, recalc, setAnchor } from './multipliers'
 import { COSMOS, chapterOf } from './dungeon'
 import { autoEnterChallenge, exitChallenge } from './trials'
@@ -64,8 +64,8 @@ export function doRebirth(silent){
   S.rebirths++;
   if(S.chal) exitChallenge(false);
   softReset();
-  log(`${icHTML('soul')}<b>${X('환생','Rebirth')}</b> · ${X('영혼석','Soul Shards')} <b class="soul">+${fmt(g)}</b> · ${X('오퍼링','Offerings')} <b class="offer">+${fmt(o)}</b>`,true);
-  if(!silent) toast(icHTML('soul')+X(` 환생 · 영혼석 +${fmt(g)}`,` Rebirth · Soul Shards +${fmt(g)}`));
+  log(`${icHTML('soul')}<b>${X('환생','Rebirth')}</b> · ${X('영혼석','Soul Shards')} <b class="soul">+${fmtLog(gl)}</b> · ${X('오퍼링','Offerings')} <b class="offer">+${fmtLog(ol)}</b>`,true);
+  if(!silent) toast(icHTML('soul')+X(` 환생 · 영혼석 +${fmtLog(gl)}`,` Rebirth · Soul Shards +${fmtLog(gl)}`));
   if(autoOK('chal')) autoEnterChallenge();
   return true;
 }
@@ -79,8 +79,8 @@ export function doAscend(silent){
   S.rebirths=0;  setRes('offering',-Infinity); S.lastSoulGain=0; S.lastSoulGainL=-Infinity; S.sinceAscend=0;
   if(S.chal) exitChallenge(false);
   softReset();
-  log(`${icHTML('relic')}<b>${X('승천','Ascension')}</b> · ${X('유물','Relics')} <b class="relic">+${fmt(g)}</b> · ${X('영혼석과 룬이 초기화되었다','soul shards and runes reset')}`,true);
-  if(!silent) toast(icHTML('relic')+X(` 승천 · 유물 +${fmt(g)}`,` Ascension · Relics +${fmt(g)}`));
+  log(`${icHTML('relic')}<b>${X('승천','Ascension')}</b> · ${X('유물','Relics')} <b class="relic">+${fmtLog(rl)}</b> · ${X('영혼석과 룬이 초기화되었다','soul shards and runes reset')}`,true);
+  if(!silent) toast(icHTML('relic')+X(` 승천 · 유물 +${fmtLog(rl)}`,` Ascension · Relics +${fmtLog(rl)}`));
   return true;
 }
 
@@ -189,8 +189,8 @@ export function doTranscend(silent){
   S.lastSoulGain=0; S.lastRelicGain=0; S.sinceAscend=0; S.sinceTrans=0;
   if(S.chal) exitChallenge(false);
   softReset();
-  log(`${icHTML('star')}<b>${X('초월','Transcendence')}</b> · ${X('별가루','Stardust')} <b class="gold">+${fmt(g)}</b> · ${X('유물과 승천까지 초기화되었다','relics and ascensions reset')}`,true);
-  if(!silent) toast(icHTML('star')+X(` 초월 · 별가루 +${fmt(g)}`,` Transcend · Stardust +${fmt(g)}`));
+  log(`${icHTML('star')}<b>${X('초월','Transcendence')}</b> · ${X('별가루','Stardust')} <b class="gold">+${fmtLog(sl)}</b> · ${X('유물과 승천까지 초기화되었다','relics and ascensions reset')}`,true);
+  if(!silent) toast(icHTML('star')+X(` 초월 · 별가루 +${fmtLog(sl)}`,` Transcend · Stardust +${fmtLog(sl)}`));
   return true;
 }
 export const transUnlocked=()=>(S.ascendEver||S.ascensions)>=5||S.starEver>0;

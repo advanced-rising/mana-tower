@@ -13,6 +13,7 @@ const HARNESS=[
   ['numlint',    'tools/numlint.html',    45,  '축약 안 된 숫자'],
   ['numaudit',   'tools/numaudit.html',   60,  '숫자 연산·비용 수학'],
   ['tabsweep',   'tools/tabsweep.html',   240,  '탭마다 이미지와 표기'],
+  ['infsweep',   'tools/infsweep.html',   180, '유한한 값이 ∞ 로 새는 곳'],
   ['invariants', 'tools/invariants.html', 500, '한 시간 플레이 불변식'],
 ]
 const only=process.argv.slice(2).filter(a=>!a.startsWith('-'))

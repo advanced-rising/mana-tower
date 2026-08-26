@@ -508,7 +508,7 @@ export function buildAuto(p){
     st.innerHTML=`<span class="tag">${X('자동화 주기',"Automation interval")} <b>×${fmtLog(m.autoSpeedLog)}</b></span>
       <span class="tag">${X('마지막 환생 이후',"Since last rebirth")} <b>${fmtTime(S.sinceRebirth)}</b></span>
       <span class="tag">${X('마지막 승천 이후',"Since last ascension")} <b>${fmtTime(S.sinceAscend)}</b></span>
-      <span class="tag">${X('직전 환생 보상',"Last rebirth gain")} <b>${fmt(S.lastSoulGain)}</b></span>`;
+      <span class="tag">${X('직전 환생 보상',"Last rebirth gain")} <b>${fmtLog(S.lastSoulGainL)}</b></span>`;
   });
 }
 
@@ -536,7 +536,8 @@ export function buildSettings(p){
   });
   updaters.push(()=>{
     const m=M();
-    const tot=`${icHTML('mana')}<b>${fmtLog(S.manaEverL)}</b> · ${icHTML('offering')}<b>${fmt(S.offerEver)}</b> · ${icHTML('crystal')}<b>${fmt(S.crystalEver)}</b> · ${icHTML('soul')}<b>${fmt(S.soulEver)}</b> · ${icHTML('relic')}<b>${fmt(S.relicEver)}</b>`;
+    /* 누적은 자릿수 필드가 진실이다. 파생된 평범한 수를 적으면 1e308 에서 ∞ 가 된다. */
+    const tot=`${icHTML('mana')}<b>${fmtLog(S.manaEverL)}</b> · ${icHTML('offering')}<b>${fmtLog(S.offerEverL)}</b> · ${icHTML('crystal')}<b>${fmtLog(S.crystalEverL)}</b> · ${icHTML('soul')}<b>${fmtLog(S.soulEverL)}</b> · ${icHTML('relic')}<b>${fmtLog(S.relicEverL)}</b>`;
     st.innerHTML=X(
       `플레이 시간 <b>${fmtTime(S.playtime)}</b> · 채집 <b>${fmt(S.clicks)}</b>회<br>
        누적 ${tot}<br>

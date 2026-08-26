@@ -1,0 +1,62 @@
+<pre id="TESTOUT" style="display:none"></pre>
+<script>
+/* ∞ 사냥.
+   화폐도 배율도 전부 자릿수(log10)로 다루므로, 값이 아무리 커도 글자는 층을
+   쌓아 적을 수 있다 — 화면에 ∞ 가 보인다면 그 값이 어딘가에서 평범한 수로
+   되돌아갔다가 1.8e308 을 넘겨 Infinity 가 됐다는 뜻이다. 전부 버그다. */
+(async()=>{
+  const O=document.getElementById('TESTOUT'), out=s=>O.textContent+=s+'\n';
+  await new Promise(r=>setTimeout(r,900));
+  const G=window.__game; if(!G){ out('[!] __game 없음'); out('DONE'); return }
+  const S=G.S;
+  /* 아주 멀리 간 회차를 만든다 — 자릿수는 크지만 전부 유한하다 */
+  for(const k of ['manaL','manaRunL','manaEverL','manaPeakL','bestRunL']) S[k]=9000;
+  for(const k of ['soul','relic','star','crystal','offering']) G.setRes(k,7000);
+  for(const k of ['soulEverL','relicEverL','starEverL','crystalEverL','offerEverL']) S[k]=9000;
+  S.soulAscL=7000; S.relicTransL=7000;
+  S.lastSoulGainL=6000; S.lastRelicGainL=6000; S.lastStarGainL=6000;
+  S.inf=1e6; S.infEver=1e6; S.eter=1e5; S.eterEver=1e5; S.real=1e4; S.realEver=1e4;
+  S.void=1e3; S.voidEver=1e3; S.origin=100; S.originEver=100;
+  S.rebirths=1e6; S.ascensions=1e5; S.transcends=1e4;
+  S.rebirthEver=1e6; S.ascendEver=1e5; S.transEver=1e4;
+  S.deepest=1e9; S.deepestEver=1e9; S.floor=1e9; S.lootFloor=1e9;
+  for(let i=0;i<S.bought.length;i++) S.bought[i]=1e12;
+  S.genL=S.genL.map(()=>9000); G.syncGen();
+  for(const r of G.RESEARCH) S.research[r.id]=1;
+  G.recalc();
+  const rc=Math.floor(G.M().runeCap), gc=Math.floor(G.M().gearCap);
+  for(const r of G.RUNES) S.runes[r.id]=rc;
+  for(const g of G.GEAR) S.gear[g.id]=gc;
+  for(const [t,k,c] of [[G.SOUL_UPS,'soulUps','soul'],[G.RELIC_UPS,'relicUps','relic'],
+      [G.STAR_UPS,'starUps','star'],[G.INF_UPS,'infUps','inf'],[G.ETER_UPS,'eterUps','eter'],
+      [G.REAL_UPS,'realUps','real'],[G.VOID_UPS,'voidUps','void'],[G.ORIGIN_UPS,'originUps','origin']])
+    for(const u of t) S[k][u.id]=G.upMaxOf(u,c);
+  for(const a of G.ACHS) S.achs[a.id]=1;
+  /* 탭이 열려야 볼 수 있다 — 해금이 보는 파생값까지 채운다 */
+  for(const k of ['soul','relic','star','crystal','offering']) G.syncRes(k);
+  S.soulEver=1e308; S.relicEver=1e308; S.starEver=1e308;
+  S.crystalEver=1e308; S.offerEver=1e308;
+  for(const c of G.CHALLENGES) S.chalDone[c.id]=1;
+  G.recalc(); G.buildTabs(); G.render();
+  await new Promise(r=>setTimeout(r,300));
+  out('아주 멀리 간 회차 (자릿수는 9,000 이지만 전부 유한)');
+  let bad=0;
+  const btns=[...document.querySelectorAll('#tabs button')];
+  for(const b of btns){
+    const label=(b.innerText||'?').replace(/\s+/g,' ').trim().slice(0,12);
+    if(b.classList.contains('locked')) continue;
+    b.click();
+    await new Promise(r=>setTimeout(r,220));
+    const txt=(document.getElementById('main')||{}).innerText||'';
+    const hits=(txt.match(/[^\n]{0,40}∞[^\n]{0,20}/g)||[]);
+    out(`  ${label.padEnd(12)} ∞ ${hits.length}`);
+    for(const h of hits.slice(0,4)){ bad++; out(`     [!] ${h.replace(/\s+/g,' ').trim()}`) }
+  }
+  /* 상단 자원 바도 본다 */
+  const top=(document.getElementById('res')||{}).innerText||'';
+  const th=(top.match(/[^\n]{0,30}∞[^\n]{0,10}/g)||[]);
+  for(const h of th){ bad++; out(`     [!] 자원바: ${h.replace(/\s+/g,' ').trim()}`) }
+  out(`=== ∞ 로 새어 나온 자리 ${bad}건 ===`);
+  out('DONE');
+})();
+</script>
