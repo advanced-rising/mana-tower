@@ -3,7 +3,7 @@ import { PRODUCERS } from './producers'
 import { DS, DSF, LANG, NM, VERSION, X, ic, icHTML, setLang, spriteURL } from './core'
 import { ACHS, BADGES, CHALLENGES, ETER_UPS, GEAR, INF_UPS, ORIGIN_UPS, REAL_UPS, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, VOID_UPS } from './content'
 import { S, setS } from './state'
-import { L10, RES, achCount, bulkCostLog, bulkMaxLog, cnt, cntLog, costLogAt, curL, cutTxt, fmt, fmtLog, gainRes, geoSumLog, logAdd, logSub, numLog, pctTxt, powTxt, ratioOf, safeLog, setRes, spendRes, syncGen, syncRes } from './num'
+import { L10, RES, achCount, bulkCostLog, bulkMaxLog, chalTotal, cnt, cntLog, costLogAt, curL, cutTxt, fmt, fmtLog, gainRes, gearTotal, geoSumLog, logAdd, logSub, numLog, pctTxt, powTxt, ratioOf, runeTotal, safeLog, setRes, spendRes, syncGen, syncRes } from './num'
 import { M, buyProducer, computeM, costLogOf, gather, gatherAmountLog, growth, manaRateLog, maxAfford, recalc } from './multipliers'
 import { COSMOS, FOES, chapterOf, chapterSeen, clearFloor, cosmos, cosmosBonusLog, dungeonPowerLog, floorHPLog, floorLoot, floorLootManaLog, foeOf, sweepCount, sweepFloors, sweepPace, syncChapter } from './dungeon'
 import { ASCEND_REQ, TRANS_REQ, doAscend, doInfBreak, doRebirth, doTranscend, infBonusLog, infGain, infUnlocked, relicGain, relicGainLog, soulGain, starGain, starGainLog, transUnlocked } from './prestige'
@@ -108,6 +108,6 @@ render();
   autoBuyTree, runAutomation, autoOK, autoUnlocked, AUTO_DEF, buyBulkLog,
   costLogAt, bulkCostLog, bulkMaxLog, curL, spendRes, gainRes, setRes, syncRes, RES, ratioOf,
   infGain, infUnlocked, doInfBreak, doRebirth, doAscend, doTranscend,
-  achCount, chapterSeen, chapterOf, cosmos, cosmosBonusLog, infBonusLog, gatherAmountLog, manaRateLog,
+  achCount, runeTotal, gearTotal, chalTotal, chapterSeen, chapterOf, cosmos, cosmosBonusLog, infBonusLog, gatherAmountLog, manaRateLog,
   transUnlocked, starGain, starGainLog, relicGain, relicGainLog, soulGain, TRANS_REQ, ASCEND_REQ,
 }

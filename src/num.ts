@@ -17,6 +17,9 @@ export function suffixOf(tier){
   for(let i=0;i<len;i++){ s=String.fromCharCode(97+(n%26))+s; n=Math.floor(n/26); }
   return s;
 }
+/* 층 지수도 일곱 자리를 넘으면 읽히지 않는다 — 쉼표를 넣되 소수는 남긴다 */
+export const grouped=(v,d)=>v.toLocaleString(LANG==='en'?'en-US':'ko-KR',
+  {minimumFractionDigits:d,maximumFractionDigits:d});
 export function headNum(m){
   return m<10?m.toFixed(2):m<100?m.toFixed(1):String(Math.round(m));
 }
@@ -40,7 +43,7 @@ export function fmtLog(l){
   let layer=1, v=l;
   while(v>=1e15&&layer<1e9){ v=L10(v); layer++; }
   const h = layer===1 ? Math.round(v).toLocaleString()
-          : v>=1000 ? v.toFixed(2) : v>=100 ? v.toFixed(3) : v.toFixed(4);
+          : grouped(v, v>=1000?2:v>=100?3:4);
   return layer<=4?'e'.repeat(layer)+h:'(e^'+layer+')'+h;
 }
 /* 설명 문구도 자릿수로 적는다. b^e 는 e 가 조금만 커져도 ∞ 가 되어
@@ -137,7 +140,7 @@ export function layerTxt(LL){          // 값의 자릿수가 10^LL 일 때 그 
   if(LL<300) return fmtLog(Math.pow(10,LL));
   let layer=2, v=LL;
   while(v>=1e15&&layer<1e9){ v=L10(v); layer++; }
-  const h = v>=1000 ? v.toFixed(2) : v>=100 ? v.toFixed(3) : v.toFixed(4);
+  const h = grouped(v, v>=1000?2:v>=100?3:4);
   return layer<=4?'e'.repeat(layer)+h:'(e^'+layer+')'+h;
 }
 /* b^(l·p) · p 는 10^pLog */
