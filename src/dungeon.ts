@@ -17,7 +17,10 @@ export const FLOOR_MIN_TIME=0.28;  // 한 층이 화면에 머무는 최소 시�
    내려간 자리는 이미 가져간 층이다 — 거기서는 싸우지도, 아무것도 나오지도 않는다. */
 export const FLOOR_RETREAD=0.05;   // 이미 지나온 층을 다시 지나갈 때
 export function floorPace(){ return isRetread(S.floor) ? FLOOR_RETREAD : FLOOR_MIN_TIME }
-export function isRetread(f){ return f<(S.deepest||0) }
+/* 이미 깬 층은 1 ~ 최심층이다. f < 최심층 으로 두면 최심층 그 자리만 '새 층' 이
+   되어, ◀ 로 한 칸 내려갔다 올라오기를 되풀이하면 같은 층의 전리품을 얼마든지
+   다시 가져갈 수 있었다. 최심층도 이미 깬 층이다. */
+export function isRetread(f){ return f<=(S.deepest||0) }
 
 /* ── 우주 계층 ────────────────────────────────
    실제 천문학의 구조를 그대로 따른다.

@@ -170,6 +170,9 @@
       for(let i=0;i<S.bought.length;i++) S.bought[i]=1e4;
       /* 공짜 시설 강화를 크게 올려 둔다 — 이게 살아남아 시설을 통째로 되깔면
          화폐를 지워도 마나가 몇 초 만에 돌아온다. 실제로 승천이 그랬다. */
+      /* 시작 지원금을 크게 올려 둔다 — 지원금만으로 환생 조건을 넘기면
+         환생하자마자 또 환생할 수 있게 된다(무한 환생). */
+      S.soulUps=Object.assign(S.soulUps||{},{s7:100000});
       S.relicUps=Object.assign(S.relicUps||{},{a5:100000});
       S.starUps=Object.assign(S.starUps||{},{t9:100000});
       S.eterUps=Object.assign(S.eterUps||{},{e13:100000});
@@ -205,6 +208,20 @@
         bad(name,`마나가 ${G.fmtLog(S.manaL)} 로 남았다 — 지원금 상한 ${G.fmtLog(G.START_MANA_CAP)} 을 넘는다 (이전 ${G.fmtLog(before.mana)})`);
       /* 생산 배율은 프레스티지로 오르는 것이 설계다 — 여기서 재지 않는다.
          "초기화가 안 된다" 로 보이는 것은 시설과 마나가 되돌아오는 쪽이다. */
+      /* 프레스티지 직후에 곧바로 또 할 수 있으면 안 된다 — 그러면 무한 반복이다.
+         지원금을 '이번 회차에 번 마나' 로 세는 바람에 실제로 그렇게 되었다. */
+      /* 어느 계층이든 하고 나서 곧바로 또 할 수 있으면 무한 반복이다.
+         '이번 주기에 번 것' 을 세는 값이 초기화되지 않으면 그렇게 된다. */
+      const again={
+        '환생': ()=>G.soulGainLog(),
+        '승천': ()=>G.relicGainLog(),
+        '초월': ()=>G.starGainLog(),
+        '무한': ()=>G.infGain(0)>0?0:-Infinity,
+      }[name];
+      if(again&&again()>-Infinity)
+        bad(name,`${name} 직후에 또 ${name}할 수 있다 (얻을 양 ${G.fmtLog(again())})`);
+      if(S.manaRunL>-Infinity&&S.manaRunL>=G.numLog(G.REBIRTH_REQ))
+        bad(name,`회차 누적이 ${G.fmtLog(S.manaRunL)} 로 시작한다 — 번 것이 없는데 환생 조건을 넘었다`);
       check(name+' 직후');
     }catch(e){ bad(name,e.message) }
   }
@@ -231,8 +248,49 @@
       const f2=S.floor;
       for(let i=0;i<300;i++) G.tick(0.2);
       if(!(S.floor>f2)) bad('던전',`기록 너머로는 더 내려가지 않는다 (${D(f2)}층에서 멈춤)`);
+      /* 내려갔다 올라오기로 같은 층의 전리품을 되풀이해 가져갈 수 있으면 안 된다.
+         잔액을 비워 두고 잰다 — 큰 잔액에 작은 전리품을 더하면 자릿수가 안 변해
+         가져갔는지 아닌지 보이지 않는다. */
+      for(let i=0;i<S.bought.length;i++) S.bought[i]=0;   // 시설 생산을 빼고 전리품만 본다
+      S.genL=S.genL.map(()=>-Infinity); G.syncGen();
+      S.manaL=-Infinity; G.setRes('crystal',-Infinity); G.recalc();
+      const rec=S.deepest, m0=S.manaL, c0=G.curL('crystal');
+      for(let k=0;k<12;k++){
+        S.floor=rec; S.prog=1; S.floorCd=0;      // 이미 깬 층에 서서
+        G.tick(0.2);                              // 한 번 더 깨 본다
+      }
+      /* 결정으로 판정한다 — 결정은 층을 깨야만 나오므로 전리품인지 아닌지가 분명하다.
+         마나는 채집·생산 등 다른 길로도 들어와 섞인다. */
+      if(G.curL('crystal')>c0+1e-9)
+        bad('던전',`이미 깬 층(${D(rec)})을 다시 깨서 전리품을 얻었다 — 결정 ${G.fmtLog(c0)} → ${G.fmtLog(G.curL('crystal'))}`);
     }
   }catch(e){ bad('던전',e.message) }
+
+  /* ── 3.7 시련이 들어가자마자 깨지지 않는가 ────
+     시련 목표도 '이번 회차에 번 마나' 로 판정한다. 지원금이 회차 누적에 얹히면
+     들어가는 순간 목표를 넘겨 그대로 돌파해 버린다 — 환생과 같은 부류다. */
+  try{
+    S.soulUps=Object.assign(S.soulUps||{},{s7:100000});   // 지원금을 크게
+    S.ascendEver=Math.max(S.ascendEver||0,1);             // 시련 해금
+    S.chalCd=0; S.chalDone={};
+    G.recalc();
+    const list=G.CHALLENGES||[];
+    let entered=0, instant=0;
+    for(const ch of list.slice(0,4)){
+      S.chal=null; S.chalCd=0;
+      G.enterChallenge? G.enterChallenge(ch.id) : (S.chal=ch.id, G.softReset());
+      if(S.chal!==ch.id) continue;
+      entered++;
+      const before=S.chalDone[ch.id]||0;
+      G.checkChallenge&&G.checkChallenge();
+      if((S.chalDone[ch.id]||0)>before){ instant++;
+        bad('시련',`${G.NM(ch.nm)} 에 들어가자마자 돌파됐다 (회차 누적 ${G.fmtLog(S.manaRunL)})`); }
+      S.chal=null;
+    }
+    if(entered&&!instant){ /* 정상 */ }
+    else if(!entered) bad('시련','시련에 하나도 들어가지 못했다 — 검사가 헛돌았다');
+  }catch(e){ bad('시련',e.message) }
+  try{ S.chal=null; G.recalc() }catch(e){}
 
   /* ── 4. 자원이 음수가 되지 않는가 ──────────── */
   try{

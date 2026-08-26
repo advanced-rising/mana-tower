@@ -33,7 +33,12 @@ export function relicGain(){ const l=relicGainLog(); return l<300?Math.floor(Mat
 export function softReset(){
   const free=freeStart();
   S.manaL=Math.max(L10(25),startManaLog(S.soulUps.s7||0));
-  S.manaRunL=S.manaL;
+  /* '회차 누적' 은 이번 회차에 **번** 마나다. 받은 지원금은 번 것이 아니다.
+     예전에는 지원금을 그대로 회차 누적에 얹었는데, 지원금이 로그로 바뀌면서
+     레벨 1 만 되어도 10^6.02 —— 환생 조건(10^6) 을 지원금만으로 넘겨,
+     환생하자마자 또 환생할 수 있었다. 무한 환생이 그것이었다.
+     회차 누적은 0 에서 시작하고, 지원금은 손에 쥔 잔액으로만 남는다. */
+  S.manaRunL=-Infinity;
   S.bought=PRODUCERS.map(()=>0); S.genL=PRODUCERS.map(()=>-Infinity); syncGen();
   /* 공짜 시설은 0 단계에만 준다. 위 단계는 아래 단계를 '비용 없이' 만들어 내므로,
      거기에 씨앗을 뿌리면 남은 배율만큼 한 틱에 폭발한다 — 값에 묶어 두어도
