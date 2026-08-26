@@ -346,6 +346,31 @@
     G.recalc();
   }catch(e){ bad('극단값',e.message) }
 
+  /* ── 4.7 유한한 값이 ∞ 로 보이지 않는가 ────────
+     자릿수를 평범한 수로 되돌렸다가 다시 자릿수를 재면 1e300 에서 ∞ 가 된다.
+     실제로 승천·초월·무한 돌파 버튼이 그렇게 적혀 있었다 — 값은 멀쩡히 유한한데
+     화면에만 ∞ 가 떴다. 화면에 ∞ 가 있으면 그 값이 정말 무한한지 따진다. */
+  try{
+    S.manaL=S.manaRunL=S.manaEverL=S.manaPeakL=5000;
+    S.soulAscL=4000; S.relicTransL=4000;
+    G.setRes('soul',4000); G.setRes('relic',4000); G.setRes('star',4000);
+    S.ascendEver=Math.max(S.ascendEver||0,10); S.transEver=Math.max(S.transEver||0,1);
+    G.recalc();
+    const finite={
+      '환생':()=>G.soulGainLog(), '승천':()=>G.relicGainLog(),
+      '초월':()=>G.starGainLog(), '무한':()=>G.numLog(G.infGain(0)),
+    };
+    for(const key of ['rebirth','ascend','trans','inf']){
+      let txt='';
+      try{ G.switchTab(key); txt=(document.getElementById('main')||{}).innerText||'' }catch(e){ continue }
+      if(!/∞/.test(txt)) continue;
+      /* ∞ 가 보인다면 그 계층의 값이 정말 무한해야 한다 */
+      const nm={rebirth:'환생',ascend:'승천',trans:'초월',inf:'무한'}[key];
+      const v=finite[nm]();
+      if(isFinite(v)) bad('∞ 표기',`${nm} 화면에 ∞ 가 보이는데 실제 값은 ${D(v)} 자릿수로 유한하다`);
+    }
+  }catch(e){ bad('∞ 표기',e.message) }
+
   /* ── 5. 표기 ───────────────────────────────── */
   try{
     for(const l of [-Infinity,0,1,2.5,5.999,6,15,100,2039,2041,54767,54769,1e6,1e9,Infinity,NaN]){

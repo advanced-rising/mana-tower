@@ -321,7 +321,7 @@ export function buildAscend(p){
       <span class="tag">${X('획득 예정',"You gain")} ${icHTML('relic')}<b class="relic">${fmtLog(relicGainLog())}</b></span>
       <span class="tag">${X(`승천 <b>${fmt(S.ascensions)}</b>회`,`<b>${fmt(S.ascensions)}</b> ascensions`)}</span>`;
     b.disabled=g<=0;
-    b.innerHTML=icHTML('relic',24)+' '+(g>0?X(`승천하여 유물 ${fmtLog(g>0?Math.log10(g):-Infinity)} 획득`,`Ascend for ${fmtLog(g>0?Math.log10(g):-Infinity)} relics`)
+    b.innerHTML=icHTML('relic',24)+' '+(g>0?X(`승천하여 유물 ${fmtLog(relicGainLog())} 획득`,`Ascend for ${fmtLog(relicGainLog())} relics`)
       :X(`누적 영혼석 ${fmt(ASCEND_REQ)} 필요`,`Needs ${fmt(ASCEND_REQ)} soul shards`));
   });
 }
@@ -343,7 +343,7 @@ export function buildTrans(p){
       <span class="tag">${X('획득 예정',"You gain")} ${icHTML('star')}<b class="gold">${fmtLog(starGainLog())}</b></span>
       <span class="tag">${X(`초월 <b>${fmt(S.transcends)}</b>회`,`<b>${fmt(S.transcends)}</b> transcends`)}</span>`;
     b.disabled=g<=0;
-    b.innerHTML=icHTML('star',16)+' '+(g>0?X(`초월하여 별가루 ${fmtLog(g>0?Math.log10(g):-Infinity)} 획득`,`Transcend for ${fmtLog(g>0?Math.log10(g):-Infinity)} stardust`)
+    b.innerHTML=icHTML('star',16)+' '+(g>0?X(`초월하여 별가루 ${fmtLog(starGainLog())} 획득`,`Transcend for ${fmtLog(starGainLog())} stardust`)
       :X(`누적 유물 ${fmt(TRANS_REQ)} 필요`,`Needs ${fmt(TRANS_REQ)} relics`));
   });
 }
@@ -380,7 +380,7 @@ export function buildLayer(p,i){
       <span class="tag">${X('보유',"Held")} <b class="gold">${fmt(S[L.k]||0)}</b></span>
       <span class="tag">${X('전체 배율',"Total")} ×<b>${powTxt(4+i*4,S[L.k+'Ever']||0)}</b></span>`;
     b.disabled=g<=0;
-    b.innerHTML=icHTML(L.sp,16)+' '+(g>0?X(`${L.ko} 돌파 · +${fmtLog(g>0?Math.log10(g):-Infinity)}`,`${L.en} Break · +${fmtLog(g>0?Math.log10(g):-Infinity)}`)
+    b.innerHTML=icHTML(L.sp,16)+' '+(g>0?X(`${L.ko} 돌파 · +${fmt(g)}`,`${L.en} Break · +${fmt(g)}`)
       :X(`${reqTxt(i)} 필요`,`Needs ${reqTxt(i)}`));
   });
 }

@@ -12,7 +12,7 @@ const ROOT=new URL('..',import.meta.url).pathname
 const HARNESS=[
   ['numlint',    'tools/numlint.html',    45,  '축약 안 된 숫자'],
   ['numaudit',   'tools/numaudit.html',   60,  '숫자 연산·비용 수학'],
-  ['tabsweep',   'tools/tabsweep.html',   90,  '탭마다 이미지와 표기'],
+  ['tabsweep',   'tools/tabsweep.html',   240,  '탭마다 이미지와 표기'],
   ['invariants', 'tools/invariants.html', 500, '한 시간 플레이 불변식'],
 ]
 const only=process.argv.slice(2).filter(a=>!a.startsWith('-'))
