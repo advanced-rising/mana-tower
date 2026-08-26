@@ -5,8 +5,8 @@ import { ACHS, BADGES, CHALLENGES, ETER_UPS, GEAR, INF_UPS, ORIGIN_UPS, REAL_UPS
 import { S, setS } from './state'
 import { L10, RES, achCount, bulkCostLog, bulkMaxLog, cnt, cntLog, costLogAt, curL, cutTxt, fmt, fmtLog, gainRes, geoSumLog, logAdd, logSub, numLog, pctTxt, powTxt, ratioOf, safeLog, setRes, spendRes, syncGen, syncRes } from './num'
 import { M, buyProducer, computeM, costLogOf, gather, gatherAmountLog, growth, manaRateLog, maxAfford, recalc } from './multipliers'
-import { COSMOS, FOES, chapterOf, chapterSeen, clearFloor, cosmos, dungeonPowerLog, floorHPLog, floorLoot, floorLootManaLog, foeOf, sweepCount, sweepFloors, sweepPace, syncChapter } from './dungeon'
-import { ASCEND_REQ, TRANS_REQ, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, relicGain, relicGainLog, soulGain, starGain, starGainLog, transUnlocked } from './prestige'
+import { COSMOS, FOES, chapterOf, chapterSeen, clearFloor, cosmos, cosmosBonusLog, dungeonPowerLog, floorHPLog, floorLoot, floorLootManaLog, foeOf, sweepCount, sweepFloors, sweepPace, syncChapter } from './dungeon'
+import { ASCEND_REQ, TRANS_REQ, doAscend, doInfBreak, doRebirth, doTranscend, infBonusLog, infGain, infUnlocked, relicGain, relicGainLog, soulGain, starGain, starGainLog, transUnlocked } from './prestige'
 import { AUTO_DEF, AUTO_DEFS, autoBuyTree, autoOK, autoUnlocked, buyBulkLog, runAutomation } from './automation'
 import { log, tick } from './tick'
 import { $, modal } from './ui/dom'
@@ -108,6 +108,6 @@ render();
   autoBuyTree, runAutomation, autoOK, autoUnlocked, AUTO_DEF, buyBulkLog,
   costLogAt, bulkCostLog, bulkMaxLog, curL, spendRes, gainRes, setRes, syncRes, RES, ratioOf,
   infGain, infUnlocked, doInfBreak, doRebirth, doAscend, doTranscend,
-  achCount, chapterSeen, chapterOf, cosmos, gatherAmountLog, manaRateLog,
+  achCount, chapterSeen, chapterOf, cosmos, cosmosBonusLog, infBonusLog, gatherAmountLog, manaRateLog,
   transUnlocked, starGain, starGainLog, relicGain, relicGainLog, soulGain, TRANS_REQ, ASCEND_REQ,
 }

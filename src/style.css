@@ -18,7 +18,12 @@
   --serif:var(--sans);
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;height:100%}
+/* body 에 height:100% 와 overflow-x:hidden 을 함께 주면 body 가 자기 스크롤
+   컨테이너가 되는데, 실제 스크롤은 html 에서 일어난다. 그러면 상단 막대의
+   position:sticky 가 붙을 대상이 없어 그냥 같이 밀려 올라간다.
+   가로 넘침은 html 이 막고, 세로는 문서가 자라게 둔다. */
+html{margin:0;padding:0;overflow-x:hidden}
+body{margin:0;padding:0;min-height:100%}
 body{
   background:
     radial-gradient(900px 460px at 50% -160px, rgba(212,169,74,.10), transparent 72%),
@@ -27,7 +32,7 @@ body{
     linear-gradient(180deg,#101013,#08080a);
   background-attachment:fixed;
   color:var(--txt); font-family:var(--sans); font-size:14.5px; line-height:1.55;
-  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
 }
 button{font-family:inherit;color:inherit;font-size:inherit}
 h1,h2,h3{margin:0;font-family:var(--sans);font-weight:700;letter-spacing:.01em}

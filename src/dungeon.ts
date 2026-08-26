@@ -5,7 +5,7 @@ import { log } from './tick'
 import { NM, X, icHTML } from './core'
 import { S } from './state'
 import { L10, cntLog, fmt, fmtLog, gainRes, geoSumLog, logAdd, numLog, safeLog } from './num'
-import { M, addManaLog, manaRateLog, recalc, safeAdd } from './multipliers'
+import { M, addManaLog, manaRateLog, recalc } from './multipliers'
 
 /* ══════════════ 던전 ══════════════ */
 export const isBoss=f=>f%10===0;
@@ -13,7 +13,6 @@ export const isBoss=f=>f%10===0;
    내내 같은 것만 보인다. 한 마리가 보일 만큼 머물게 하고, 깊이가 느려지는 몫은
    아래 sweepCount 가 한 걸음에 여러 층을 쓸어 담아 메운다. */
 export const FLOOR_MIN_TIME=0.28;  // 한 층이 화면에 머무는 최소 시간(초)
-export const FLOOR_MAX_STEPS=40;   // 한 틱에 처리할 수 있는 최대 걸음 수
 
 /* ── 우주 계층 ────────────────────────────────
    실제 천문학의 구조를 그대로 따른다.
@@ -71,11 +70,14 @@ export function cosmosLabel(f){
   p.push(X(`${c.floor}층`,`F${c.floor}`));
   return p.join(' · ');
 }
-export function cosmosBonus(f){
-  const c=cosmos(f); let v=1;
-  for(let i=1;i<COSMOS.length;i++) v*=Math.pow(COSMOS_MUL[i], c[COSMOS[i].k]-1);
-  return isFinite(v)?Math.min(v,1e120):1e120;   // 이 위로 가면 생산이 1e308 을 넘어 ∞ 가 된다
+/* 예전에는 1e120 에서 잘랐다 — 평범한 수로 곱하면 1e308 에서 ∞ 가 되기 때문이다.
+   배율이 전부 자릿수로 옮겨 갔으므로 자를 이유가 없다. 자릿수로 더해 돌려준다. */
+export function cosmosBonusLog(f){
+  const c=cosmos(f); let v=0;
+  for(let i=1;i<COSMOS.length;i++) v+=(c[COSMOS[i].k]-1)*L10(COSMOS_MUL[i]);
+  return v;
 }
+export function cosmosBonus(f){ const l=cosmosBonusLog(f); return l<300?Math.pow(10,l):Infinity; }
 
 /* 층마다 다른 적이 나온다 */
 /* 던전 몬스터 : 기본 6종 × 속성 6종 = 36종. 보스는 2종 × 6 = 12종.
@@ -184,16 +186,12 @@ export function poolsFor(ch){
 }
 export const BOSSES=mkFoes(BOSS_BASE,'boss');
 export const elemOf=f=>foeOf(f).af;
-/* 계층마다 다른 무리가 나온다. 지구의 짐승 → 천체와 기계 → 은하 규모의 것들 */
-/* mkFoes 는 [속성 바깥 · 기본형 안쪽] 으로 늘어놓는다. 그래서 그냥 f 로 훑으면
-   기본형만 바뀌고 속성이 열두 층 내리 같아서 — 속성이 색을 정하므로 — 화면이
-   열두 층 동안 한 가지 색으로 고인다. 배열 길이와 서로소인 13 씩 건너뛰면
-   기본형과 속성이 매 층 함께 바뀌고, 그래도 결국 전부 한 번씩 나온다. */
-export /* 고정 간격으로 훑으면 걸음 폭과 명단 길이가 맞물려 몇 종류만 돌고 만다.
-   힘이 세지면 한 걸음이 수천·수만 층이 되는데 그 폭이 거의 일정해서,
-   96 층씩 건너뛸 때는 스물네 걸음 동안 세 종류밖에 안 나왔다.
-   층 번호를 곱셈 해시로 흩어 놓으면 어떤 폭으로 밟아도 고르게 나오고,
-   층마다의 결과는 그대로 정해져 있어 체력·속성은 흔들리지 않는다. */
+/* 계층마다 다른 무리가 나온다. 지구의 짐승 → 천체와 기계 → 은하 규모의 것들.
+   고정 간격으로 명단을 훑으면 걸음 폭과 명단 길이가 맞물려 몇 종류만 돌고 만다 —
+   힘이 세지면 한 걸음이 수천·수만 층이 되고 그 폭이 거의 일정해서, 96 층씩
+   건너뛸 때는 스물네 걸음 동안 세 종류밖에 안 나왔다. 층 번호를 곱셈 해시로
+   흩어 놓으면 어떤 폭으로 밟아도 고르게 나오고, 층마다의 결과는 그대로 정해져
+   있어 체력·속성은 흔들리지 않는다. */
 function foeHash(f){
   const lo=f%4294967296, hi=Math.floor(f/4294967296)%4294967296;
   let h=((lo^hi)>>>0)^0x9e3779b9;
@@ -278,7 +276,8 @@ export function sweepCount(){
 export function sweepFloors(n){
   if(n<=1){ clearFloor(1); return }
   const f=S.floor, m=M(), e=elemOf(f);
-  addManaLog(floorLootManaLog(f)+geoSumLog(1.40,n));
+  const ml=floorLootManaLog(f)+geoSumLog(1.40,n);
+  addManaLog(ml);
   const csum=n+0.5*(n*f+n*(n-1)/2);                       // Σ(1+0.5·층)
   const cl=numLog(csum)+m.crystalLog+m.floorLootLog+numLog(e.crystal)-L10(8);
   gainRes('crystal',cl);
@@ -290,7 +289,7 @@ export function sweepFloors(n){
   const last=f+n-1;
   if(last>S.deepest){ S.deepest=last; if(last>(S.deepestEver||0)) S.deepestEver=last; syncChapter(); }
   const foe=foeOf(f);
-  log(`${icHTML(foe.sp)}<b>${NM(foe.nm)}</b> ${X('격파','defeated')} <span class="dim">${X(`외 ${fmt(n-1)}층`,`and ${fmt(n-1)} more`)}</span> <span class="dim">${cosmosLabel(last)}</span> · ${icHTML('mana')}${fmtLog(floorLootManaLog(f)+geoSumLog(1.40,n))} ${icHTML('crystal')}${fmtLog(cl)}`, false);
+  log(`${icHTML(foe.sp)}<b>${NM(foe.nm)}</b> ${X('격파','defeated')} <span class="dim">${X(`외 ${fmt(n-1)}층`,`and ${fmt(n-1)} more`)}</span> <span class="dim">${cosmosLabel(last)}</span> · ${icHTML('mana')}${fmtLog(ml)} ${icHTML('crystal')}${fmtLog(cl)}`, false);
   S.floor=f+n; recalc();
 }
 export function clearFloor(show){

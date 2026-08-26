@@ -127,12 +127,14 @@ export function doInfBreak(i){
   return true;
 }
 /* 무한 계층은 그 자체가 전체 배율이 된다 */
-export function infBonus(){
-  let v=1;
+export function infBonusLog(){
+  let v=0;
   // 배율이 너무 세면 돌파 직후 곧바로 되돌아와 초기화가 체감되지 않는다
-  for(let i=0;i<INF_LAYERS.length;i++) v*=Math.pow(1.6+i*0.9, S[INF_LAYERS[i].k+'Ever']||0);
-  return isFinite(v)?Math.min(v,1e120):1e120;   // 이 위로 가면 생산이 1e308 을 넘어 ∞ 가 된다
+  for(let i=0;i<INF_LAYERS.length;i++) v+=(S[INF_LAYERS[i].k+'Ever']||0)*L10(1.6+i*0.9);
+  return v;
 }
+/* 1e120 에서 자르던 천장을 걷었다 — 배율이 자릿수로 다뤄지므로 넘칠 일이 없다 */
+export function infBonus(){ const l=infBonusLog(); return l<300?Math.pow(10,l):Infinity; }
 
 export const TRANS_REQ=500;
 export function starGainLog(){

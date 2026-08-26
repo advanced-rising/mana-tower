@@ -3,8 +3,8 @@ import { PRODUCERS } from './producers'
 import { CHALLENGES, GEAR, MILESTONES, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS } from './content'
 import { MC, S, setMC } from './state'
 import { L10, achCount, cntLog, curChal, geoSumLog, logAdd, logSub, numLog } from './num'
-import { cosmosBonus, floorLoot } from './dungeon'
-import { infBonus } from './prestige'
+import { cosmosBonus, cosmosBonusLog, floorLoot } from './dungeon'
+import { infBonus, infBonusLog } from './prestige'
 import { log } from './tick'
 
 /* ══════════════ 배율 계산 ══════════════ */
@@ -78,7 +78,7 @@ export function computeM(){
     const store=S[L.store]||{};
     for(const u of L.ups()){ const l=store[u.id]||0; if(l) foldUp(st,u.apply,l); }
   }
-  { const v=L10(infBonus());             // infBonus·cosmosBonus 는 1e120 에서 잘려 넘치지 않는다
+  { const v=infBonusLog();               // 자릿수로 받는다 — 이제 상한이 없다
     st.prodL+=v; st.soulL+=v; st.offerL+=v; st.crystalL+=v; st.dungeonL+=v; st.relicL+=v; }
   { const cp=deriveSeed(st.chalPowL);
     for(const c of CHALLENGES){const n=S.chalDone[c.id]||0; if(n) foldUp(st,c.apply,n*cp);} }
@@ -88,7 +88,7 @@ export function computeM(){
   st.prodL+=L10(1+0.02*achCount());
   st.prodL+=L10(1+0.05*S.rebirths);
   st.prodL+=logAdd(0,st.floorPctL+numLog(S.deepest));   // 1+floorPct*deepest
-  { const v=L10(cosmosBonus(S.deepest||1));             // 행성·행성계·은하를 넘길 때마다
+  { const v=cosmosBonusLog(S.deepest||1);              // 행성·행성계·은하를 넘길 때마다
     st.prodL+=v; st.soulL+=v; st.offerL+=v; st.crystalL+=v; st.dungeonL+=v; }
   st.dungeonL+=L10(1+0.03*S.deepest);
   if(ch&&ch.rule.drain) st.prodL-=L10(ch.rule.drain);   // 나누기는 로그에서 빼기다

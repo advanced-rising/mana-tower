@@ -352,8 +352,18 @@ export function buildTrans(p){
 export function buildInf(p){
   const c=card([X('무한',"Infinity"),'infinity'],X(`수가 <b>${fmtLog(300)}</b> 을 넘길 지경이 되면 그 자체가 관문이 된다. 한 칸 위로 올라가고 아래가 접힌다. <b class="gold">별가루와 별 강화는 남는다.</b> 칸을 넘길 때마다 모든 생산에 큰 배율이 영구히 붙는다.<br>칸은 <b>${INF_LAYERS.length}</b> 개가 준비돼 있고, 더 이어 붙일 수 있다.`,`When a number is about to overflow past <b>${fmtLog(300)}</b>, that ceiling becomes a door. You rise one rung and everything below folds away — <b class="gold">stardust and star upgrades stay</b> — leaving a permanent multiplier.`));
   p.appendChild(c);
+  /* 다섯 계층이 세로로 쌓이면 화면이 길어져 아래쪽은 스크롤해야 보인다.
+     열린 계층만 메뉴로 내어 한 번에 하나씩 본다. */
+  const menu=el('div','row'); menu.style.cssText='gap:6px;margin:2px 0 10px;flex-wrap:wrap';
+  p.appendChild(menu);
+  let pick=0;
+  const cards=[], tabsBtn=[];
   INF_LAYERS.forEach((L,i)=>{
+    const mb=btn('sm','',()=>{ pick=i; refresh() });
+    mb.innerHTML=icHTML(L.sp,16)+' '+X(L.ko,L.en);
+    menu.appendChild(mb); tabsBtn.push(mb);
     const lc=card([X(L.ko,L.en),L.sp]);
+    cards.push(lc);
     const info=el('div','row'); info.style.margin='4px 0 9px'; lc.appendChild(info);
     const b=btn('gold big','',()=>{
       if(infGain(i)<=0) return;
@@ -374,8 +384,12 @@ export function buildInf(p){
     p.appendChild(lc);
     updaters.push(()=>{
       const open=infUnlocked(i), g=infGain(i), v=L.from();
-      lc.style.display=open?'':'none';
-      if(!open) return;
+      mb.style.display=open?'':'none';
+      let cls='btn sm '+(pick===i?'on':'');
+      if(mb.className!==cls) mb.className=cls;
+      if(open&&!infUnlocked(pick)) pick=i;            // 고른 칸이 잠기면 열린 칸으로 옮긴다
+      lc.style.display=(open&&pick===i)?'':'none';
+      if(!open||pick!==i) return;
       info.innerHTML=`<span class="tag">${X('현재',"Now")} <b>${i===0?fmtLog(S.manaEverL):fmt(v)}</b></span>
         <span class="tag">${X('필요',"Needs")} <b>${reqTxt(i)}</b></span>
         <span class="tag">${X('보유',"Held")} <b class="gold">${fmt(S[L.k]||0)}</b></span>
@@ -487,14 +501,11 @@ export function buildAuto(p){
     const row=toggleRow(def); c.appendChild(row);
     return {def,head,div,row};
   });
-  const locked=el('div','hint'); locked.style.cssText='margin-top:12px;opacity:.6';
-  c.appendChild(locked);
   updaters.push(()=>{
     /* 뒤에서 앞으로 훑으면 "이 머리말 아래에 보이는 줄이 있는가" 를 한 번에 안다 */
-    let anyBelow=false, hidden=0, firstShown=true;
+    let anyBelow=false, firstShown=true;
     for(let i=rows.length-1;i>=0;i--){
       const r=rows[i], un=autoUnlocked(r.def.k);
-      if(!un) hidden++;
       r.row.style.display=un?'':'none';
       if(un) anyBelow=true;
       if(r.head){ r.head.style.display=anyBelow?'':'none'; anyBelow=false; }
@@ -504,7 +515,6 @@ export function buildAuto(p){
       r.div.style.display=(un&&!firstShown)?'':'none';
       if(un) firstShown=false;
     }
-    locked.textContent = hidden ? X(`아직 열리지 않은 자동화 ${fmt(hidden)}개`,`${fmt(hidden)} more automations locked`) : '';
   });
 
   p.appendChild(c);
