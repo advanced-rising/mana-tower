@@ -52,6 +52,14 @@
     }
     if(S.deepest<S.deepestEver-0) { /* 최심층 자체는 승천에서 줄 수 있다 */ }
     if((S.deepestEver||0)<(S.deepest||0)) bad('S.deepestEver',`${D(S.deepestEver)} < 최심층 ${D(S.deepest)} (${at})`);
+    /* 배율은 매 프레임이 아니라 입력이 바뀐 프레임에만 다시 잰다.
+       그래서 '지금 들고 있는 값' 이 '지금 다시 재면 나올 값' 과 같아야 한다.
+       어긋나면 캐시가 낡은 것이고, 화면과 실제 진행이 갈라진다. */
+    const fresh=G.computeM();
+    for(const k of MULS){
+      const a=m[k+'Log'], b=fresh[k+'Log'];
+      if(Math.abs((a||0)-(b||0))>1e-9) bad('배율 캐시가 낡았다',`${k}Log 들고있는값 ${D(a)} vs 다시잰값 ${D(b)} (${at})`);
+    }
   }
 
   /* ── 자동 플레이 ───────────────────────────── */

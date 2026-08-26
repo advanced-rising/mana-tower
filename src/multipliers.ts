@@ -121,6 +121,15 @@ export function computeM(){
   return m;
 }
 export function recalc(){setMC(computeM()); syncMana();}
+/* 배율을 지금 다시 재지 않고 '낡았다' 고만 표시한다 — 다음에 M() 을 읽을 때
+   한 번만 다시 접는다. 업적처럼 틱 도중에 조용히 바뀌는 입력에 쓴다. */
+export function invalidateM(){ setMC(null) }
+/* 배율의 입력 중 평범한 틱이 바꿀 수 있는 것들. 이게 그대로면 다시 접을 이유가 없다. */
+export function mSignature(){
+  const ch=curChal();
+  return `${S.deepest|0}|${S.rebirths|0}|${S.ascensions|0}|${S.transcends|0}|`
+    +`${S.inf||0}|${S.eter||0}|${S.real||0}|${S.void||0}|${S.origin||0}|${ch?ch.id:''}`;
+}
 export function M(){ if(!MC) setMC(computeM()); return MC }
 
 /* 증가율을 덧셈으로 깎으면 하한(1.05)에 금방 막혀 더 사도 아무 일이 없다.

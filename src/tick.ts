@@ -6,7 +6,7 @@ import { DS, NM, X, icHTML } from './core'
 import { ACHS } from './content'
 import { LOG, S } from './state'
 import { cntLog, curChal, logAdd, numLog, syncGen } from './num'
-import { M, addManaLog, manaRateLog, recalc } from './multipliers'
+import { M, addManaLog, invalidateM, manaRateLog, mSignature, recalc, syncMana } from './multipliers'
 import { clearFloor, dungeonPowerLog, floorHPLog, floorPace } from './dungeon'
 import { autoOK, runAutomation } from './automation'
 
@@ -60,11 +60,22 @@ export function tick(dt){
   if(S.deepest>(S.deepestEver||0)) S.deepestEver=S.deepest;
   if(!(S.manaPeakL>=S.manaEverL)) S.manaPeakL=S.manaEverL;
   checkAchs();
-  recalc();
+  /* 예전에는 여기서 조건 없이 recalc() 를 불렀다. 후반부에는 한 프레임마다
+     강화·연구·장비 548 항목을 전부 다시 접어 초당 삼만 번을 넘겼다 — 화면이
+     끊기고 세이브를 여는 데 한참 걸리던 것이 이것이었다.
+     시설·강화·프레스티지·층 돌파는 저마다 그 자리에서 이미 recalc() 를 부르고,
+     업적은 checkAchs() 가 낡았다고 표시한다. 여기서는 그 밖의 입력이 바뀐
+     프레임에만 다시 잰다. 파생값(S.mana 등)은 값이 싸므로 늘 맞춰 둔다. */
+  syncMana();
+  const sig=mSignature();
+  if(sig!==lastSig){ lastSig=sig; recalc(); }
 }
+let lastSig='';
 export function checkAchs(){
   for(const a of ACHS) if(!S.achs[a.id]&&a.f()){
     S.achs[a.id]=1;
+    invalidateM();                       // 업적 하나마다 마나 생산 +2%
+
     const tier=ACHS.indexOf(a);
     achToast(NM(a.nm),DS(a)+X(' · 마나 생산 +2%',' · Mana output +2%'),tier<10?'medal_b':tier<20?'medal_s':'medal');
     log(`${icHTML('medal')}${X('업적','Feat')} <b class="gold">${NM(a.nm)}</b> ${X('달성 · 마나 생산 +2%','unlocked · Mana output +2%')}`,true);
