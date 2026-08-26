@@ -24,11 +24,15 @@ export const SEED_CAP=1e250;                    // 되먹임 값이 이보다 �
 export const deriveNum=l=>(isNaN(l)?1:(l<308?Math.pow(10,l):Infinity));   // double 이 버티는 끝까지는 옛 값 그대로 준다
 export const deriveSeed=l=>(isNaN(l)?1:(l<250?Math.pow(10,l):SEED_CAP));
 export const _sm={prod:1,t0:1,tUp:1,speed:1,soul:1,offer:1,crystal:1,dungeon:1,relic:1,
-  floorPct:0.02,floorLoot:1,boss:1,costMul:1,runeCap:25,gearPow:1,
+  floorPct:0.02,floorLoot:1,boss:1,costMul:1,runeCap:25,gearPow:1,gearExp:1,
   autoSpeed:1,offline:4,chalPow:1,autoMax:false};      // 항목 하나를 잴 때만 쓰는 그릇
+/* 장비 강화는 지수 자체를 곱한다 — 지수의 지수라 어떤 비용 곡선으로도 못 막는다.
+   지수 배율을 그대로 쓰지 않고 그 자릿수만 더해 준다: ×1e248 이 ×249 가 된다.
+   여전히 끝없이 자라지만 한 겹만 자란다. */
+export const gearExpOf=gp=>1+Math.max(0,(gp>0&&isFinite(gp))?L10(gp):250);
 export function _seedM(gp,fp,rc,off){
   for(let i=0;i<MUL_FIELDS.length;i++) _sm[MUL_FIELDS[i]]=1;
-  _sm.gearPow=gp; _sm.floorPct=fp; _sm.runeCap=rc; _sm.offline=off; _sm.autoMax=false;
+  _sm.gearPow=gp; _sm.gearExp=gearExpOf(gp); _sm.floorPct=fp; _sm.runeCap=rc; _sm.offline=off; _sm.autoMax=false;
 }
 /* 항목 하나를 재서 st 에 로그로 얹는다. lv 를 주면 넘칠 때 잘게 줄여 잰다. */
 export function foldUp(st,fn,lv){
@@ -95,7 +99,8 @@ export function computeM(){
   if(ch&&ch.rule.slow) st.speedL-=L10(ch.rule.slow);
   st.autoSpeedL=Math.max(L10(0.15),st.autoSpeedL);
   const m={autoMax:st.autoMax,runeCap:st.runeCap,offline:st.offline,
-           floorPctLog:st.floorPctL,floorPct:deriveNum(st.floorPctL)};
+           floorPctLog:st.floorPctL,floorPct:deriveNum(st.floorPctL),
+           gearExp:1+Math.max(0,st.gearPowL)};      // 지수는 자릿수만 실린다
   for(let i=0;i<MUL_FIELDS.length;i++){
     const k=MUL_FIELDS[i], l=st[k+'L'];
     m[k+'Log']=l; m[k]=deriveNum(l);     // 옛 코드가 읽는 평범한 수는 파생값으로 남긴다

@@ -9,7 +9,7 @@ import { COSMOS, FOES, chapterOf, chapterSeen, clearFloor, cosmos, cosmosBonusLo
 import { ASCEND_REQ, TRANS_REQ, doAscend, doInfBreak, doRebirth, doTranscend, infBonusLog, infGain, infUnlocked, relicGain, relicGainLog, soulGain, starGain, starGainLog, transUnlocked } from './prestige'
 import { AUTO_DEF, AUTO_DEFS, autoBuyTree, autoOK, autoUnlocked, buyBulkLog, runAutomation } from './automation'
 import { log, tick } from './tick'
-import { $, modal } from './ui/dom'
+import { $, modal, modalOpen } from './ui/dom'
 import { TABS, TAB_KEYS, buildTabs, ensureTabs, switchTab, tabByKey, tabKeyOf, updaters } from './ui/tabs'
 import { buildRes } from './ui/resbar'
 import { refresh, render } from './ui/render'
@@ -42,6 +42,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)save(true)}
 document.addEventListener('keydown',e=>{
   if(e.metaKey||e.ctrlKey||e.altKey) return;
   if(e.target.tagName==='INPUT') return;
+  if(modalOpen()) return;              // 창이 떠 있으면 글쇠는 창이 가져간다
   const k=e.key.toLowerCase();
   /* 열린 탭에 보이는 순서대로 1~9,0,Q…P 가 붙는다 */
   if(!['b','s'].includes(k)){

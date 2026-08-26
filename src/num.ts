@@ -40,8 +40,10 @@ export function fmtLog(l){
      써도 ee8.00 → ee8.00 이라 아무 일도 안 일어난 것처럼 읽혔다.
      자릿수를 쉼표로 그대로 적을 수 있는 데까지(1e15) 한 겹으로 두고,
      그 위로 층을 쌓을 때도 소수 넷째 자리까지 적어 변화를 잃지 않는다. */
+  /* 자릿수를 통째로 적으면 e2,063,726,572,023 처럼 길어져 읽히지 않는다.
+     백만을 넘으면 층을 쌓되 소수 넷째 자리까지 남겨, 값이 바뀌면 글자도 바뀐다. */
   let layer=1, v=l;
-  while(v>=1e15&&layer<1e9){ v=L10(v); layer++; }
+  while(v>=1e6&&layer<1e9){ v=L10(v); layer++; }
   const h = layer===1 ? Math.round(v).toLocaleString()
           : grouped(v, v>=1000?2:v>=100?3:4);
   return layer<=4?'e'.repeat(layer)+h:'(e^'+layer+')'+h;
@@ -139,7 +141,7 @@ export function layerTxt(LL){          // 값의 자릿수가 10^LL 일 때 그 
   if(!isFinite(LL)) return LL>0?'∞':'1';
   if(LL<300) return fmtLog(Math.pow(10,LL));
   let layer=2, v=LL;
-  while(v>=1e15&&layer<1e9){ v=L10(v); layer++; }
+  while(v>=1e6&&layer<1e9){ v=L10(v); layer++; }
   const h = grouped(v, v>=1000?2:v>=100?3:4);
   return layer<=4?'e'.repeat(layer)+h:'(e^'+layer+')'+h;
 }
@@ -188,17 +190,49 @@ export function gainRes(k,addLog){
 export function spendRes(k,costLog){ S[k+'L']=logSub(curL(k),costLog); syncRes(k) }
 export function setRes(k,l){ S[k+'L']=l; syncRes(k) }
 
-/* base·g^l 의 자릿수 */
+/* ── 비용은 초지수로 오른다 ────────────────────────
+   비용이 base·g^l 이고 효과도 b^l 이면 둘이 상쇄되어 브레이크가 없다.
+   예산이 10^B 일 때 살 수 있는 단계가 B 에 비례해 늘고, 그만큼 생산이
+   또 지수로 커져 다음 회차 예산이 더 커진다 — 별 강화가 5.79e17 단계까지
+   간 이유가 이것이고, 그래서 어떤 초기화도 0.2 초 만에 지워졌다.
+   레벨의 제곱에 비례하는 항을 더하면 예산이 열 배가 돼도 단계는 조금만
+   늘어난다(대략 √B). 상한은 여전히 없다 — 다만 천천히 오른다. */
+export const COST_CURVE=0.0016;                 // 제곱항의 세기
 export function ratioOf(costFn){ const c0=costFn(0); return costFn(1)/c0 }
-export function costLogAt(costFn,l){ return numLog(costFn(0))+l*L10(ratioOf(costFn)) }
-/* 레벨 l 부터 n 단계를 사는 값의 자릿수 */
-export function bulkCostLog(costFn,l,n){ return costLogAt(costFn,l)+geoSumLog(ratioOf(costFn),n) }
-/* 예산(자릿수) 으로 살 수 있는 단계 수 */
+export function costLogAt(costFn,l){
+  const lg=L10(ratioOf(costFn));
+  return numLog(costFn(0))+l*lg+COST_CURVE*lg*l*l;
+}
+/* 레벨 l 부터 n 단계를 사는 값의 자릿수.
+   항이 초지수로 커지므로 합은 맨 윗 항이 지배한다 — 위에서부터 예순네 항만
+   더해도 나머지는 스무 자리 아래라 묻힌다. */
+export function bulkCostLog(costFn,l,n){
+  if(!(n>0)) return -Infinity;
+  const top=costLogAt(costFn,l+n-1);
+  if(n===1) return top;
+  /* 항이 초지수로 커지므로 합은 맨 윗 항이 지배한다. 바로 아래 항과의
+     비율 r 만 보면 등비합으로 정확히 근사된다 — 예순네 항을 일일이 더하면
+     자동 구매가 한 틱에 수십만 번 도는 자리라 게임이 눈에 띄게 느려진다. */
+  const d=top-costLogAt(costFn,l+n-2);
+  if(!(d>1e-9)) return top+L10(n);
+  return top+L10(1/(1-Math.pow(10,-d)));
+}
+/* 예산(자릿수) 으로 살 수 있는 단계 수.
+   맨 윗 항이 예산을 넘지 않는 지점을 이차식으로 풀고, 반올림 몫만 손으로 맞춘다. */
 export function bulkMaxLog(costFn,l,budgetLog){
   const g=ratioOf(costFn); if(!(g>1)) return 0;
-  const lg=L10(g);
-  const A=budgetLog+L10(g-1)-costLogAt(costFn,l);   // log10( 예산·(g-1)/c(l) )
-  if(!(A>-300)) return 0;
-  const n = A>15 ? A/lg : L10(1+Math.pow(10,A))/lg;
-  return Math.max(0,Math.floor(n));
+  if(!(budgetLog>-Infinity)) return 0;
+  const lg=L10(g), c0=numLog(costFn(0));
+  const T=budgetLog-L10(g/(g-1));                // 합이 아니라 맨 윗 항 기준
+  const a=COST_CURVE*lg, b=lg, cc=c0-T;
+  let m;                                          // a·m² + b·m + cc = 0 의 양의 근
+  if(a>0){ const disc=b*b-4*a*cc; if(!(disc>0)) return 0; m=(-b+Math.sqrt(disc))/(2*a); }
+  else m=-cc/b;
+  let n=Math.floor(m-l+1);
+  if(!(n>0)) return 0;
+  let k=0;                                        // 반올림 몫만 몇 걸음 맞춘다
+  while(n>0&&bulkCostLog(costFn,l,n)>budgetLog&&k++<8) n--;
+  k=0;
+  while(bulkCostLog(costFn,l,n+1)<=budgetLog&&k++<8) n++;
+  return Math.max(0,n);
 }

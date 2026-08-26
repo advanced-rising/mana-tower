@@ -551,11 +551,27 @@ html[data-chapter="11"]{--gold:#c07ae0;--gold2:#e6b6f6;--goldDk:#703f8a}
 .arena[data-ch="11"]::after{background-image:url('../art/ui/glow_ch11.png')}
 
 /* ══ 좁은 화면 ═══════════════════════════════════
-   자원 띠와 조작 줄이 한 줄로만 늘어서서 화면 밖으로 잘려 나갔다.
-   좁으면 줄을 바꾸게 하고, 어떤 줄도 화면보다 넓어지지 않게 한다. */
+   자원 열두 칸이 큼직한 카드로 두 줄씩 쌓이면 첫 화면을 통째로 먹어서
+   정작 게임은 스크롤해야 나온다. 좁으면 한 줄짜리 작은 조각으로 줄이고,
+   탭도 가로로만 밀지 말고 줄을 바꿔 전부 보이게 한다. */
 @media(max-width:760px){
-  #res{flex-wrap:wrap; overflow-x:visible}
-  .res{flex:1 1 44%; min-width:0}
+  /* 열두 칸을 줄바꿈하면 여섯 줄이 되어 첫 화면을 다 먹는다.
+     한 줄에 두고 좌우로 밀어 본다 — 손가락으로 훑는 편이 자연스럽다. */
+  #res{flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch;
+       scroll-snap-type:x proximity; gap:6px; padding:2px 8px 7px}
+  .res{
+    flex:0 0 auto; width:132px; min-width:0; padding:3px 6px; gap:6px;
+    border-width:4px; border-image-slice:6; scroll-snap-align:start;
+  }
+  .res img.px{width:18px !important;height:18px !important}
+  .res .lab{font-size:9.5px;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .res .val{font-size:13px;line-height:1.15}
+  .res .sub{display:none}
+
+  #tabs{flex-wrap:wrap; overflow-x:visible; gap:4px}
+  .tab{flex:0 0 auto; padding:5px 8px; font-size:12px}
+  .tab .n{display:none}
+
   .row{flex-wrap:wrap}
   .card{padding:6px 7px 8px}
   .arena{grid-template-columns:auto 1fr; gap:9px}
@@ -563,14 +579,13 @@ html[data-chapter="11"]{--gold:#c07ae0;--gold2:#e6b6f6;--goldDk:#703f8a}
   #modal{max-width:94vw}
   .log{height:120px;font-size:11.5px}
   .up .ic img,.unit .ico img{width:26px;height:26px}
+  #brand{padding:5px 10px 2px}
+  #brandLogo{height:30px}
 }
 @media(max-width:430px){
-  .res{flex:1 1 46%}          /* 한 줄에 하나면 자원만 열 줄이 되어 게임이 저 아래로 밀린다 */
-  .res .sub{display:none}
-  .res .val{font-size:15px}
+  .res{width:120px}
+  .res .val{font-size:12.5px}
   .btn{padding:5px 8px;font-size:12px}
-  .tab{padding:6px 9px}
-  #brandLogo{height:34px}
   .grid.wide{grid-template-columns:1fr}
 }
 /* 어떤 것도 화면보다 넓게 그리지 않는다 */

@@ -44,4 +44,16 @@ $('modalOk').addEventListener('click',()=>{
   const f=modalCb; modalCb=null; if(f){f();render()}
 });
 $('modalNo').addEventListener('click',()=>{$('modalWrap').classList.remove('on');modalCb=null});
-$('modalWrap').addEventListener('click',e=>{if(e.target.id==='modalWrap'){$('modalWrap').classList.remove('on');modalCb=null}});
+$('modalWrap').addEventListener('click',e=>{if(e.target.id==='modalWrap'){$('modalWrap').classList.remove('on');modalCb=null}})
+/* 확인 창이 떠 있으면 글쇠는 창의 것이다 — Enter 로 확인, Esc 로 취소.
+   이때 게임 단축키는 먹지 않아야 한다(스페이스로 채집이 되면 곤란하다). */
+export const modalOpen=()=>$('modalWrap').classList.contains('on');
+document.addEventListener('keydown',e=>{
+  if(!modalOpen()) return;
+  if(e.key==='Enter'){ e.preventDefault(); e.stopImmediatePropagation(); $('modalOk').click() }
+  else if(e.key==='Escape'){ e.preventDefault(); e.stopImmediatePropagation();
+    if(modalCb) $('modalNo').click(); else $('modalOk').click() }
+  /* stopPropagation 은 같은 노드의 다른 청취자를 막지 못한다 — 게임 단축키가
+     document 에 붙어 있으므로 즉시 중단해야 스페이스가 채집으로 새지 않는다. */
+  else e.stopImmediatePropagation();
+},true);;
