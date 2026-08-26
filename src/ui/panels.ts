@@ -477,16 +477,36 @@ export function buildAuto(p){
       ? X('<b class="gold">전부 열렸다</b> · 이제부터는 손댈 것이 없다',"<b class='gold'>All unlocked</b> · nothing left to do by hand")
       : X(`해금 <b>${n}</b> / ${AUTO_DEFS.length}`,`<b>${n}</b> / ${AUTO_DEFS.length} unlocked`);
   });
-  /* 진행 순서대로 묶어서 보여 준다 — 스물세 줄이 한 덩어리로 있으면 뭐가 뭔지 모른다 */
-  AUTO_DEFS.forEach((def,i)=>{
-    if(def.g){
-      const h=el('div','hint');
+  /* 진행 순서대로 묶어서 보여 준다 — 스물세 줄이 한 덩어리로 있으면 뭐가 뭔지 모른다.
+     아직 열리지 않은 것은 감춘다. 열릴 때마다 줄이 하나씩 늘어난다. */
+  const rows=AUTO_DEFS.map(def=>{
+    const head=def.g?(()=>{ const h=el('div','hint');
       h.style.cssText='margin:12px 0 2px;font-family:var(--serif);font-size:12px;letter-spacing:.06em;color:var(--gold);opacity:.85';
-      h.textContent=NM(def.g).toUpperCase();
-      c.appendChild(h);
-    } else if(i>0) c.appendChild(el('div','divider'));
-    c.appendChild(toggleRow(def));
+      h.textContent=NM(def.g).toUpperCase(); c.appendChild(h); return h })():null;
+    const div=el('div','divider'); c.appendChild(div);
+    const row=toggleRow(def); c.appendChild(row);
+    return {def,head,div,row};
   });
+  const locked=el('div','hint'); locked.style.cssText='margin-top:12px;opacity:.6';
+  c.appendChild(locked);
+  updaters.push(()=>{
+    /* 뒤에서 앞으로 훑으면 "이 머리말 아래에 보이는 줄이 있는가" 를 한 번에 안다 */
+    let anyBelow=false, hidden=0, firstShown=true;
+    for(let i=rows.length-1;i>=0;i--){
+      const r=rows[i], un=autoUnlocked(r.def.k);
+      if(!un) hidden++;
+      r.row.style.display=un?'':'none';
+      if(un) anyBelow=true;
+      if(r.head){ r.head.style.display=anyBelow?'':'none'; anyBelow=false; }
+    }
+    for(const r of rows){                      // 첫 줄 위에는 구분선을 두지 않는다
+      const un=autoUnlocked(r.def.k);
+      r.div.style.display=(un&&!firstShown)?'':'none';
+      if(un) firstShown=false;
+    }
+    locked.textContent = hidden ? X(`아직 열리지 않은 자동화 ${fmt(hidden)}개`,`${fmt(hidden)} more automations locked`) : '';
+  });
+
   p.appendChild(c);
   const s=card([X('자동화 상태',"Automation Status"),'fastfwd']);
   const st=el('div','row'); s.appendChild(st); p.appendChild(s);

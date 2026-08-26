@@ -1,7 +1,6 @@
 import { LANG, X } from './core'
 import { CHALLENGES, GEAR, RUNES } from './content'
 import { S } from './state'
-import { L10, logAdd, numLog } from './dungeon'
 
 /* ══════════════ 유틸 ══════════════ */
 /* ── 숫자 표기 사다리 ─────────────────────────

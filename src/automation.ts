@@ -62,7 +62,11 @@ export const autoOK=k=>autoUnlocked(k)&&!!S.auto[k];
 /* 예산도 비용도 자릿수로 다룬다. 평범한 수로 하면 자원이 1e308 을 넘는 순간
    예산이 ∞ 가 되고, 살 수 있는 단계도 ∞ 가 되어 n 을 절반씩 줄이는 고리가
    Infinity/2 = Infinity 로 영원히 돌았다 — 게임이 통째로 멈추던 자리다. */
-const LOGGED=new Set(RES);
+/* 모듈 평가 시점에 RES 를 읽으면, 순환 의존에 걸렸을 때 undefined 가 되어
+   new Set(undefined) 즉 빈 집합이 된다 — 그러면 모든 화폐가 자릿수가 아닌 것으로
+   취급되어 차감이 조용히 틀린다. 처음 쓸 때 만든다. */
+let _logged=null;
+const LOGGED={ has(k){ return (_logged||(_logged=new Set(RES))).has(k) } };
 export function budgetLogOf(k){ return LOGGED.has(k)?curL(k):numLog(S[k]||0) }
 export function payFrom(k,costLog){
   if(LOGGED.has(k)) spendRes(k,costLog);

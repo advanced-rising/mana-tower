@@ -7,7 +7,7 @@ import { ACHS } from './content'
 import { LOG, S } from './state'
 import { cntLog, curChal, logAdd, numLog, syncGen } from './num'
 import { M, addManaLog, manaRateLog, recalc } from './multipliers'
-import { FLOOR_MAX_STEPS, FLOOR_MIN_TIME, clearFloor, dungeonPowerLog, floorHPLog, sweepCount, sweepFloors } from './dungeon'
+import { FLOOR_MIN_TIME, dungeonPowerLog, floorHPLog, sweepCount, sweepFloors } from './dungeon'
 import { autoOK, runAutomation } from './automation'
 
 /* ══════════════ 진행 ══════════════ */
@@ -47,7 +47,8 @@ export function tick(dt){
     }
   }else{
     S.chalTime=0;
-    if(S.manaRun>S.bestRun) S.bestRun=S.manaRun;   // 파생값 기준 — 시련 도달 판정용
+    /* 파생값으로 재면 1e308 위에서 둘 다 ∞ 가 되어 기록이 멈춘다 */
+    if(!(S.bestRunL>=S.manaRunL)) S.bestRunL=S.manaRunL;
   }
   checkChallenge();
   S.chalCd=Math.max(0,(S.chalCd||0)-dt);

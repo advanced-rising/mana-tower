@@ -33,7 +33,7 @@ export function newState(){return{
   lastSoulGain:0, lastRelicGain:0, lastStarGain:0,
   sinceRebirth:0, sinceAscend:0, sinceTrans:0, sinceInf:0,
   deepest:0, floor:1, prog:0, exploring:false,
-  chal:null, chalDone:{}, chalTime:0, chalCd:0, bestRun:0, floorCd:0, autoUnlocked:{},
+  chal:null, chalDone:{}, chalTime:0, chalCd:0, bestRun:0, bestRunL:-Infinity, floorCd:0, autoUnlocked:{},
   achs:{},
   auto:{gather:1,build:1,research:1,rune:1,gear:1,dungeon:1,soulup:1,rebirth:1,relicup:1,starup:1,upinf:1,upeter:1,upreal:1,upvoid:1,uporigin:1,brketer:1,brkreal:1,brkvoid:1,brkorigin:1,ascend:1,trans:1,inf:1,chal:1},
   timers:{build:0,research:0,rune:0,gear:0,gather:0},

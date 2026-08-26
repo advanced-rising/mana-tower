@@ -3,7 +3,7 @@ import { recalc } from './multipliers'
 import { NM, X, icHTML } from './core'
 import { CHALLENGES, chalGoal } from './content'
 import { S } from './state'
-import { chalTotal, curChal, fmt, numLog } from './num'
+import { L10, chalTotal, curChal, fmt, numLog } from './num'
 import { softReset } from './prestige'
 import { autoOK } from './automation'
 import { log } from './tick'
@@ -41,7 +41,9 @@ export function chalReachable(ch){
   const n=S.chalDone[ch.id]||0;
   if(n>=ch.max) return false;
   const penalty=(ch.rule.drain||1)*(ch.rule.noResearch?4:1)*(ch.rule.noAuto?3:1)*(ch.rule.maxTier!==undefined?3:1);
-  return chalGoal(ch,n)*penalty <= S.bestRun*0.6;
+  /* 목표가 1e308 을 넘으면 평범한 수로는 ∞ 가 되어 어떤 시련도 "닿을 수 없음" 이
+     되고, 반대로 기록이 ∞ 면 전부 "닿을 수 있음" 이 된다. 자릿수로 견준다. */
+  return numLog(chalGoal(ch,n))+numLog(penalty) <= (S.bestRunL||-Infinity)+L10(0.6);
 }
 export function autoEnterChallenge(){
   if(!chalUnlocked()||S.chal) return;

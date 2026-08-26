@@ -53,7 +53,7 @@ export function updateSide(){
   box.innerHTML=`
     <div class="k">${X('마나 생산',"Mana output")}</div><div class="v">${fmtLog(manaRateLog())}${X(' /초',' /s')}</div>
     <hr>
-    <div class="k">${S.exploring?X('교전 중','In combat'):X('대기 중','Idle')} · ${X(f+'층','F'+f)}</div>
+    <div class="k">${S.exploring?X('교전 중','In combat'):X('대기 중','Idle')} · ${X(fmt(f)+'층','F'+fmt(f))}</div>
     <div class="v" style="display:flex;align-items:center;gap:5px">${icHTML(fo.sp)}${NM(fo.nm)}</div>
     <div class="mini"><i style="width:${pctTxt(pr*100)}%"></i></div>
     <div class="k">${X('전체 배율',"Total multiplier")}</div><div class="v">×${fmtLog(m.prodLog)}</div>

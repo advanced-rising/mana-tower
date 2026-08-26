@@ -4,7 +4,7 @@ import { DS, DSF, LANG, NM, VERSION, X, ic, icHTML, setLang, spriteURL } from '.
 import { ACHS, BADGES, CHALLENGES, ETER_UPS, GEAR, INF_UPS, ORIGIN_UPS, REAL_UPS, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, VOID_UPS } from './content'
 import { S, setS } from './state'
 import { L10, RES, achCount, bulkCostLog, bulkMaxLog, cnt, cntLog, costLogAt, curL, cutTxt, fmt, fmtLog, gainRes, geoSumLog, logAdd, logSub, numLog, pctTxt, powTxt, ratioOf, safeLog, setRes, spendRes, syncGen, syncRes } from './num'
-import { M, computeM, gather, gatherAmountLog, manaRateLog, recalc } from './multipliers'
+import { M, buyProducer, computeM, costLogOf, gather, gatherAmountLog, growth, manaRateLog, maxAfford, recalc } from './multipliers'
 import { COSMOS, FOES, chapterOf, chapterSeen, clearFloor, cosmos, dungeonPowerLog, floorHPLog, floorLoot, floorLootManaLog, foeOf, sweepCount, sweepFloors, sweepPace, syncChapter } from './dungeon'
 import { ASCEND_REQ, TRANS_REQ, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, relicGain, relicGainLog, soulGain, starGain, starGainLog, transUnlocked } from './prestige'
 import { AUTO_DEF, AUTO_DEFS, autoBuyTree, autoOK, autoUnlocked, buyBulkLog, runAutomation } from './automation'
@@ -101,7 +101,7 @@ render();
   PRODUCERS, RESEARCH, RUNES, GEAR, SOUL_UPS, RELIC_UPS, STAR_UPS,
   INF_UPS, ETER_UPS, REAL_UPS, VOID_UPS, ORIGIN_UPS,
   CHALLENGES, ACHS, AUTO_DEFS, TABS, COSMOS, INF_LAYERS, FOES, BADGES,
-  M, computeM, recalc, tick, refresh, render, switchTab, buildTabs, save, load,
+  M, computeM, recalc, tick, costLogOf, maxAfford, buyProducer, growth, refresh, render, switchTab, buildTabs, save, load,
   fmt, fmtLog, powTxt, cutTxt, pctTxt, NM, DS, DSF, X, ic, icHTML, spriteURL,
   foeOf, sweepCount, sweepPace, sweepFloors, clearFloor, floorLoot, floorLootManaLog, floorHPLog,
   dungeonPowerLog, cnt, cntLog, syncGen, logAdd, logSub, geoSumLog, numLog, safeLog, L10,

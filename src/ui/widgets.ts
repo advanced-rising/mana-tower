@@ -52,7 +52,7 @@ export function levelGrid(defs,lvOf,curKey,setLv,curSp){
     updaters.push(()=>{
       const l=lvOf(u.id),maxed=l>=u.max;
       const bud=budgetLogOf(curKey), cl=costLogAt(u.c,l), afford=!maxed&&bud>=cl;
-      _t.html=`${NM(u.nm)} <span class="lv">Lv.${fmt(l)}${u.max!==Infinity?' / '+u.max:''}</span>`;
+      _t.html=`${NM(u.nm)} <span class="lv">Lv.${fmt(l)}${u.max!==Infinity?' / '+fmt(u.max):''}</span>`;
       _d.text=u.d(l);
       const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
       const {n:bn,costLog:bs}=buyBulkLog(u.c,l,bud,Math.min(u.max-l,want));

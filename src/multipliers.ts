@@ -82,7 +82,9 @@ export function computeM(){
     st.prodL+=v; st.soulL+=v; st.offerL+=v; st.crystalL+=v; st.dungeonL+=v; st.relicL+=v; }
   { const cp=deriveSeed(st.chalPowL);
     for(const c of CHALLENGES){const n=S.chalDone[c.id]||0; if(n) foldUp(st,c.apply,n*cp);} }
-  for(const ms of MILESTONES) if(S.rebirths>=ms.n) foldUp(st,ms.apply);
+  /* 이정표는 "환생 200회" 처럼 영구 보상으로 읽히는데 회차 값을 보고 있어서
+     승천 한 번에 전부 사라졌다. 줄지 않는 누적 횟수를 본다. */
+  for(const ms of MILESTONES) if((S.rebirthEver||S.rebirths)>=ms.n) foldUp(st,ms.apply);
   st.prodL+=L10(1+0.02*achCount());
   st.prodL+=L10(1+0.05*S.rebirths);
   st.prodL+=logAdd(0,st.floorPctL+numLog(S.deepest));   // 1+floorPct*deepest
@@ -146,12 +148,8 @@ export function manaRate(){ const l=manaRateLog(); return l<300?Math.pow(10,l):I
 export function gatherAmountLog(){ return Math.max(0,manaRateLog()+L10(0.5)); }
 export function gatherAmount(){ const l=gatherAmountLog(); return l<300?Math.pow(10,l):Infinity; }
 export function gather(){addManaLog(gatherAmountLog());S.clicks++}
-export const CAP=1e300;
-export function safeAdd(cur,v){                       // ∞ 나 NaN 이 한 번 새면 그 뒤가 전부 망가진다
-  if(!isFinite(v)||isNaN(v)) v=CAP;
-  const n=(cur||0)+v;
-  return (!isFinite(n)||isNaN(n))?CAP:Math.min(n,CAP);
-}
+/* safeAdd 는 1e300 에서 값을 자르던 함수였다. 화폐가 전부 자릿수로 옮겨 가면서
+   쓰이는 곳이 없어졌다 — 남겨 두면 다시 천장을 만드는 데 쓰이므로 지운다. */
 /* 마나의 진실은 manaL / manaRunL / manaEverL (log10) 이다.
    S.mana / S.manaRun / S.manaEver 는 세이브 호환과 옛 조건식을 위한 읽기 전용 파생값. */
 export function syncMana(){

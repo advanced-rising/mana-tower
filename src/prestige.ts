@@ -146,8 +146,10 @@ export function doTranscend(silent){
   if(g<=0) return false;
   const sl=starGainLog();
   gainRes('star',sl); S.lastStarGainL=sl; S.lastStarGain=g; S.transcends++; S.transEver=(S.transEver||0)+1;
-  S.relic=0; S.relicTrans=0; S.relicUps={};
-  S.soul=0; S.soulAsc=0; S.soulUps={}; S.runes={}; S.gear={};
+  /* 자릿수가 진실이므로 파생값만 0 으로 두면 아무것도 초기화되지 않는다.
+     초월 뒤에도 영혼석과 유물이 그대로 남아 있던 자리다. */
+  setRes('relic',-Infinity); S.relicTrans=0; S.relicTransL=-Infinity; S.relicUps={};
+  setRes('soul',-Infinity); S.soulAsc=0; S.soulAscL=-Infinity; S.soulUps={}; S.runes={}; S.gear={};
   setRes('crystal',-Infinity); setRes('offering',-Infinity);
   S.rebirths=0; S.ascensions=0; S.deepest=0;
   S.lastSoulGain=0; S.lastRelicGain=0; S.sinceAscend=0; S.sinceTrans=0;
