@@ -1,0 +1,31 @@
+<pre id="TESTOUT" style="display:none"></pre>
+<script>
+(async()=>{
+  const O=document.getElementById('TESTOUT'); const out=s=>O.textContent+=s+'\n';
+  const errs=[]; window.addEventListener('error',e=>errs.push(e.message),true);
+  await new Promise(r=>setTimeout(r,1500));
+  const btns=[...document.querySelectorAll('#tabs button, #tabs .tab, #tabs > *')].filter(b=>b.offsetParent!==null);
+  let bad=0, seen=0;
+  for(const b of btns){
+    const label=(b.innerText||'?').trim().split('\n')[0].slice(0,10);
+    b.click(); seen++;
+    await new Promise(r=>setTimeout(r,280));
+    const imgs=[...document.querySelectorAll('#main img')];
+    await Promise.all(imgs.map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r})));
+    await new Promise(r=>setTimeout(r,120));
+    const broke=imgs.filter(i=>!i.naturalWidth);
+    const txt=document.getElementById('main').innerText;
+    const raw=(txt.match(/\d[\d,]{6,}/g)||[]).filter(s=>s.replace(/,/g,'').length>6&&!/,/.test(s));
+    const srcs=imgs.map(i=>i.src.split('/').pop());
+    const dup=srcs.length-new Set(srcs).size;
+    out(`  ${label.padEnd(8)} 이미지 ${String(imgs.length).padStart(3)} · 깨짐 ${broke.length} · 같은그림 ${String(dup).padStart(3)} · 긴숫자 ${raw.length}`);
+    if(broke.length){ bad++; out('     깨진 것: '+[...new Set(broke.map(i=>i.src.split('/').pop()))].slice(0,3).join(', ')) }
+    if(raw.length){ bad++; out('     긴 숫자: '+raw.slice(0,3).join(', ')) }
+    if(dup>0){ const cnt={}; srcs.forEach(x=>cnt[x]=(cnt[x]||0)+1);
+      const top=Object.entries(cnt).filter(e=>e[1]>1).sort((a,b)=>b[1]-a[1]).slice(0,3);
+      out('     겹친 그림: '+top.map(e=>e[0]+'×'+e[1]).join(', ')) }
+  }
+  if(errs.length){ out('[!] 콘솔 오류 '+errs.length+' :: '+errs.slice(0,3).join(' | ')); bad++ }
+  out(`=== 탭 ${seen}개 · 문제 ${bad}건 ===`); out('DONE');
+})();
+</script>

@@ -1,0 +1,131 @@
+<pre id="TESTOUT" style="position:fixed;left:-9999px"></pre>
+<script>
+window.__errs=[]; window.addEventListener('error',e=>__errs.push(String(e.message)));
+function out(l){document.getElementById('TESTOUT').textContent+=l+'\n';}
+function bad(t,m){out('  [!] '+t+' — '+m);}
+const rel=(a,b)=>(a===b)?0:Math.abs(a-b)/Math.max(1e-300,Math.abs(b));
+setTimeout(()=>{try{
+const G=window.__game, S=G.S;
+const {logAdd,logSub,geoSumLog,numLog,L10,costLogAt,bulkCostLog,bulkMaxLog,curL,spendRes,gainRes,setRes}=G;
+
+out('=== 1. 로그 덧셈·뺄셈 ===');
+let n=0,worst=0,wc='';
+for(const a of [0,1,5,17,50,300,1e5]) for(const b of [0,1,5,17,50,300,1e5]){
+  const t=Math.log10(Math.pow(10,Math.min(a,300))+Math.pow(10,Math.min(b,300)));
+  if(a<=300&&b<=300){ const r=rel(logAdd(a,b),t); n++; if(r>worst){worst=r;wc=`logAdd(${a},${b})`} }
+}
+for(const a of [1,5,17,50,300]) for(const b of [0,1,5,17]){
+  if(a<=b) continue;
+  const t=Math.log10(Math.pow(10,a)-Math.pow(10,b));
+  if(isFinite(t)){ const r=rel(logSub(a,b),t); n++; if(r>worst){worst=r;wc=`logSub(${a},${b})`} }
+}
+out(`  ${n}개 비교 · 최대 상대오차 ${worst.toExponential(2)} (${wc})`);
+if(worst>1e-12) bad('logAdd/logSub','오차가 크다');
+
+out('=== 2. 등비합 ===');
+worst=0;wc='';n=0;
+for(const g of [1.05,1.3,1.7,2,4,120]) for(const k of [1,2,5,10,30]){
+  let sum=0; for(let i=0;i<k;i++) sum+=Math.pow(g,i);
+  if(!isFinite(sum)) continue;
+  const r=rel(geoSumLog(g,k), Math.log10(sum)); n++;
+  if(r>worst){worst=r;wc=`geoSumLog(${g},${k})`}
+}
+out(`  ${n}개 비교 · 최대 상대오차 ${worst.toExponential(2)} (${wc})`);
+if(worst>1e-10) bad('geoSumLog','오차가 크다');
+
+out('=== 3. 비용 자릿수 (초지수 곡선) ===');
+/* 비용의 정의는 이제 costLogAt 이다 — c(l) 은 c(0)·c(1) 로 기울기를 읽는 씨앗일 뿐.
+   레벨 0·1 에서는 둘이 같아야 하고, 그 위로는 제곱항만큼 더 비싸야 한다. */
+worst=0;wc='';n=0;
+const TREES=[G.SOUL_UPS,G.RELIC_UPS,G.STAR_UPS,G.INF_UPS,G.ETER_UPS,G.REAL_UPS,G.VOID_UPS,G.ORIGIN_UPS];
+let mono=0;
+for(const defs of TREES) for(const u of defs){
+  { const t=u.c(0);                       // 제곱항이 0 인 곳 — 여기선 정확히 같아야 한다
+    if(isFinite(t)&&t>0){ const r=rel(Math.pow(10,costLogAt(u.c,0)), t); n++;
+      if(r>worst){worst=r;wc=u.id+' Lv0'} } }
+  for(const l of [2,40,400,4000]) if(!(costLogAt(u.c,l+1)>costLogAt(u.c,l))) mono++;
+}
+out(`  레벨 0 에서 ${n}개 비교 · 최대 상대오차 ${worst.toExponential(2)} (${wc})`);
+out(`  비용이 레벨에 따라 늘 오르는가 · 어긋난 것 ${mono}`);
+if(worst>1e-9) bad('costLogAt','레벨 0 에서 원래 곡선과 어긋난다');
+if(mono) bad('costLogAt','비용이 단조 증가하지 않는다');
+
+out('=== 4. 묶음 비용 (닫힌 근사 vs 항별 합) ===');
+worst=0;wc='';n=0;
+for(const defs of TREES) for(const u of defs.slice(0,3)) for(const l of [0,5,30]) for(const k of [1,3,12,40]){
+  let sum=-Infinity;
+  for(let i=0;i<k;i++) sum=G.logAdd(sum,costLogAt(u.c,l+i));
+  const got=bulkCostLog(u.c,l,k); n++;
+  const d=Math.abs(Math.pow(10,got-sum)-1);      // 상대오차
+  if(d>worst){worst=d;wc=u.id+` Lv${l}+${k}`}
+}
+out(`  ${n}개 비교 · 최대 상대오차 ${worst.toExponential(2)} (${wc})`);
+if(worst>1e-9) bad('bulkCostLog','항별 합과 어긋난다');
+
+out('=== 5. 예산으로 살 수 있는 단계 수 (한 단계도 넘치면 안 된다) ===');
+let over=0, under=0, tested=0;
+for(const defs of TREES) for(const u of defs) for(const l of [0,3,25]) for(const be of [1,3,8,20,60,200]){
+  const budgetLog=be;
+  const k=bulkMaxLog(u.c,l,budgetLog); tested++;
+  if(k>0 && bulkCostLog(u.c,l,k) > budgetLog+1e-9) over++;          // 예산 초과
+  if(bulkCostLog(u.c,l,k+1) <= budgetLog-1e-9){ under++;
+    if(under<=4) out(`    덜 삼: ${u.id} Lv${l} 예산 e${be} → ${k}개(e${bulkCostLog(u.c,l,k).toFixed(2)}), ${k+1}개도 e${bulkCostLog(u.c,l,k+1).toFixed(2)} 로 가능`); }
+}
+out(`  ${tested}개 조합 · 예산 초과 ${over} · 덜 산 것 ${under}`);
+if(over) bad('bulkMaxLog','예산보다 많이 산다');
+if(under>tested*0.02) bad('bulkMaxLog','덜 사는 경우가 2% 를 넘는다');
+
+out('=== 6. 구매가 정확히 그만큼 깎는가 ===');
+let mism=0;
+for(const [store,defs,cur] of [['soulUps',G.SOUL_UPS,'soul'],['starUps',G.STAR_UPS,'star']]){
+  for(let t=0;t<6;t++){
+    S[store]={}; setRes(cur, 30+t*40);
+    const before=curL(cur);
+    const got=G.autoBuyTree(defs,store,cur);
+    const spentLog=logSub(before,curL(cur));
+    let trueLog=-Infinity;
+    for(const u of defs){ const lv=S[store][u.id]||0; if(lv>0) trueLog=logAdd(trueLog,bulkCostLog(u.c,0,lv)); }
+    const r=rel(Math.pow(10,spentLog),Math.pow(10,trueLog));
+    if(got>0 && r>1e-6){ mism++; if(mism<4) bad('구매',`${cur} 예산 e${30+t*40}: 깎인 값 e${spentLog.toFixed(3)} vs 실제 e${trueLog.toFixed(3)}`); }
+  }
+}
+out('  어긋난 구매 '+mism+'건');
+
+out('=== 7. 잔액이 음수가 되지 않는가 ===');
+let neg=0;
+for(const cur of ['soul','relic','star','crystal','offering']){
+  setRes(cur,50);
+  for(let i=0;i<40;i++) spendRes(cur, 40+Math.random()*20);
+  if(curL(cur)>0.001) { neg++; bad('잔액', cur+' 가 다 쓰고도 e'+curL(cur).toFixed(2)+' 남았다'); }
+  if(isNaN(curL(cur))) { neg++; bad('잔액', cur+' 가 NaN'); }
+}
+out('  이상 '+neg+'건');
+
+out('=== 8. 획득이 이중 적립되지 않는가 ===');
+setRes('crystal',-Infinity); S.crystalEverL=-Infinity;
+for(let i=0;i<10;i++) gainRes('crystal', 2);      // 100 씩 열 번 = 1000
+const want=Math.log10(1000);
+out('  보유 e'+curL('crystal').toFixed(4)+' · 누적 e'+S.crystalEverL.toFixed(4)+' · 기대 e'+want.toFixed(4));
+if(rel(curL('crystal'),want)>1e-9) bad('획득','보유가 어긋난다');
+if(rel(S.crystalEverL,want)>1e-9) bad('획득','누적이 어긋난다');
+
+out('=== 9. 배율 합성 (강화 하나씩 vs 함께) ===');
+(function(){
+  const clear=()=>{S.research={};S.runes={};S.gear={};
+    ['soulUps','relicUps','starUps','infUps','eterUps','realUps','voidUps','originUps'].forEach(k=>S[k]={})};
+  const pick=m=>m.prodLog;
+  clear(); G.recalc(); const base=pick(G.M());
+  const ups=[[ 'soulUps',G.SOUL_UPS[0],7],['relicUps',G.RELIC_UPS[0],5],['starUps',G.STAR_UPS[0],3]];
+  let solo=0;
+  for(const [st,u,lv] of ups){ clear(); S[st]={[u.id]:lv}; G.recalc(); solo+= pick(G.M())-base; }
+  clear(); for(const [st,u,lv] of ups) S[st]={[u.id]:lv}; G.recalc();
+  const both=pick(G.M())-base;
+  out('  따로 더한 값 '+solo.toFixed(6)+' · 함께 잰 값 '+both.toFixed(6)+' · 차이 '+Math.abs(solo-both).toExponential(2));
+  if(Math.abs(solo-both)>1e-6) bad('배율 합성','곱이 어긋난다 (로그에서는 합이어야 한다)');
+})();
+
+out('=== 오류 '+__errs.length+'건 ===');
+__errs.slice(0,5).forEach(e=>out('  '+e));
+out('DONE');
+}catch(e){out('EXCEPTION: '+e.message+'\n'+e.stack);}},900);
+</script>

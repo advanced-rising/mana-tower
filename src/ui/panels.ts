@@ -7,7 +7,7 @@ import { DS, DSF, NM, VERSION, X, ic, icHTML, spriteURL } from '../core'
 import { ACHS, CHALLENGES, GEAR, MILESTONES, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, bulkCost, buyAmtFor, chalGoal, gearCost, runeCost } from '../content'
 import { LOG, S } from '../state'
 import { achCount, bulkCostLog, chalTotal, cntLog, costLogAt, curChal, curL, fmt, fmtLog, fmtTime, gearTotal, logSub, numLog, pctTxt, powTxt, runeTotal, spendRes } from '../num'
-import { M, buyProducer, costLogOf, gather, gatherAmountLog, manaRateLog, maxAfford, recalc, tierLocked } from '../multipliers'
+import { M, buyProducer, costLogOf, effLevel, gather, gatherAmountLog, manaRateLog, maxAfford, recalc, tierLocked } from '../multipliers'
 import { COSMOS, COSMOS_MUL, COSMOS_SP, FOES, chapterOf, chapterSeen, cosmos, dungeonPowerLog, floorHPLog, floorLoot, foeOf, isBoss } from '../dungeon'
 import { ASCEND_REQ, REBIRTH_REQ, TRANS_REQ, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, offerGain, offerGainLog, relicGain, relicGainLog, reqTxt, soulGain, soulGainLog, starGain, starGainLog } from '../prestige'
 import { AUTO_DEF, AUTO_DEFS, allAuto, autoUnlocked, buyBulkLog } from '../automation'
@@ -96,7 +96,7 @@ export function buildResearch(p){
 }
 
 export function buildDungeon(p){
-  const c=card([X('심연의 던전',"The Abyssal Dungeon"),'sword'],X('원정대의 공격력은 보유한 시설 총합에서 나온다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다.',"Your party power comes from every building you own. A <b class='bad'>boss</b> waits every 10th floor, and depth permanently raises your mana multiplier."));
+  const c=card([X('심연의 던전',"The Abyssal Dungeon"),'sword'],X('원정대의 공격력은 보유한 시설 총합에서 나온다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다.<br><b>환생</b>하면 서 있던 층은 1층으로 돌아가지만 <b class="gold">최심층</b>은 남는다 — 가 본 길은 되밟기만 하면 되므로 훨씬 빠르게 지나간다. <b>승천</b>부터는 최심층까지 지워진다.',"Your party power comes from every building you own. A <b class='bad'>boss</b> waits every 10th floor, and depth permanently raises your mana multiplier.<br><b>Rebirth</b> sends you back to floor 1 but keeps your <b class='gold'>deepest</b> — ground you have already walked is retread far faster. <b>Ascension</b> and above wipe the deepest too."));
   const ar=el('div','arena');
   const foe=el('div','foe'); const foeIco=ic(FOES[0].sp,64); foe.appendChild(foeIco);
   const right=el('div');
@@ -160,7 +160,8 @@ export function buildDungeon(p){
     /* 층수가 열 자리를 넘으면 이름에 그대로 붙어 읽히지 않는다.
        줄을 갈라 놓고 숫자는 짧은 표기로 적는다. */
     ftitle.innerHTML=`<b class="gold">${NM(fo.nm)}</b>${boss?' <span class="tag bad" style="vertical-align:2px">'+X('보스','BOSS')+'</span>':''}`
-      +`<div class="dim" style="font-size:12px;margin-top:2px">${X('층','Floor')} <b>${fmt(f)}</b> <span style="opacity:.5">·</span> ${X('최심층','Deepest')} <b>${fmt(S.deepest)}</b></div>`;
+      +`<div class="dim" style="font-size:12px;margin-top:2px">${X('층','Floor')} <b>${fmt(f)}</b> <span style="opacity:.5">·</span> ${X('최심층','Deepest')} <b>${fmt(S.deepest)}</b>`
+      +(f<(S.deepest||0)?` <span class="tag gold" style="vertical-align:1px">${X('되밟는 중 · 빠름','Retreading · fast')}</span>`:'')+`</div>`;
     const r=Math.max(0,Math.min(1,S.prog||0));
     const gap=pl-hl, per=gap>=8?1e8:(gap<=-300?0:Math.pow(10,gap));
     hp.querySelector('i').style.width=(r*100).toFixed(1)+'%';
@@ -179,7 +180,6 @@ export function buildDungeon(p){
     auto.className='btn sm '+(!ud?'off':(S.auto.dungeon?'on':'off'));
     auto.textContent=!ud?X('연속 탐험 잠김 (20층 돌파)','Auto-delve locked (floor 20)'):(S.auto.dungeon?X('연속 탐험 ON','Auto-delve ON'):X('연속 탐험 OFF','Auto-delve OFF'));
   });
-  buildGear(p);            // 결정을 캐는 곳에서 바로 벼린다
 }
 
 /* 장비는 던전에서 캐낸 결정으로 벼린다 — 재료가 나오는 곳에 두는 편이 찾기 쉽다 */
@@ -209,7 +209,7 @@ export function buildGear(p){
       const bb=buyBulkLog(gearCost,l,curL('crystal'),want);
       const n=Math.max(1,bb.n), costL=bb.n>0?bb.costLog:costLogAt(gearCost,l);
       _t.html=`${NM(gr.nm)} <span class="lv">Lv.${fmt(l)}</span>`;
-      _d.text=gr.d(l,pw);
+      _d.text=gr.d(effLevel(l),pw);
       _c.html=`${icHTML('crystal')} ${fmtLog(costL)}${n>1?` <span class="dim">×${fmt(n)}</span>`:''}`;
       b.classList.toggle('afford',curL('crystal')>=costL);
     });
@@ -249,7 +249,7 @@ export function buildRelics(p){
       const n=Math.max(1,Math.min(buyBulkLog(runeCost,l,curL('offering'),want2).n,Math.max(0,cap-l)));
       const costL=bulkCostLog(runeCost,l,n);
       _t.html=`${NM(r.nm)} <span class="lv">Lv.${fmt(l)} / ${fmt(cap)}</span>`;
-      _d.text=r.d(l);
+      _d.text=r.d(effLevel(l));
       _c.html=maxed?`<span class="good">${X('최대 레벨','Max level')}</span>`
         :`${icHTML('offering')} ${fmtLog(costL)}${n>1?` <span class="dim">×${fmt(n)}</span>`:''}`;
       b.classList.toggle('done',maxed); b.classList.toggle('afford',!maxed&&curL('offering')>=costL); b.disabled=maxed;
@@ -267,7 +267,7 @@ export function buildRebirth(p){
   const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
   const b=btn('gold big','',()=>{
     if(soulGain()<=0) return;
-    modal(X('환생하시겠습니까?','Rebirth?'),X(`영혼석 <b class="soul">${fmtLog(soulGainLog())}</b> · 오퍼링 <b class="offer">${fmtLog(offerGainLog())}</b>을 얻고<br>마나 · 시설 · 연구가 초기화됩니다.`,`You gain <b class="soul">${fmtLog(soulGainLog())}</b> soul shards and <b class="offer">${fmtLog(offerGainLog())}</b> offerings.<br>Mana, buildings and research reset.`),()=>doRebirth());
+    modal(X('환생하시겠습니까?','Rebirth?'),X(`영혼석 <b class="soul">${fmtLog(soulGainLog())}</b> · 오퍼링 <b class="offer">${fmtLog(offerGainLog())}</b>을 얻고<br>마나 · 시설 · 연구가 초기화되고<br>던전은 1층으로 돌아갑니다 (최심층 <b class="gold">${fmt(S.deepest)}</b>층까지는 되밟기라 빠릅니다).`,`You gain <b class="soul">${fmtLog(soulGainLog())}</b> soul shards and <b class="offer">${fmtLog(offerGainLog())}</b> offerings.<br>Mana, buildings and research reset, and the dungeon returns to floor 1 (retreading to <b class="gold">F${fmt(S.deepest)}</b> is fast).`),()=>doRebirth());
   });
   c.appendChild(b); p.appendChild(c);
   const uc=card([X('영혼 강화',"Soul Upgrades"),'gem'],X('환생해도 유지된다. 승천할 때만 초기화된다.',"Kept through rebirths. Only ascension resets them."));
@@ -552,7 +552,7 @@ export function buildSettings(p){
   });
 }
 
-export const BUILDERS={tower:buildTower,research:buildResearch,dungeon:buildDungeon,relics:buildRelics,
+export const BUILDERS={tower:buildTower,gear:buildGear,research:buildResearch,dungeon:buildDungeon,relics:buildRelics,
   rebirth:buildRebirth,ascend:buildAscend,trans:buildTrans,chal:buildChal,ach:buildAch,auto:buildAuto,settings:buildSettings};
 /* 모듈 평가 시점에 INF_LAYERS 를 읽으면 아직 비어 있을 수 있다 (순환 의존).
    패널을 그릴 때 없으면 그때 채운다. */

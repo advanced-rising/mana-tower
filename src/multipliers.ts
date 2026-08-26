@@ -34,8 +34,21 @@ export function _seedM(gp,fp,rc,off){
   for(let i=0;i<MUL_FIELDS.length;i++) _sm[MUL_FIELDS[i]]=1;
   _sm.gearPow=gp; _sm.gearExp=gearExpOf(gp); _sm.floorPct=fp; _sm.runeCap=rc; _sm.offline=off; _sm.autoMax=false;
 }
+/* ── 레벨이 배율에 실리는 방식 ────────────────────────
+   강화 하나하나가 레벨에 지수로 붙는데(1.15^l 꼴) 레벨이 조 단위까지 오른다.
+   백 개가 곱으로 쌓이면 어떤 비용 곡선을 써도 배율이 터진다 — 한 틱에 레벨이
+   1,269 에서 6조로 뛰고 생산 배율이 10^(2.5e249) 이 되던 자리다.
+   천 단계까지는 설계한 대로 그대로 세고, 그 위로는 레벨이 열 배가 될 때마다
+   천 단계씩만 더 쳐 준다. 여전히 끝없이 오르지만 로그로 오른다.
+   여기 한 곳만 고치면 apply 백여든 개를 건드리지 않아도 전부에 적용된다. */
+export const SOFT_LEVEL=1000;
+export function effLevel(l){
+  if(!(typeof l==='number'&&l>SOFT_LEVEL)) return l;
+  return SOFT_LEVEL*(1+L10(l/SOFT_LEVEL));
+}
 /* 항목 하나를 재서 st 에 로그로 얹는다. lv 를 주면 넘칠 때 잘게 줄여 잰다. */
-export function foldUp(st,fn,lv){
+export function foldUp(st,fn,lv0){
+  const lv=effLevel(lv0);
   const scalable=(typeof lv==='number'&&isFinite(lv)&&lv>0);
   let f=1;
   for(let it=0;it<400;it++){

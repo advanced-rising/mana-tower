@@ -7,7 +7,7 @@ import { ACHS } from './content'
 import { LOG, S } from './state'
 import { cntLog, curChal, logAdd, numLog, syncGen } from './num'
 import { M, addManaLog, manaRateLog, recalc } from './multipliers'
-import { FLOOR_MIN_TIME, dungeonPowerLog, floorHPLog, sweepCount, sweepFloors } from './dungeon'
+import { clearFloor, dungeonPowerLog, floorHPLog, floorPace } from './dungeon'
 import { autoOK, runAutomation } from './automation'
 
 /* ══════════════ 진행 ══════════════ */
@@ -30,8 +30,8 @@ export function tick(dt){
     S.prog=Math.min(1,(S.prog||0)+per*d);
     S.floorCd=Math.max(0,(S.floorCd||0)-dt);
     if((S.floorCd||0)<=0&&S.prog>=1){
-      S.prog=0; S.floorCd=FLOOR_MIN_TIME;
-      sweepFloors(sweepCount());
+      S.prog=0; S.floorCd=floorPace();
+      clearFloor(1);                       // 한 번에 한 층. 깊이는 시간에 묶인다.
       if(!autoOK('dungeon')) S.exploring=false;
     }
     S.prog=Math.max(0,Math.min(1,S.prog||0));

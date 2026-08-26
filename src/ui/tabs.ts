@@ -14,6 +14,7 @@ export const TABS=[
  {id:'research',sp:'flask',    nm:{ko:'연구',en:"Research"},      open:()=>S.manaPeakL>=2},
  {id:'dungeon', sp:'sword',    nm:{ko:'던전',en:"Dungeon"},      open:()=>S.manaPeakL>=numLog(5e3)},
  {id:'relics',  sp:'rune_wealth',nm:{ko:'룬 석판',en:"Rune Tablets"},open:()=>S.offerEver>0},
+ {id:'gear',    sp:'anvil',    nm:{ko:'장비',en:"Gear"},        open:()=>S.crystalEver>0},
  {id:'rebirth', sp:'soul',     nm:{ko:'환생',en:"Rebirth"},      open:()=>S.manaPeakL>=numLog(REBIRTH_REQ/20)||(S.rebirthEver||S.rebirths)>0||S.soulEver>0},
  {id:'ascend',  sp:'relic',    nm:{ko:'승천',en:"Ascension"},      open:()=>S.soulEver>=ASCEND_REQ/10||(S.ascendEver||S.ascensions)>0||S.relicEver>0},
  {id:'trans',   sp:'star',     nm:{ko:'초월',en:"Transcend"},   open:()=>transUnlocked()},

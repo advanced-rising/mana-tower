@@ -13,6 +13,11 @@ export const isBoss=f=>f%10===0;
    내내 같은 것만 보인다. 한 마리가 보일 만큼 머물게 하고, 깊이가 느려지는 몫은
    아래 sweepCount 가 한 걸음에 여러 층을 쓸어 담아 메운다. */
 export const FLOOR_MIN_TIME=0.28;  // 한 층이 화면에 머무는 최소 시간(초)
+export const FLOOR_RETREAD=0.04;   // 이미 지나온 층을 다시 밟을 때
+/* 환생하면 1 층부터 다시 오른다. 되밟는 길에서 얻는 보상이 던전 수입의 대부분인데,
+   한 층에 0.28 초씩이면 회차 안에 예전 깊이까지 닿지도 못한다.
+   가 본 곳은 빠르게 지나가고, 최심층에 닿으면 다시 한 층씩 천천히 간다. */
+export function floorPace(){ return S.floor<(S.deepest||0) ? FLOOR_RETREAD : FLOOR_MIN_TIME }
 
 /* ── 우주 계층 ────────────────────────────────
    실제 천문학의 구조를 그대로 따른다.
@@ -214,10 +219,16 @@ export function floorHPLog(f){
   return L10(40)+a*L10(1.35)+b*L10(1.09)+(isBoss(f)?L10(8):0)+safeLog(elemOf(f).hp);
 }
 export function floorHP(f){ const l=floorHPLog(f); return l<300?Math.pow(10,l):Infinity; }
-/* 층 보상 마나도 자릿수로 — 1.40^f 는 2,600 층쯤에서 넘친다 */
+/* ── 던전 보상은 체력보다 천천히 오른다 ────────────────
+   층당 보상이 ×1.40 이고 체력이 ×1.09 였다. 힘이 P 자릿수면 닿는 층은
+   P/0.0374 이고 그 층의 보상은 P×3.9 자릿수 — 던전 한 번이 힘의 네 배를
+   돌려주고 그 마나가 다시 힘이 되니, 이것이 폭주의 지배항이었다.
+   보상 기울기를 체력 아래(×1.08 → 힘 대비 0.89 배)로 내리면 고리가 수렴한다.
+   깊이는 여전히 이득이지만, 스스로를 밀어 올리지는 못한다. */
+export const LOOT_PER_FLOOR=1.08;
 export function floorLootManaLog(f){
   const m=M(), bl=isBoss(f)?L10(10)+m.bossLog:0, e=elemOf(f);
-  return L10(80)+(f-1)*L10(1.40)+m.prodLog+m.floorLootLog+bl+numLog(e.loot);
+  return L10(80)+(f-1)*L10(LOOT_PER_FLOOR)+m.prodLog+m.floorLootLog+bl+numLog(e.loot);
 }
 export function floorLoot(f){
   const m=M(), b=isBoss(f)?10*m.boss:1, e=elemOf(f);
@@ -248,50 +259,9 @@ export function syncChapter(force){
   log(`${icHTML('star')}<b class="gold">${X(`제 ${ch+1} 장 · ${chapterName(ch,true)}`,`Chapter ${ch+1} · ${chapterName(ch,true)}`)}</b> ${X('에 들어섰다','reached')}`,true);
 }
 
-/* 압도적으로 셀 때는 한 걸음에 여러 층을 쓸어 담는다 — 보이는 속도는 그대로 두고
-   깊이만 빨리 나간다. 자릿수 차이가 클수록 한 번에 더 많이 쓸어 담는다. */
-/* 힘이 층을 압도할 때 한 걸음에 256 층으로 묶어 두었더니, 아무리 강해져도
-   깊이가 힘이 아니라 시간에 묶였다. 무한 돌파가 회차를 밀어 버리기 전에 갈 수
-   있는 거리가 정해져 버려서 우주 계층 열둘 중 다섯째에서 더 나아가지 못했다.
-   이제는 힘이 닿는 층까지 한 번에 내려간다 — 200 층 위로는 체력이 한 층당
-   1.09 배씩 오르므로, 자릿수 차이를 그 기울기로 나누면 닿는 거리가 나온다. */
-export const SWEEP_MAX=1e9;
-/* 되찾는 데에도 시간이 든다. 힘만 보고 쓸면 승천 직후 한두 걸음 만에
-   예전 최심층까지 되돌아가 버려서, 깊이를 잃는다는 대가가 사라진다.
-   한 걸음이 최고 기록의 1/64 를 넘지 않게 해 예순 걸음 남짓(≈18 초)은
-   내려가게 한다. 기록 위로는 어차피 힘이 먼저 막으므로 이 제한이 걸리지 않는다. */
-export function sweepPace(){
-  return Math.max(256, Math.floor((S.deepestEver||0)/64));
-}
-export function sweepCount(){
-  const p=dungeonPowerLog(), h=floorHPLog(S.floor);
-  if(!(p>h)) return 1;
-  const reach=Math.floor((p-h)/L10(1.09));
-  return Math.max(1, Math.min(SWEEP_MAX, reach, sweepPace()));
-}
-/* 층을 하나씩 세면서 보상을 더하면 백만 층에서 브라우저가 멈춘다.
-   층마다 1.40 배씩 오르는 마나는 등비합으로, 층에 비례하는 결정과
-   열 층마다 나오는 오퍼링은 닫힌 식으로 한 번에 준다.
-   원소 배수만 진입 층의 것으로 잡는다 — 한 걸음 안에서는 거의 같은 무리다. */
-export function sweepFloors(n){
-  if(n<=1){ clearFloor(1); return }
-  const f=S.floor, m=M(), e=elemOf(f);
-  const ml=floorLootManaLog(f)+geoSumLog(1.40,n);
-  addManaLog(ml);
-  const csum=n+0.5*(n*f+n*(n-1)/2);                       // Σ(1+0.5·층)
-  const cl=numLog(csum)+m.crystalLog+m.floorLootLog+numLog(e.crystal)-L10(8);
-  gainRes('crystal',cl);
-  const bn=Math.floor((f+n-1)/10)-Math.floor((f-1)/10);   // 이 구간의 보스 수
-  if(bn>0){
-    const ol=numLog(0.8*bn*(f+n/2))+m.offerLog+L10(10)+m.bossLog+numLog(e.offer)-L10(6);
-    gainRes('offering',ol);
-  }
-  const last=f+n-1;
-  if(last>S.deepest){ S.deepest=last; if(last>(S.deepestEver||0)) S.deepestEver=last; syncChapter(); }
-  const foe=foeOf(f);
-  log(`${icHTML(foe.sp)}<b>${NM(foe.nm)}</b> ${X('격파','defeated')} <span class="dim">${X(`외 ${fmt(n-1)}층`,`and ${fmt(n-1)} more`)}</span> <span class="dim">${cosmosLabel(last)}</span> · ${icHTML('mana')}${fmtLog(ml)} ${icHTML('crystal')}${fmtLog(cl)}`, false);
-  S.floor=f+n; recalc();
-}
+/* 던전은 한 번에 한 층만 오른다. 예전에는 힘이 닿는 데까지 쓸어 담았는데,
+   그러면 깊이가 힘에 비례해 늘고 그 층의 보상이 다시 힘이 되어 폭주했다.
+   시간에 묶어 두면 깊이가 초당 한 층씩만 자라 고리가 끊긴다. */
 export function clearFloor(show){
   const f=S.floor,l=floorLoot(f);
   addManaLog(l.manaLog);

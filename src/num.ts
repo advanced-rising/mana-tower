@@ -208,14 +208,21 @@ export function costLogAt(costFn,l){
    더해도 나머지는 스무 자리 아래라 묻힌다. */
 export function bulkCostLog(costFn,l,n){
   if(!(n>0)) return -Infinity;
-  const top=costLogAt(costFn,l+n-1);
+  const lg=L10(ratioOf(costFn)), c0=numLog(costFn(0)), K=COST_CURVE*lg;
+  const at=(x)=>c0+x*lg+K*x*x;
+  const top=at(l+n-1);
   if(n===1) return top;
-  /* 항이 초지수로 커지므로 합은 맨 윗 항이 지배한다. 바로 아래 항과의
-     비율 r 만 보면 등비합으로 정확히 근사된다 — 예순네 항을 일일이 더하면
-     자동 구매가 한 틱에 수십만 번 도는 자리라 게임이 눈에 띄게 느려진다. */
-  const d=top-costLogAt(costFn,l+n-2);
-  if(!(d>1e-9)) return top+L10(n);
-  return top+L10(1/(1-Math.pow(10,-d)));
+  /* 위에서부터 내려오며 더한다. 항이 초지수로 줄어들어 금세 무시할 만해지므로
+     스무 항 남짓이면 배정도 정밀도를 다 쓴다 — n 이 아무리 커도 걸음 수는 같다.
+     예전에는 맨 윗 두 항의 비율로 등비합 근사를 했는데, 곡선이 등비가 아니라
+     아래 항들을 너무 크게 잡아 적은 수량에서 25% 나 비싸게 물렸다. */
+  let acc=0;
+  for(let i=n-1;i>=0;i--){
+    const d=at(l+i)-top;
+    if(d<-18) break;                 // 남은 항을 다 더해도 끝자리 아래다
+    acc+=Math.pow(10,d);
+  }
+  return top+L10(acc);
 }
 /* 예산(자릿수) 으로 살 수 있는 단계 수.
    맨 윗 항이 예산을 넘지 않는 지점을 이차식으로 풀고, 반올림 몫만 손으로 맞춘다. */
@@ -225,14 +232,19 @@ export function bulkMaxLog(costFn,l,budgetLog){
   const lg=L10(g), c0=numLog(costFn(0));
   const T=budgetLog-L10(g/(g-1));                // 합이 아니라 맨 윗 항 기준
   const a=COST_CURVE*lg, b=lg, cc=c0-T;
-  let m;                                          // a·m² + b·m + cc = 0 의 양의 근
-  if(a>0){ const disc=b*b-4*a*cc; if(!(disc>0)) return 0; m=(-b+Math.sqrt(disc))/(2*a); }
+  let m=-Infinity;                                // a·m² + b·m + cc = 0 의 양의 근
+  if(a>0){ const disc=b*b-4*a*cc; if(disc>0) m=(-b+Math.sqrt(disc))/(2*a); }
   else m=-cc/b;
-  let n=Math.floor(m-l+1);
-  if(!(n>0)) return 0;
-  let k=0;                                        // 반올림 몫만 몇 걸음 맞춘다
-  while(n>0&&bulkCostLog(costFn,l,n)>budgetLog&&k++<8) n--;
+  /* 어림이 0 이하로 나와도 곧바로 0 을 돌려주면 안 된다 — 맨 윗 항만 본 어림이라
+     실제로는 한두 개 살 수 있는 자리가 있다. '최대' 를 눌러도 아무것도 안 사지고
+     자원이 그대로이던 것이 이 자리였다. 0 에서 시작해 아래 걸음으로 올려 본다. */
+  let n=isFinite(m)?Math.floor(m-l+1):0;
+  if(!(n>0)) n=0;
+  /* 이차식 몫은 맨 윗 항만 본 어림이라 한두 걸음 어긋난다. 여덟 걸음만 맞추던
+     때는 천팔백 조합 중 열일곱 자리에서 살 수 있는데도 덜 샀다 — 넉넉히 걷는다. */
+  let k=0;
+  while(n>0&&bulkCostLog(costFn,l,n)>budgetLog&&k++<64) n--;
   k=0;
-  while(bulkCostLog(costFn,l,n+1)<=budgetLog&&k++<8) n++;
+  while(bulkCostLog(costFn,l,n+1)<=budgetLog&&k++<64) n++;
   return Math.max(0,n);
 }

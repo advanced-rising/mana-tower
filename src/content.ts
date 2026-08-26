@@ -486,14 +486,26 @@ export const RX_KINDS=[
  ['coinpurse','물류 최적화',"Logistics",     ()=>X('시설 비용 증가율 -3%',"Building cost growth -3%"), m=>m.costMul*=0.97],
  ['runering','룬 확장',    "Rune Expansion", ()=>X('룬 최대 레벨 +5',"Rune level cap +5"),  m=>m.runeCap+=5],
 ];
-export const RX_ERA=[['지상','Terrestrial'],['항성','Stellar'],['은하','Galactic'],['초월','Transcendent'],['무한','Infinite']];
+/* 연구 240칸의 이름 — 예전에는 '지상 정제 5' 처럼 뒤에 숫자만 붙어서 스물아홉,
+   서른까지 세는 목록이 되었다. 태동에서 태초까지 서른 단계의 어휘로 갈음한다.
+   갈래 여덟과 곱하면 240칸이 모두 다른 이름이 된다. */
+export const RX_STEP=[
+ ['태동','Nascent'],   ['각성','Awakened'],  ['정련','Refined'],    ['심화','Deepened'],
+ ['확립','Established'],['확장','Expanded'],  ['정합','Coherent'],   ['공명','Resonant'],
+ ['결정','Crystalline'],['승화','Sublimed'],  ['초전도','Superconducting'],['항성','Stellar'],
+ ['성단','Clustered'],  ['은하','Galactic'],  ['성간','Interstellar'],['우주','Cosmic'],
+ ['차원','Dimensional'],['위상','Topological'],['특이','Singular'],   ['시공','Spacetime'],
+ ['인과','Causal'],     ['절대','Absolute'],  ['초월','Transcendent'],['영겁','Aeonic'],
+ ['무한','Infinite'],   ['영원','Eternal'],   ['현실','Real'],       ['공허','Void'],
+ ['근원','Primordial'], ['태초','Genesis'],
+];
+export const RX_SP=['prod','battle','soul','crystal','offer','time','logi','rune'];
 for(let k=0;k<240;k++){
-  const kind=RX_KINDS[k%RX_KINDS.length];
-  const era=RX_ERA[Math.min(RX_ERA.length-1,Math.floor(k/48))];
-  const step=Math.floor(k/RX_KINDS.length)+1;
+  const i=k%RX_KINDS.length, kind=RX_KINDS[i];
+  const step=Math.floor(k/RX_KINDS.length)+1, w=RX_STEP[step-1];
   RESEARCH.push({
-    id:'qx'+k, sp:kind[0],
-    nm:{ko:`${era[0]} ${kind[1]} ${step}`, en:`${era[1]} ${kind[2]} ${step}`},
+    id:'qx'+k, sp:`rx_${RX_SP[i]}_${step}`,
+    nm:{ko:`${w[0]}의 ${kind[1]}`, en:`${w[1]} ${kind[2]}`},
     cost:5e19*Math.pow(12,k),
     d:kind[3], req: k===0 ? 'q20' : 'qx'+(k-1),
     apply:kind[4],
@@ -545,36 +557,36 @@ export const BADGE_EMB=['dot','cross','chev','moon','flame','eye','spiral','bolt
 export const BADGES=[];
 for(const f of BADGE_FRAME) for(const c of BADGE_PAL) for(const e of BADGE_EMB) BADGES.push(`badge_${f}_${c}_${e}`);
 export const ACHS=[
- {id:'h1', sp:'apprentice', nm:{ko:'첫 걸음',en:"First Step"},      d:()=>X('견습 마법사 고용',"Hire an Apprentice Mage"),      f:()=>S.bought[0]>=1},
- {id:'h2', sp:'coinpurse', nm:{ko:'소규모 길드',en:"Small Guild"},  d:()=>X('마나 1,000',"1,000 mana"),            f:()=>S.manaPeakL>=3},
- {id:'h3', sp:'treasure', nm:{ko:'마나 부자',en:"Mana Rich"},    d:()=>X(`마나 ${fmtLog(6)}`,`${fmtLog(6)} mana`),              f:()=>S.manaPeakL>=6},
- {id:'h4', sp:'vault', nm:{ko:'대부호',en:"Magnate"},       d:()=>X(`마나 ${fmtLog(12)}`,`${fmtLog(12)} mana`),             f:()=>S.manaPeakL>=12},
- {id:'h5', sp:'starcompass', nm:{ko:'천문학자',en:"Astronomer"},     d:()=>X(`마나 ${fmtLog(20)}`,`${fmtLog(20)} mana`),             f:()=>S.manaPeakL>=20},
- {id:'h6', sp:'inf_frame', nm:{ko:'무한의 문턱',en:"Brink of Infinity"},  d:()=>X(`마나 ${fmtLog(40)}`,`${fmtLog(40)} mana`),             f:()=>S.manaPeakL>=40},
- {id:'h7', sp:'workshop', nm:{ko:'공방장',en:"Workshop Master"},       d:()=>X('마법 공방 25개',"25 Arcane Workshops"),        f:()=>cnt(1)>=25},
- {id:'h8', sp:'tower', nm:{ko:'탑주',en:"Tower Lord"},         d:()=>X('마탑 25개',"25 Mage Towers"),             f:()=>cnt(2)>=25},
- {id:'h9', sp:'academy', nm:{ko:'학장',en:"Dean"},         d:()=>X('아카데미 25개',"25 Academies"),         f:()=>cnt(3)>=25},
- {id:'h10', sp:'council',nm:{ko:'대현자',en:"Archsage"},       d:()=>X('대현자 회의 10개',"10 Archsage Councils"),      f:()=>cnt(4)>=10},
- {id:'h11', sp:'soul',nm:{ko:'첫 환생',en:"First Rebirth"},      d:()=>X('환생 1회',"Rebirth once"),              f:()=>(S.rebirthEver||S.rebirths)>=1},
- {id:'h12', sp:'spiral',nm:{ko:'윤회',en:"Samsara"},         d:()=>X('환생 25회',"Rebirth 25 times"),             f:()=>(S.rebirthEver||S.rebirths)>=25},
- {id:'h13', sp:'eonring',nm:{ko:'영원한 순환',en:"Eternal Cycle"},  d:()=>X('환생 100회',"Rebirth 100 times"),            f:()=>(S.rebirthEver||S.rebirths)>=100},
- {id:'h14', sp:'reliquary',nm:{ko:'승천자',en:"Ascendant"},       d:()=>X('승천 1회',"Ascend once"),              f:()=>(S.ascendEver||S.ascensions)>=1},
- {id:'h15', sp:'starcrown',nm:{ko:'초월자',en:"Transcendent"},       d:()=>X('승천 10회',"Ascend 10 times"),             f:()=>(S.ascendEver||S.ascensions)>=10},
- {id:'h16', sp:'compass',nm:{ko:'탐험가',en:"Explorer"},       d:()=>X('던전 10층',"Dungeon floor 10"),             f:()=>(S.deepestEver||S.deepest)>=10},
- {id:'h17', sp:'skull',nm:{ko:'보스 사냥꾼',en:"Boss Hunter"},  d:()=>X('던전 30층',"Dungeon floor 30"),             f:()=>(S.deepestEver||S.deepest)>=30},
- {id:'h18', sp:'abysscrown',nm:{ko:'심연 정복자',en:"Abyss Conqueror"},  d:()=>X('던전 75층',"Dungeon floor 75"),             f:()=>(S.deepestEver||S.deepest)>=75},
- {id:'h19', sp:'runebook',nm:{ko:'룬 수집가',en:"Rune Collector"},    d:()=>X('룬 합계 레벨 25',"25 total rune levels"),       f:()=>runeTotal()>=25},
- {id:'h20', sp:'rune_forge',nm:{ko:'룬 대가',en:"Rune Master"},      d:()=>X('룬 합계 레벨 100',"100 total rune levels"),      f:()=>runeTotal()>=100},
- {id:'h21', sp:'helm',nm:{ko:'무장',en:"Armed"},         d:()=>X('장비 합계 레벨 15',"15 total gear levels"),     f:()=>gearTotal()>=15},
- {id:'h22', sp:'omniforge',nm:{ko:'전설의 장비',en:"Legendary Gear"},  d:()=>X('장비 합계 레벨 45',"45 total gear levels"),     f:()=>gearTotal()>=45},
- {id:'h23', sp:'book',nm:{ko:'학자',en:"Scholar"},         d:()=>X('연구 10개 완료',"Complete 10 researches"),        f:()=>Object.keys(S.research).length>=10},
- {id:'h24', sp:'library',nm:{ko:'전지',en:"Omniscient"},         d:()=>X('연구 20개 모두 완료',"Complete all 20 researches"),   f:()=>Object.keys(S.research).length>=20},
- {id:'h25', sp:'offering',nm:{ko:'봉헌자',en:"Devotee"},       d:()=>X('오퍼링 1,000 획득',"Earn 1,000 offerings"),     f:()=>S.offerEver>=1e3},
- {id:'h26', sp:'gem',nm:{ko:'보석상',en:"Jeweler"},       d:()=>X('결정 1,000 획득',"Earn 1,000 crystals"),       f:()=>S.crystalEver>=1e3},
- {id:'h27', sp:'chain',nm:{ko:'도전자',en:"Challenger"},       d:()=>X('도전 1회 완료',"Clear 1 trial stage"),         f:()=>chalTotal()>=1},
- {id:'h28', sp:'trialcrown',nm:{ko:'시련의 주인',en:"Master of Trials"},  d:()=>X('도전 15회 완료',"Clear 15 trial stages"),        f:()=>chalTotal()>=15},
- {id:'h29', sp:'relicheart',nm:{ko:'유물 사냥꾼',en:"Relic Hunter"},  d:()=>X('유물 50개 획득',"Earn 50 relics"),        f:()=>S.relicEver>=50},
- {id:'h30', sp:'throne',nm:{ko:'왕국의 지배자',en:"Ruler of the Kingdom"},d:()=>X(`전체 배율 ${fmtLog(6)} 돌파`,"Total multiplier past 1e6"),    f:()=>M().prod>=1e6},
+ {id:'h1', sp:'ach_h1', nm:{ko:'첫 걸음',en:"First Step"},      d:()=>X('견습 마법사 고용',"Hire an Apprentice Mage"),      f:()=>S.bought[0]>=1},
+ {id:'h2', sp:'ach_h2', nm:{ko:'소규모 길드',en:"Small Guild"},  d:()=>X('마나 1,000',"1,000 mana"),            f:()=>S.manaPeakL>=3},
+ {id:'h3', sp:'ach_h3', nm:{ko:'마나 부자',en:"Mana Rich"},    d:()=>X(`마나 ${fmtLog(6)}`,`${fmtLog(6)} mana`),              f:()=>S.manaPeakL>=6},
+ {id:'h4', sp:'ach_h4', nm:{ko:'대부호',en:"Magnate"},       d:()=>X(`마나 ${fmtLog(12)}`,`${fmtLog(12)} mana`),             f:()=>S.manaPeakL>=12},
+ {id:'h5', sp:'ach_h5', nm:{ko:'천문학자',en:"Astronomer"},     d:()=>X(`마나 ${fmtLog(20)}`,`${fmtLog(20)} mana`),             f:()=>S.manaPeakL>=20},
+ {id:'h6', sp:'ach_h6', nm:{ko:'무한의 문턱',en:"Brink of Infinity"},  d:()=>X(`마나 ${fmtLog(40)}`,`${fmtLog(40)} mana`),             f:()=>S.manaPeakL>=40},
+ {id:'h7', sp:'ach_h7', nm:{ko:'공방장',en:"Workshop Master"},       d:()=>X('마법 공방 25개',"25 Arcane Workshops"),        f:()=>cnt(1)>=25},
+ {id:'h8', sp:'ach_h8', nm:{ko:'탑주',en:"Tower Lord"},         d:()=>X('마탑 25개',"25 Mage Towers"),             f:()=>cnt(2)>=25},
+ {id:'h9', sp:'ach_h9', nm:{ko:'학장',en:"Dean"},         d:()=>X('아카데미 25개',"25 Academies"),         f:()=>cnt(3)>=25},
+ {id:'h10', sp:'ach_h10',nm:{ko:'대현자',en:"Archsage"},       d:()=>X('대현자 회의 10개',"10 Archsage Councils"),      f:()=>cnt(4)>=10},
+ {id:'h11', sp:'ach_h11',nm:{ko:'첫 환생',en:"First Rebirth"},      d:()=>X('환생 1회',"Rebirth once"),              f:()=>(S.rebirthEver||S.rebirths)>=1},
+ {id:'h12', sp:'ach_h12',nm:{ko:'윤회',en:"Samsara"},         d:()=>X('환생 25회',"Rebirth 25 times"),             f:()=>(S.rebirthEver||S.rebirths)>=25},
+ {id:'h13', sp:'ach_h13',nm:{ko:'영원한 순환',en:"Eternal Cycle"},  d:()=>X('환생 100회',"Rebirth 100 times"),            f:()=>(S.rebirthEver||S.rebirths)>=100},
+ {id:'h14', sp:'ach_h14',nm:{ko:'승천자',en:"Ascendant"},       d:()=>X('승천 1회',"Ascend once"),              f:()=>(S.ascendEver||S.ascensions)>=1},
+ {id:'h15', sp:'ach_h15',nm:{ko:'초월자',en:"Transcendent"},       d:()=>X('승천 10회',"Ascend 10 times"),             f:()=>(S.ascendEver||S.ascensions)>=10},
+ {id:'h16', sp:'ach_h16',nm:{ko:'탐험가',en:"Explorer"},       d:()=>X('던전 10층',"Dungeon floor 10"),             f:()=>(S.deepestEver||S.deepest)>=10},
+ {id:'h17', sp:'ach_h17',nm:{ko:'보스 사냥꾼',en:"Boss Hunter"},  d:()=>X('던전 30층',"Dungeon floor 30"),             f:()=>(S.deepestEver||S.deepest)>=30},
+ {id:'h18', sp:'ach_h18',nm:{ko:'심연 정복자',en:"Abyss Conqueror"},  d:()=>X('던전 75층',"Dungeon floor 75"),             f:()=>(S.deepestEver||S.deepest)>=75},
+ {id:'h19', sp:'ach_h19',nm:{ko:'룬 수집가',en:"Rune Collector"},    d:()=>X('룬 합계 레벨 25',"25 total rune levels"),       f:()=>runeTotal()>=25},
+ {id:'h20', sp:'ach_h20',nm:{ko:'룬 대가',en:"Rune Master"},      d:()=>X('룬 합계 레벨 100',"100 total rune levels"),      f:()=>runeTotal()>=100},
+ {id:'h21', sp:'ach_h21',nm:{ko:'무장',en:"Armed"},         d:()=>X('장비 합계 레벨 15',"15 total gear levels"),     f:()=>gearTotal()>=15},
+ {id:'h22', sp:'ach_h22',nm:{ko:'전설의 장비',en:"Legendary Gear"},  d:()=>X('장비 합계 레벨 45',"45 total gear levels"),     f:()=>gearTotal()>=45},
+ {id:'h23', sp:'ach_h23',nm:{ko:'학자',en:"Scholar"},         d:()=>X('연구 10개 완료',"Complete 10 researches"),        f:()=>Object.keys(S.research).length>=10},
+ {id:'h24', sp:'ach_h24',nm:{ko:'전지',en:"Omniscient"},         d:()=>X('연구 20개 모두 완료',"Complete all 20 researches"),   f:()=>Object.keys(S.research).length>=20},
+ {id:'h25', sp:'ach_h25',nm:{ko:'봉헌자',en:"Devotee"},       d:()=>X('오퍼링 1,000 획득',"Earn 1,000 offerings"),     f:()=>S.offerEver>=1e3},
+ {id:'h26', sp:'ach_h26',nm:{ko:'보석상',en:"Jeweler"},       d:()=>X('결정 1,000 획득',"Earn 1,000 crystals"),       f:()=>S.crystalEver>=1e3},
+ {id:'h27', sp:'ach_h27',nm:{ko:'도전자',en:"Challenger"},       d:()=>X('도전 1회 완료',"Clear 1 trial stage"),         f:()=>chalTotal()>=1},
+ {id:'h28', sp:'ach_h28',nm:{ko:'시련의 주인',en:"Master of Trials"},  d:()=>X('도전 15회 완료',"Clear 15 trial stages"),        f:()=>chalTotal()>=15},
+ {id:'h29', sp:'ach_h29',nm:{ko:'유물 사냥꾼',en:"Relic Hunter"},  d:()=>X('유물 50개 획득',"Earn 50 relics"),        f:()=>S.relicEver>=50},
+ {id:'h30', sp:'ach_h30',nm:{ko:'왕국의 지배자',en:"Ruler of the Kingdom"},d:()=>X(`전체 배율 ${fmtLog(6)} 돌파`,"Total multiplier past 1e6"),    f:()=>M().prod>=1e6},
 ];
 
 export const _ac={mx:0,dx:0,rx:0,ax:0,tx:0,ix:0};

@@ -94,16 +94,28 @@ export function reqFor(i){
   return Math.pow(10,reqLog(i));
 }
 export function reqTxt(i){ const r=reqFor(i); return isFinite(r)?fmt(r):('1e'+reqLog(i)); }
+/* ── 돌파로 얻는 양은 넘긴 폭의 로그에 비례한다 ──────────
+   예전에는 요구치를 넘긴 자릿수만큼 그대로 주었다. 마나가 1e102 자릿수면
+   무한을 1e102 개 받고, 무한 보너스는 그 개수의 지수라 배율이 10^(2e101) 이
+   되었다 — 스물한 번째 분에 생산 배율의 전부가 이 한 항이었다.
+   넘긴 폭의 로그를 쓰면 자릿수가 백 배가 되어도 얻는 양은 두 배쯤만 는다.
+   그래도 끝은 없다 — 다만 사람이 따라갈 수 있는 속도로 는다. */
+export const BREAK_SCALE=10;
+export function breakAmount(excessLog){
+  if(!(excessLog>0)) return 1;
+  return Math.max(1, 1+Math.floor(BREAK_SCALE*L10(1+excessLog)));
+}
 export function infGain(i){
   const v=INF_LAYERS[i].from();
   if(i>0){                                    // 위 칸은 아래 계층을 세어 바꾼다
     const r=reqFor(i);
     if(!isFinite(v)) return 1;
-    return v<r ? 0 : Math.floor(v/r);
+    if(!(v>=r)) return 0;
+    return breakAmount(L10(v/r));
   }
   const rl=reqLog(i), vl=S.manaEverL;   // 마나는 자릿수가 진실이므로 1e300 위에서도 정확히 센다
   if(isNaN(vl)||!(vl>=rl)) return 0;
-  return Math.max(1,1+Math.floor(vl-rl));
+  return breakAmount(vl-rl);
 }
 export function doInfBreak(i){
   const g=infGain(i);

@@ -2,7 +2,7 @@ import { updaters } from './tabs'
 import { DS, DSF, NM, X, ic, icHTML } from '../core'
 import { S } from '../state'
 import { costLogAt, fmt, fmtLog } from '../num'
-import { recalc } from '../multipliers'
+import { effLevel, recalc } from '../multipliers'
 import { autoUnlocked, budgetLogOf, buyBulkLog, payFrom } from '../automation'
 import { btn, el, toast } from './dom'
 import { refresh } from './render'
@@ -53,7 +53,7 @@ export function levelGrid(defs,lvOf,curKey,setLv,curSp){
       const l=lvOf(u.id),maxed=l>=u.max;
       const bud=budgetLogOf(curKey), cl=costLogAt(u.c,l), afford=!maxed&&bud>=cl;
       _t.html=`${NM(u.nm)} <span class="lv">Lv.${fmt(l)}${u.max!==Infinity?' / '+fmt(u.max):''}</span>`;
-      _d.text=u.d(l);
+      _d.text=u.d(effLevel(l));
       const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
       const {n:bn,costLog:bs}=buyBulkLog(u.c,l,bud,Math.min(u.max-l,want));
       _c.html=maxed?`<span class="good">${X('최대치 도달','Maxed')}</span>`
