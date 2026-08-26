@@ -40,6 +40,62 @@
 <div id="chapter"><div class="box"><div class="k"></div><div class="t"></div></div></div>
 <input type="file" id="fileIn" accept=".txt,.json" style="display:none">
 
-<script src="dist/bundle.js?v=811ca549"></script>
+<script>
+/* 번들보다 먼저 걸어 두는 감시자. 순수 ES5 로만 쓴다 — 구형 브라우저가
+   번들을 파싱조차 못 해도 이건 돌아야 하기 때문이다.
+   index.html 에는 로고 말고 보이는 것이 없어서, 번들이 죽으면 화면은
+   그냥 검게 남고 무엇이 잘못됐는지 알 길이 없었다. */
+window.__watchdog = { errs: [], loaded: false };
+window.addEventListener('error', function (e) {
+  var w = window.__watchdog;
+  if (w.errs.length > 8) return;
+  if (e && e.target && e.target.tagName === 'SCRIPT') { w.errs.push('스크립트를 못 불러옴: ' + (e.target.src || '')); return; }
+  if (e && e.target && e.target.tagName === 'LINK') { w.errs.push('스타일을 못 불러옴: ' + (e.target.href || '')); return; }
+  var at = (e && e.filename ? String(e.filename).split('/').pop() : '') + (e && e.lineno ? ':' + e.lineno : '');
+  w.errs.push(((e && e.message) || 'error') + (at ? '  @ ' + at : ''));
+}, true);
+window.addEventListener('unhandledrejection', function (e) {
+  window.__watchdog.errs.push('처리되지 않은 거부: ' + ((e && e.reason && (e.reason.message || e.reason)) || ''));
+});
+setTimeout(function () {
+  if (window.__game) return;
+  var w = window.__watchdog;
+  var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+  var save = ''; try { save = localStorage.getItem('manaTowerSave2') || ''; } catch (err) { save = '(읽을 수 없음)'; }
+  var lines = [];
+  lines.push('번들 파일: ' + (w.loaded ? '받았습니다' : '받지 못했습니다'));
+  lines.push('세이브: ' + (save ? save.length + '자' : '없음'));
+  lines.push('브라우저: ' + navigator.userAgent);
+  var html = '<div style="max-width:680px;margin:32px auto;padding:20px;font:14px/1.7 system-ui,-apple-system,sans-serif;color:#ddd">'
+    + '<h2 style="margin:0 0 12px;color:#e8c46a">게임을 여는 데 실패했습니다</h2>'
+    + '<p>아래 내용을 그대로 복사해서 알려 주시면 원인을 바로 찾을 수 있습니다.</p>'
+    + '<pre id="wdInfo" style="white-space:pre-wrap;word-break:break-all;background:#15151a;border:1px solid #333;padding:12px;font:12px/1.6 monospace;color:#ccc">'
+    + esc(lines.join('\n')) + '\n\n'
+    + (w.errs.length ? esc(w.errs.join('\n')) : '자바스크립트 오류는 잡히지 않았습니다.')
+    + '</pre>'
+    + '<p><button id="wdCopy" style="padding:9px 16px;margin-right:8px">위 내용 복사</button>'
+    + '<button id="wdRetry" style="padding:9px 16px;margin-right:8px">다시 시도</button>'
+    + (save ? '<button id="wdWipe" style="padding:9px 16px">세이브 지우고 열기</button>' : '')
+    + '</p>'
+    + (save ? '<p style="font-size:12px;color:#888">세이브를 지우기 전에 아래에서 먼저 복사해 두세요.</p>'
+      + '<textarea id="wdSave" readonly style="width:100%;height:100px;font:11px monospace">' + esc(save) + '</textarea>' : '')
+    + '</div>';
+  document.body.innerHTML = html;
+  var $ = function (id) { return document.getElementById(id); };
+  if ($('wdCopy')) $('wdCopy').onclick = function () {
+    var t = document.createElement('textarea');
+    t.value = $('wdInfo').textContent; document.body.appendChild(t); t.select();
+    try { document.execCommand('copy'); this.textContent = '복사했습니다'; } catch (err) { this.textContent = '직접 선택해 주세요'; }
+    document.body.removeChild(t);
+  };
+  if ($('wdRetry')) $('wdRetry').onclick = function () { location.reload(); };
+  if ($('wdWipe')) $('wdWipe').onclick = function () {
+    if (!confirm('세이브를 지우고 처음부터 시작합니다. 계속할까요?')) return;
+    try { localStorage.removeItem('manaTowerSave2'); } catch (err) {}
+    location.reload();
+  };
+}, 6000);
+</script>
+<script onload="window.__watchdog.loaded=true" src="dist/bundle.js?v=fe47a5a3"></script>
 </body>
 </html>

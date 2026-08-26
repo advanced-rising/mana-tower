@@ -14,7 +14,7 @@ const opts = {
   outfile: 'dist/bundle.js',
   bundle: true,
   format: 'iife',
-  target: ['es2022'],
+  target: ['es2017'],   // 구형 사파리에서 파싱 단계부터 죽는 일이 없도록 낮춰 둔다
   minify: !dev,
   sourcemap: dev ? 'inline' : false,
   legalComments: 'none',

@@ -18,7 +18,9 @@ const REPORT = `<pre id="SMOKE" style="display:none"></pre><script>setTimeout(()
 },1200)</script>`
 
 const html = readFileSync(ROOT+'index.html','utf8')
-const at = html.indexOf('<script src="dist/bundle.js')
+/* 번들 <script> 태그를 찾는다 — 속성이 붙을 수 있으므로 경로에서 거슬러 올라간다 */
+const bi = html.indexOf('dist/bundle.js')
+const at = bi < 0 ? -1 : html.lastIndexOf('<script', bi)
 const end = html.lastIndexOf('</body>')
 if (at < 0 || end < 0) { console.error('  스모크: index.html 모양이 예상과 다르다'); process.exit(1) }
 const tmp = ROOT+'_smoke.html'
