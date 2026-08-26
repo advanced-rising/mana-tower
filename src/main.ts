@@ -3,7 +3,7 @@ import { PRODUCERS } from './producers'
 import { DS, DSF, LANG, NM, VERSION, X, ic, icHTML, setLang, spriteURL } from './core'
 import { ACHS, BADGES, CHALLENGES, ETER_UPS, GEAR, INF_UPS, MILESTONES, ORIGIN_UPS, REAL_UPS, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, VOID_UPS } from './content'
 import { S, setS } from './state'
-import { achCount, bulkCostLog, bulkMaxLog, chalTotal, cnt, cntLog, costLogAt, curL, cutTxt, fmt, fmtLog, freeFrom, freeRaw, freeStart, gainRes, gearTotal, geoSumLog, L10, logAdd, logSub, numLog, pctTxt, powTxt, ratioOf, RES, runeTotal, safeLog, setRes, spendRes, START_MANA_CAP, syncGen, syncRes } from './num'
+import { achCount, bulkCostLog, bulkMaxLog, capFrom, chalTotal, cnt, cntLog, costLogAt, curL, cutTxt, everLogOf, fmt, fmtLog, freeFrom, freeRaw, freeStart, gainRes, gearTotal, geoSumLog, L10, logAdd, logSub, numLog, pctTxt, powTxt, ratioOf, RES, runeTotal, safeLog, setRes, spendRes, START_MANA_CAP, syncGen, syncRes, upCapFrom, upMaxOf } from './num'
 import { addManaLog, buyProducer, computeM, costLogOf, effLevel, gather, gatherAmountLog, growth, M, manaRateLog, maxAfford, recalc, syncMana } from './multipliers'
 import { COSMOS, FOES, chapterOf, chapterSeen, clearFloor, cosmos, cosmosBonusLog, dungeonPowerLog, floorHPLog, floorLoot, floorLootManaLog, foeOf, syncChapter } from './dungeon'
 import { ASCEND_REQ, breakAmount, doAscend, doInfBreak, doRebirth, doTranscend, infBonusLog, infGain, infUnlocked, offerGainLog, relicGain, relicGainLog, softReset, soulGain, soulGainLog, starGain, starGainLog, TRANS_REQ, transUnlocked } from './prestige'
@@ -90,7 +90,7 @@ document.title=X('무한의 탑','Tower of Infinity');
   infGain, infUnlocked, doInfBreak, doRebirth, doAscend, doTranscend,
   achCount, runeTotal, gearTotal, chalTotal, chapterSeen, chapterOf, cosmos, cosmosBonusLog, infBonusLog, gatherAmountLog, manaRateLog,
   transUnlocked, starGain, starGainLog, relicGain, relicGainLog, soulGain, soulGainLog, offerGainLog, breakAmount, TRANS_REQ, ASCEND_REQ,
-  gather, addManaLog, syncMana, effLevel, START_MANA_CAP, freeStart, freeFrom, freeRaw, softReset, checkAchs, MILESTONES, RESEARCH_ALL: RESEARCH,
+  gather, addManaLog, syncMana, effLevel, START_MANA_CAP, freeStart, freeFrom, freeRaw, upMaxOf, upCapFrom, everLogOf, capFrom, softReset, checkAchs, MILESTONES, RESEARCH_ALL: RESEARCH,
   importSave, mergeState, load, offlineCatchUp, dec, enc, crumb, lastCrumb, exportSave, safeMode, skippedSave,
 }
 

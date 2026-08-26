@@ -35,7 +35,10 @@ export function softReset(){
   S.manaL=Math.max(L10(25),startManaLog(S.soulUps.s7||0));
   S.manaRunL=S.manaL;
   S.bought=PRODUCERS.map(()=>0); S.genL=PRODUCERS.map(()=>-Infinity); syncGen();
-  for(let i=0;i<5;i++) S.bought[i]=free;
+  /* 공짜 시설은 0 단계에만 준다. 위 단계는 아래 단계를 '비용 없이' 만들어 내므로,
+     거기에 씨앗을 뿌리면 남은 배율만큼 한 틱에 폭발한다 — 값에 묶어 두어도
+     생성은 값을 내지 않기 때문에 막을 방법이 없다.
+     0 단계는 손으로 채집하는 것을 대신할 뿐이라 연쇄에 불을 붙이지 않는다. */
   S.bought[0]=Math.max(1,free);
   /* 던전 층수는 초기화하지 않는다 — 내려간 깊이는 프레스티지가 가져가지 않는다.
      서 있던 층에서 그대로 이어 간다. */

@@ -590,3 +590,8 @@ html[data-chapter="11"]{--gold:#c07ae0;--gold2:#e6b6f6;--goldDk:#703f8a}
 }
 /* 어떤 것도 화면보다 넓게 그리지 않는다 */
 img,.card,.up,.unit,.res,.arena{max-width:100%}
+
+/* 잠긴 프레스티지 탭의 조건 — 이름 아래에 작게 */
+.tab .req{display:block;font-size:10px;line-height:1.3;opacity:.62;margin-top:1px;white-space:normal}
+.tab.locked{opacity:.62}
+@media (max-width:900px){ .tab .req{display:none} }

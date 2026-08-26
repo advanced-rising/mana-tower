@@ -3,7 +3,7 @@ import { PRODUCERS } from './producers'
 import { X } from './core'
 import { GEAR, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, bulkCost, bulkMax, gearCost, runeCost } from './content'
 import { S } from './state'
-import { L10, RES, bulkCostLog, bulkMaxLog, chalTotal, costLogAt, curChal, curL, logSub, numLog, spendRes } from './num'
+import { L10, RES, bulkCostLog, bulkMaxLog, chalTotal, costLogAt, curChal, curL, logSub, numLog, spendRes, upMaxOf } from './num'
 import { M, costLogOf, gather, maxAfford, recalc, tierLocked } from './multipliers'
 
 import { INF_AUTO_CD, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, relicGain, soulGain, starGain } from './prestige'
@@ -90,14 +90,14 @@ export function autoBuyTree(defs,store,curKey){
   let bought=0;
   for(let round=0;round<6;round++){
     const st=S[store]=S[store]||{};
-    const open=defs.filter(u=>(st[u.id]||0)<u.max);
+    const open=defs.filter(u=>(st[u.id]||0)<upMaxOf(u,curKey));
     if(!open.length) break;
     open.sort((a,b)=>costLogAt(a.c,st[a.id]||0)-costLogAt(b.c,st[b.id]||0));
     let did=0;
     for(const u of open){
       const l=st[u.id]||0;
       const share=budgetLogOf(curKey)-L10(open.length);   // 한 항목이 예산을 독차지하지 않게
-      const {n,costLog}=buyBulkLog(u.c,l,share,u.max-l);
+      const {n,costLog}=buyBulkLog(u.c,l,share,upMaxOf(u,curKey)-l);
       if(!(n>0)) continue;
       payFrom(curKey,costLog); st[u.id]=l+n; bought+=n; did+=n;
     }

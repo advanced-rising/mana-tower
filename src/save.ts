@@ -1,9 +1,9 @@
-import { GEAR, RUNES } from './content'
+import { ETER_UPS, GEAR, INF_UPS, ORIGIN_UPS, REAL_UPS, RELIC_UPS, RUNES, SOUL_UPS, STAR_UPS, VOID_UPS } from './content'
 import { PRODUCERS } from './producers'
 import { SAVE_KEY, X, icHTML } from './core'
 
 import { S, newState, setLOG, setS } from './state'
-import { fmt, fmtLog, fmtTime, genNum, logSub, numLog } from './num'
+import { fmt, fmtLog, fmtTime, genNum, logSub, numLog, upMaxOf } from './num'
 import { M, gather, recalc } from './multipliers'
 
 import { tick } from './tick'
@@ -47,12 +47,26 @@ export function load(){
    상한은 '더 사는 것' 만 막으므로, 상한이 생기기 전에 저장된 룬 2.85e14 레벨 같은
    값은 그대로 남아 배율도 그대로다 — 프레스티지를 해도 마나가 즉시 꼭대기로
    돌아오던 것이 그 때문이었다. 불러올 때 한 번 맞춰 준다. */
+/* 강화 트리와 그 화폐 이름 */
+export const TREES=()=>[
+  [SOUL_UPS,'soulUps','soul'], [RELIC_UPS,'relicUps','relic'], [STAR_UPS,'starUps','star'],
+  [INF_UPS,'infUps','inf'], [ETER_UPS,'eterUps','eter'], [REAL_UPS,'realUps','real'],
+  [VOID_UPS,'voidUps','void'], [ORIGIN_UPS,'originUps','origin'],
+];
 export function clampToCaps(){
   recalc();
   const rc=Math.floor(M().runeCap), gc=Math.floor(M().gearCap);
   let n=0;
   for(const r of RUNES){ const l=S.runes[r.id]||0; if(l>rc){ S.runes[r.id]=rc; n++ } }
   for(const g of GEAR){ const l=S.gear[g.id]||0; if(l>gc){ S.gear[g.id]=gc; n++ } }
+  /* 강화 트리도 마찬가지다 — 상한이 생기기 전에 쌓인 레벨은 그대로 남는다 */
+  for(const [defs,store,cur] of TREES()){
+    const st=S[store]; if(!st) continue;
+    for(const u of defs){
+      const l=st[u.id]||0, lim=upMaxOf(u,cur);
+      if(l>lim){ st[u.id]=lim; n++ }
+    }
+  }
   if(n) recalc();
   return n;
 }

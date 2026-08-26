@@ -117,6 +117,27 @@ export const freeStart=()=>freeFrom(freeRaw());
 /* 룬·장비 최대 레벨. 강화가 더해 준 원값(raw)을 로그로 접는다 —
    25 에서 시작해 원값이 20만이 되어도 350 언저리다. */
 export const CAP_BASE=25;
+/* 강화 한 항목의 최대 레벨.
+   여태 모든 강화가 상한 없이 올라갔다. 한 레벨마다 붙는 고정 배수가 서른 항목에
+   쌓이면, 프레스티지가 마나와 시설을 지워도 배율만으로 10^763 이 남아 한두 초면
+   제자리였다. 그 화폐를 여태 얼마나 벌어 봤는지에 따라 아주 천천히 오르는 상한을
+   둔다 — 10^100 을 벌었으면 90 레벨, 10^10000 을 벌었어도 140 레벨쯤이다. */
+export const UP_CAP_BASE=40;
+export function upCapFrom(everLog){
+  const e=(typeof everLog==='number'&&isFinite(everLog))?Math.max(0,everLog):0;
+  return UP_CAP_BASE+Math.floor(25*Math.log10(1+e));
+}
+/* 화폐 이름으로 '여태 번 자릿수' 를 찾는다. 자릿수 필드가 없으면 평범한 수에서 만든다. */
+export function everLogOf(curKey){
+  const l=S[curKey+'EverL'];
+  if(typeof l==='number'&&isFinite(l)) return l;
+  const n=S[curKey+'Ever'];
+  return (typeof n==='number'&&n>0&&isFinite(n))?Math.log10(n):0;
+}
+export function upMaxOf(u,curKey){
+  const c=upCapFrom(everLogOf(curKey));
+  return Math.min(typeof u.max==='number'?u.max:Infinity, c);
+}
 export function capFrom(raw){
   const over=Math.max(0,(typeof raw==='number'&&isFinite(raw)?raw:CAP_BASE)-CAP_BASE);
   return CAP_BASE+Math.floor(60*Math.log10(1+over));

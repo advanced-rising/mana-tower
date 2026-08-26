@@ -147,25 +147,35 @@ export function growth(i){return Math.max(1.0005,1+(PRODUCERS[i].g-1)*M().costMu
    서른세 개로 생산이 10^414/초였고, 0.4 초 만에 원래 자리로 돌아왔다.
    값이 생산력을 따라 오르면 다시 오르는 데 걸리는 시간이 회차마다 비슷해진다.
    지수를 1 보다 조금 작게 두어, 그 차이만큼이 프레스티지의 순이득이 된다. */
-export const COST_ANCHOR=0.8;
+export const COST_ANCHOR=1;
 /* 값을 정하는 것은 '이번 회차를 시작할 때 들고 온 배율' 이다. 회차 중에 번 배율까지
    값에 얹으면 회차 안 진행까지 같이 눌려, 한 시간을 돌려도 제자리였다.
    들고 온 만큼만 값에 얹으면, 회차 안에서는 예전처럼 뻗어 나가고
    프레스티지 직후에는 처음처럼 다시 올라야 한다. */
-export function anchorLog(){ const a=S.anchorL; return (typeof a==='number'&&a>0)?a:0 }
+/* 값의 기준은 단계마다 다르다. 0 단계는 마나를 뽑을 뿐이지만, 위 단계는 아래
+   단계를 '비용 없이' 만들어 낸다 — 그 생성 배율(tUp)까지 값에 얹지 않으면 위
+   단계가 제 값을 안 내고, 한 틱 만에 연쇄에 불이 붙는다. */
+export function anchorLog(i){
+  const a=S.anchorL, b=S.anchorUpL;
+  const base=(typeof a==='number'&&a>0)?a:0;
+  if(!(i>0)) return base;
+  return base+((typeof b==='number'&&b>0)?b:0);
+}
 export function setAnchor(){
-  const m=M(), p=(m.prodLog||0)+(m.t0Log||0);
-  S.anchorL = p>0?COST_ANCHOR*p:0;
+  const m=M();
+  const p=(m.prodLog||0)+(m.t0Log||0), u=(m.tUpLog||0);
+  S.anchorL   = p>0?COST_ANCHOR*p:0;
+  S.anchorUpL = u>0?COST_ANCHOR*u:0;
 }
 /* 비용은 자릿수(log10)로 센다. g^bought 는 금방 1e308 을 넘지만 자릿수는 넘지 않는다. */
 export function costLogOf(i,n){
   const g=growth(i),b=S.bought[i];
-  return numLog(PRODUCERS[i].base)+anchorLog()+b*L10(g)+geoSumLog(g,n);
+  return numLog(PRODUCERS[i].base)+anchorLog(i)+b*L10(g)+geoSumLog(g,n);
 }
 export function costOf(i,n){ const l=costLogOf(i,n); return l<300?Math.pow(10,l):Infinity; }
 export function maxAfford(i){
   const g=growth(i),b=S.bought[i],lg=L10(g);
-  const x=S.manaL-numLog(PRODUCERS[i].base)-anchorLog()-b*lg;   // log10(mana / (base*g^bought))
+  const x=S.manaL-numLog(PRODUCERS[i].base)-anchorLog(i)-b*lg;   // log10(mana / (base*g^bought))
   if(isNaN(x)||x===-Infinity) return 0;
   let n;
   if(x>300){ n=Math.floor((x+L10(g-1))/lg); }       // 10^x 가 넘치는 구간은 근사식으로

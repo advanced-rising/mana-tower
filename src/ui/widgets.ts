@@ -1,7 +1,7 @@
 import { updaters } from './tabs'
 import { DS, DSF, NM, X, ic, icHTML } from '../core'
 import { S } from '../state'
-import { costLogAt, fmt, fmtLog } from '../num'
+import { costLogAt, fmt, fmtLog, upMaxOf } from '../num'
 import { effLevel, recalc } from '../multipliers'
 import { autoUnlocked, budgetLogOf, buyBulkLog, payFrom } from '../automation'
 import { btn, el, toast } from './dom'
@@ -39,10 +39,10 @@ export function levelGrid(defs,lvOf,curKey,setLv,curSp){
        ∞ - ∞ = NaN 이 되어 잔액이 통째로 망가졌다. 전부 자릿수로 다룬다. */
     b.addEventListener('click',e=>{
       e.preventDefault();
-      const l=lvOf(u.id);
-      if(l>=u.max) return;
+      const l=lvOf(u.id), lim=upMaxOf(u,curKey);
+      if(l>=lim) return;
       const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
-      const cap=Math.min(u.max-l, want);
+      const cap=Math.min(lim-l, want);
       const {n,costLog}=buyBulkLog(u.c,l,budgetLogOf(curKey),cap);
       if(!(n>0)) return;
       payFrom(curKey,costLog); setLv(u.id,n); recalc(); refresh();
@@ -50,12 +50,12 @@ export function levelGrid(defs,lvOf,curKey,setLv,curSp){
     });
     g.appendChild(b);
     updaters.push(()=>{
-      const l=lvOf(u.id),maxed=l>=u.max;
+      const l=lvOf(u.id), lim=upMaxOf(u,curKey), maxed=l>=lim;
       const bud=budgetLogOf(curKey), cl=costLogAt(u.c,l), afford=!maxed&&bud>=cl;
-      _t.html=`${NM(u.nm)} <span class="lv">Lv.${fmt(l)}${u.max!==Infinity?' / '+fmt(u.max):''}</span>`;
+      _t.html=`${NM(u.nm)} <span class="lv">Lv.${fmt(l)} / ${fmt(lim)}</span>`;
       _d.text=u.d(effLevel(l));
       const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
-      const {n:bn,costLog:bs}=buyBulkLog(u.c,l,bud,Math.min(u.max-l,want));
+      const {n:bn,costLog:bs}=buyBulkLog(u.c,l,bud,Math.min(lim-l,want));
       _c.html=maxed?`<span class="good">${X('최대치 도달','Maxed')}</span>`
         :`${icHTML(curSp)} ${fmtLog(bn>0?bs:cl)}${bn>1?` <span class="dim">×${fmt(bn)}</span>`:''}`;
       b.classList.toggle('done',maxed); b.classList.toggle('afford',afford); b.disabled=maxed;
