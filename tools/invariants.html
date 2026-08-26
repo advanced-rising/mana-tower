@@ -1,0 +1,188 @@
+<pre id="TESTOUT" style="display:none"></pre>
+<script>
+/* 게임을 실제로 한 시간 플레이하면서 불변식을 지킨다.
+   NaN 은 한 번 생기면 로그 공간을 타고 전부로 번지므로 생긴 자리에서 잡아야 한다.
+   여기서 보는 것:
+     1) 매 5초 — 배율·화폐·층·표기가 성한가
+     2) 저장 왕복 — JSON 이 -Infinity 를 null 로 적어도 되살아나는가
+     3) 프레스티지 — 지울 것을 지우고 남길 것을 남기는가
+     4) 구매    — 자원이 실제로 줄고 음수가 되지 않는가
+     5) 성장    — 한 시간 곡선이 어디까지 가는가 (수치가 터지지 않는가)  */
+(async()=>{
+  const O=document.getElementById('TESTOUT'), out=s=>{O.textContent+=s+'\n'};
+  const fail=[]; const bad=(w,d)=>{ if(fail.length<50) fail.push(w+' :: '+d) };
+  const D=x=>x===undefined?'undefined':x===null?'null':(typeof x==='number'
+      ?(isFinite(x)?(Math.abs(x)>=1e5?x.toExponential(3):String(Math.round(x*100)/100)):String(x)):String(x));
+  try{
+  await new Promise(r=>setTimeout(r,900));
+  const G=window.__game; if(!G){ out('[!] __game 없음 — 페이지가 뜨지 않았다'); out('DONE'); return }
+  let S=G.S;
+  const KEY='manaTowerSave2';
+
+  const MULS=['prod','t0','tUp','speed','soul','offer','crystal','dungeon','relic',
+              'floorLoot','boss','gearPow','autoSpeed','chalPow','costMul'];
+  const LOGS=['manaL','manaRunL','manaEverL','manaPeakL','soulL','relicL','starL',
+              'crystalL','offeringL','soulEverL','relicEverL','starEverL'];
+  const NUMS=['rebirths','ascensions','transcends','floor','deepest','prog','inf','eter','real','void','origin'];
+
+  /* ── 1. 불변식 ─────────────────────────────── */
+  function check(t){
+    const at=`t=${D(t)}초`;
+    const m=G.M();
+    for(const k of MULS){ const l=m[k+'Log'];
+      if(typeof l!=='number'||isNaN(l)) bad(`M().${k}Log`,`${D(l)} (${at})`); }
+    if(isNaN(m.gearExp)) bad('M().gearExp',`NaN (${at})`);
+    if(!(m.runeCap>0)) bad('M().runeCap',`${D(m.runeCap)} (${at})`);
+    if(isNaN(m.floorPctLog)) bad('M().floorPctLog',`NaN (${at})`);
+    for(const k of LOGS){ const v=S[k];
+      if(v===undefined) continue;
+      if(typeof v!=='number'||isNaN(v)) bad(`S.${k}`,`${D(v)} (${at})`); }
+    for(const k of NUMS){ const v=S[k];
+      if(v===undefined) continue;
+      if(typeof v!=='number'||isNaN(v)) bad(`S.${k}`,`${D(v)} (${at})`);
+      else if(v<0) bad(`S.${k}`,`음수 ${D(v)} (${at})`); }
+    if(!(S.floor>=1)) bad('S.floor',`${D(S.floor)} — 1층 아래 (${at})`);
+    if(S.floor>(S.deepest||0)+1) bad('S.floor',`${D(S.floor)} > 최심층+1 (${at})`);
+    if(!(S.prog>=0&&S.prog<=1.0001)) bad('S.prog',`${D(S.prog)} — 0..1 밖 (${at})`);
+    if(isNaN(G.manaRateLog())) bad('manaRateLog()',`NaN (${at})`);
+    if(isNaN(G.gatherAmountLog())) bad('gatherAmountLog()',`NaN (${at})`);
+    for(const l of [S.manaL,G.manaRateLog(),m.prodLog]){
+      const s=G.fmtLog(l);
+      if(/NaN|undefined/.test(s)) bad('fmtLog',`${D(l)} → "${s}" (${at})`);
+    }
+    if(S.deepest<S.deepestEver-0) { /* 최심층 자체는 승천에서 줄 수 있다 */ }
+    if((S.deepestEver||0)<(S.deepest||0)) bad('S.deepestEver',`${D(S.deepestEver)} < 최심층 ${D(S.deepest)} (${at})`);
+  }
+
+  /* ── 자동 플레이 ───────────────────────────── */
+  function buyResearch(){
+    for(const r of G.RESEARCH){
+      if(S.research[r.id]) continue;
+      if(r.req&&!S.research[r.req]) continue;
+      const c=G.numLog(r.cost);
+      if(!(S.manaL>=c)) continue;
+      const before=S.manaL;
+      S.manaL=G.logSub(S.manaL,c); S.research[r.id]=1; G.recalc();
+      /* 값이 배정도로 표현되는 범위 안에서만 줄어드는 것이 보인다 —
+         10^1000 을 들고 100 을 쓰면 자릿수는 그대로다. 그건 옳다.
+         비용이 잔액과 열네 자릿수 안쪽일 때만 실제로 줄었는지 따진다. */
+      if(S.manaL>before+1e-12) bad('연구 구매',`${r.id} 를 샀는데 마나가 늘었다 ${D(before)} → ${D(S.manaL)}`);
+      else if(before-c<14&&!(S.manaL<before)) bad('연구 구매',`${r.id}(${D(c)}자리) 를 ${D(before)}자리로 샀는데 줄지 않았다`);
+      if(isNaN(S.manaL)) bad('연구 구매',`${r.id} 뒤 마나가 NaN`);
+      return true;
+    }
+    return false;
+  }
+  const STEP=0.2; let t=0, tickErr=0, lastErr='', lastPres=-99;
+  function play(){
+    try{
+      G.gather(); G.gather();
+      for(let i=G.PRODUCERS.length-1;i>=0;i--){ const n=G.maxAfford(i); if(n>0){ G.buyProducer(i,n); break } }
+      buyResearch();
+      for(const a of G.AUTO_DEFS) if(G.autoUnlocked(a.k)) S.auto[a.k]=true;
+      S.exploring=true;
+      /* 프레스티지도 손으로 한다. 자동 환생은 한참 뒤에나 열리므로 이걸 하지
+         않으면 '한 번도 환생하지 않은 회차' 만 재게 된다 — 실제로 환생 뒤 마나가
+         제대로 지워지지 않던 버그는 이 경로에서만 드러났다. */
+      if(t-lastPres>25){
+        if(G.transUnlocked&&G.transUnlocked()&&G.starGainLog()>0){ G.doTranscend(); lastPres=t; }
+        else if(G.relicGainLog()>0&&S.soulAscL>=G.numLog(G.ASCEND_REQ)){ G.doAscend(); lastPres=t; }
+        else if(G.soulGain()>0){ G.doRebirth(); lastPres=t; }
+      }
+      G.tick(STEP);
+    }catch(e){ tickErr++; if(!lastErr) lastErr=e.message+' @ '+(e.stack||'').split('\n')[1] }
+    t+=STEP;
+  }
+
+  out('  분 |  마나자릿수  생산자릿수 |   시설수L    prodL  dungeonL |  깊이  | 환생 승천 초월 무한 영원 현실 공허 근원 | 업적 연구');
+  const marks=[60,300,900,1800,2400,3000,3600]; let mi=0;
+  while(t<3600){
+    play();
+    if(Math.round(t*5)%25===0) check(t);
+    if(mi<marks.length&&t>=marks[mi]){
+      const m=G.M();
+      out(`${String(Math.round(marks[mi]/60)).padStart(4)} | ${D(S.manaL).padStart(11)} ${D(G.manaRateLog()).padStart(11)} | `
+        +`${D(G.cntLog(0)).padStart(9)} ${D(m.prodLog).padStart(8)} ${D(m.dungeonLog).padStart(9)} | ${String(S.deepest).padStart(6)} | `
+        +`${S.rebirths} ${S.ascensions} ${S.transcends} ${S.inf||0} ${S.eter||0} ${S.real||0} ${S.void||0} ${S.origin||0}`
+        +` | ${G.achCount()} ${Object.keys(S.research).length} 룬${G.runeTotal()} 장비${G.gearTotal()}`);
+      mi++;
+    }
+  }
+
+  /* ── 2. 저장 왕복 ──────────────────────────── */
+  const snap={};
+  for(const k of LOGS.concat(NUMS)) snap[k]=S[k];
+  snap._ach=G.achCount(); snap._res=Object.keys(S.research).length;
+  try{
+    G.save(true);
+    const raw=localStorage.getItem(KEY);
+    if(!raw) bad('저장',`localStorage['${KEY}'] 가 비었다`);
+    else{
+      G.load(); S=G.S;
+      for(const k of Object.keys(snap)){
+        const now=k==='_ach'?G.achCount():k==='_res'?Object.keys(S.research).length:S[k];
+        const was=snap[k];
+        if(typeof was==='number'&&typeof now==='number'){
+          if(isNaN(now)&&!isNaN(was)) bad('저장 왕복',`${k}: ${D(was)} → NaN`);
+          else if(Math.abs(now-was)>Math.max(1e-9,Math.abs(was)*1e-12)&&!(now===was)) bad('저장 왕복',`${k}: ${D(was)} → ${D(now)}`);
+        } else if(now!==was) bad('저장 왕복',`${k}: ${D(was)} → ${D(now)}`);
+      }
+      /* 저장 문자열에 NaN 이 문자로 새어 나가지 않는가 */
+      const j=JSON.parse(decodeURIComponent(escape(atob(raw))));
+      const walk=(o,p)=>{ for(const k in o){ const v=o[k];
+        if(typeof v==='number'&&isNaN(v)) bad('저장',`${p}${k} 가 NaN`);
+        else if(v&&typeof v==='object') walk(v,p+k+'.'); } };
+      walk(j,'');
+    }
+  }catch(e){ bad('저장 왕복',e.message) }
+
+  /* ── 3. 프레스티지가 지우고 남기는 것 ──────── */
+  try{
+    const achBefore=G.achCount(), autoBefore=JSON.stringify(S.auto);
+    const manaBefore=S.manaL, boughtBefore=(S.bought||[]).reduce((a,b)=>a+b,0);
+    G.doRebirth();
+    S=G.S;
+    if(G.achCount()<achBefore) bad('환생',`업적이 ${achBefore} → ${G.achCount()} 로 줄었다`);
+    if(JSON.stringify(S.auto)!==autoBefore) bad('환생','자동화 설정이 바뀌었다');
+    /* 환생은 초기화다. 시작 지원금이 있어도 회차에서 벌어들인 자릿수의
+       한 줌 이상을 되돌려주면 그건 복원이지 초기화가 아니다. */
+    if(!(S.manaL<manaBefore)) bad('환생',`마나가 줄지 않았다 ${D(manaBefore)} → ${D(S.manaL)}`);
+    else if(manaBefore>200&&S.manaL>manaBefore*0.25)
+      bad('환생',`마나가 제대로 초기화되지 않았다 ${D(manaBefore)}자리 → ${D(S.manaL)}자리 (${Math.round(S.manaL/manaBefore*100)}% 남음)`);
+    const boughtAfter=(S.bought||[]).reduce((a,b)=>a+b,0);
+    if(boughtAfter>=boughtBefore&&boughtBefore>0) bad('환생',`시설이 남아 있다 ${boughtBefore} → ${boughtAfter}`);
+    if(S.floor!==1) bad('환생',`던전이 1층으로 돌아가지 않았다 (${D(S.floor)}층)`);
+    if(Object.keys(S.research).length) bad('환생',`연구가 ${Object.keys(S.research).length}개 남았다`);
+    check('환생 직후');
+  }catch(e){ bad('환생',e.message) }
+
+  /* ── 4. 자원이 음수가 되지 않는가 ──────────── */
+  try{
+    for(const k of ['soul','relic','star','crystal','offering']){
+      const before=G.curL(k);
+      G.spendRes(k, before+50);                    // 가진 것보다 훨씬 많이 쓰려 해 본다
+      const after=G.curL(k);
+      if(after>before+1e-9) bad('과다 지출',`${k}: ${D(before)} → ${D(after)} (늘었다)`);
+      if(isNaN(after)) bad('과다 지출',`${k} 가 NaN`);
+    }
+  }catch(e){ bad('지출',e.message) }
+
+  /* ── 5. 표기 ───────────────────────────────── */
+  try{
+    for(const l of [-Infinity,0,1,2.5,5.999,6,15,100,2039,2041,54767,54769,1e6,1e9,Infinity,NaN]){
+      const s=G.fmtLog(l);
+      if(typeof s!=='string'||!s.length) bad('fmtLog',`${D(l)} → ${D(s)}`);
+      if(/NaN|undefined/.test(s)) bad('fmtLog',`${D(l)} → "${s}"`);
+    }
+    for(const n of [0,0.5,999,1000,1e6,1e15,1e100,1e308,Infinity,NaN,-5])
+      if(/NaN|undefined/.test(G.fmt(n))) bad('fmt',`${D(n)} → "${G.fmt(n)}"`);
+  }catch(e){ bad('표기',e.message) }
+
+  if(tickErr) bad('틱',`${tickErr}회 예외 :: ${lastErr}`);
+  }catch(e){ bad('하네스',e.message+' @ '+(e.stack||'').split('\n')[1]) }
+  out('');
+  for(const f of fail) out('  [!] '+f);
+  out(`=== 불변식 위반 ${fail.length}건 ===`);
+  out('DONE');
+})();
+</script>

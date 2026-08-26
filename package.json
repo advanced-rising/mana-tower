@@ -4,12 +4,16 @@
   "description": "Tower of Infinity — an idle game that never ends",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "build": "node scripts/build.mjs",
+    "build": "node scripts/build.mjs && node scripts/smoke.mjs",
     "watch": "node scripts/build.mjs --watch",
     "check": "tsc --noEmit",
-    "art": "python3 tools/build_sprites.py && python3 tools/build_ui.py"
+    "art": "python3 tools/build_sprites.py && python3 tools/build_ui.py",
+    "smoke": "node scripts/smoke.mjs",
+    "verify": "node scripts/verify.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",

@@ -100,12 +100,19 @@ export const runeTotal=()=>RUNES.reduce((a,r)=>a+(S.runes[r.id]||0),0);
 export const gearTotal=()=>GEAR.reduce((a,g)=>a+(S.gear[g.id]||0),0);
 export const chalTotal=()=>CHALLENGES.reduce((a,c)=>a+(S.chalDone[c.id]||0),0);
 export const curChal=()=>S.chal?CHALLENGES.find(c=>c.id===S.chal):null;
-export function startManaLog(l){return l<=0?-Infinity:2*l}
+
 export function startMana(l){const x=startManaLog(l);return x<300?Math.pow(10,x):Infinity}
 
 /* 체력과 공격력을 그대로 곱하면 1e308 에서 ∞ 가 되고 ∞/∞ 가 NaN 이 된다.
    둘 다 '자릿수'(밑 10 로그)로 다룬다. 로그는 층수에 비례해 선형이라 넘치지 않는다. */
 export const L10=Math.log10;
+/* 시작 지원금 — 환생 직후의 마나.
+   레벨당 2 자릿수씩 선형으로 주던 때는, 777 레벨에서 환생마다 10^1554 를
+   돌려받았다. 환생이 초기화가 아니라 복원이 되어 버려서, 갚아야 할 램프 없이
+   프레스티지만 반복하면 수치가 끝없이 부풀었다.
+   지원금은 지루한 처음 1 분을 건너뛰라고 있는 것이지 회차를 되돌리는 것이 아니다.
+   레벨에 로그로 붙여 아무리 올려도 예순 자릿수 언저리에 머물게 한다. */
+export function startManaLog(l){return l<=0?-Infinity:20*L10(1+l)}
 export function safeLog(v){ return (typeof v==='number'&&v>0&&isFinite(v))?L10(v):(v>0?308:0); }
 /* 마나 계열은 0 이 진짜 0 이어야 한다 — safeLog 는 0 을 0(=10^0) 으로 돌려주므로 따로 쓴다. */
 export function numLog(v){ return (typeof v==='number'&&v>0)?(isFinite(v)?L10(v):308):-Infinity; }
