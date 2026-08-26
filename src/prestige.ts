@@ -5,7 +5,7 @@ import { autoOK } from './automation'
 import { X, icHTML } from './core'
 import { ACHS, ACH_NOUN, BADGES, ETER_UPS, INF_UPS, ORIGIN_UPS, REAL_UPS, VOID_UPS, achName } from './content'
 import { S } from './state'
-import { L10, fmt, gainRes, logAdd, numLog, setRes, startManaLog, syncGen } from './num'
+import { L10, fmt, freeStart, gainRes, logAdd, numLog, setRes, startManaLog, syncGen } from './num'
 import { M, recalc } from './multipliers'
 import { COSMOS, chapterOf } from './dungeon'
 import { autoEnterChallenge, exitChallenge } from './trials'
@@ -31,7 +31,7 @@ export function relicGainLog(){
 }
 export function relicGain(){ const l=relicGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
 export function softReset(){
-  const free=8*(S.relicUps.a5||0)+25*(S.starUps.t9||0)+500*((S.eterUps||{}).e13||0)+5000*((S.realUps||{}).r9||0)+1e5*((S.originUps||{}).o6||0);
+  const free=freeStart();
   S.manaL=Math.max(L10(25),startManaLog(S.soulUps.s7||0));
   S.manaRunL=S.manaL;
   S.bought=PRODUCERS.map(()=>0); S.genL=PRODUCERS.map(()=>-Infinity); syncGen();

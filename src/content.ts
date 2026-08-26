@@ -3,7 +3,7 @@ import { INF_LAYERS } from './layers'
 import { COSMOS, chapterOf } from './dungeon'
 import { X } from './core'
 import { S } from './state'
-import { chalTotal, cnt, cutTxt, cutTxtL, fmt, fmtLog, gearTotal, mulTxtL, pctTxt, powTxt, powTxtL, runeTotal, smallMul, startManaLog } from './num'
+import { chalTotal, cnt, cutTxt, cutTxtL, fmt, fmtLog, freeFrom, freeRaw, gearTotal, mulTxtL, pctTxt, powTxt, powTxtL, runeTotal, smallMul, startManaLog } from './num'
 import { M } from './multipliers'
 
 /* ══════════════ 콘텐츠 정의 ══════════════
@@ -156,7 +156,7 @@ export const RELIC_UPS=[
  {id:'a2', sp:'pickaxe',  nm:{ko:'영혼 광맥',en:"Soul Vein"},  max:Infinity,c:l=>2*Math.pow(3.2,l),  d:l=>`${X('영혼석 획득',"Soul Shards")} ×${powTxt(2.5,l)} → ×${powTxt(2.5,l+1)}`, apply:(m,l)=>m.soul*=Math.pow(2.5,l)},
  {id:'a3', sp:'clock',nm:{ko:'시간 가속',en:"Time Acceleration"},  max:Infinity,      c:l=>3*Math.pow(4,l),    d:l=>`${X('게임 속도',"Game speed")} +${fmt(12*l)}% → +${fmt(12*(l+1))}%`, apply:(m,l)=>m.speed*=1+0.12*l},
  {id:'a4', sp:'voyage',  nm:{ko:'심연 항해',en:"Abyssal Voyage"},  max:Infinity,c:l=>4*Math.pow(3.4,l),  d:l=>`${X('던전 보상',"Dungeon rewards")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`, apply:(m,l)=>m.floorLoot*=Math.pow(3,l)},
- {id:'a5', sp:'blessing',  nm:{ko:'왕국의 축복',en:"Kingdom's Blessing"},max:Infinity,c:l=>5*Math.pow(3.5,l),  d:l=>X(`환생 후 각 시설 ${fmt(8*l)}개 → ${fmt(8*(l+1))}개 무료`,`Free buildings after rebirth: ${fmt(8*l)} → ${fmt(8*(l+1))}`), apply:()=>{}},
+ {id:'a5', sp:'blessing',  nm:{ko:'왕국의 축복',en:"Kingdom's Blessing"},max:Infinity,c:l=>5*Math.pow(3.5,l),  d:l=>X(`환생 후 각 시설 ${fmt(freeFrom(freeRaw()))}개 → ${fmt(freeFrom(freeRaw()+8))}개 무료`,`Free buildings after rebirth: ${fmt(freeFrom(freeRaw()))} → ${fmt(freeFrom(freeRaw()+8))}`), apply:()=>{}},
  {id:'a6', sp:'banner',      nm:{ko:'심연의 지도',en:"Map of the Abyss"},max:Infinity,c:l=>6*Math.pow(3.8,l),  d:l=>`${X('층당 배율',"Depth bonus")} +${fmt(2*l)}%p → +${fmt(2*(l+1))}%p`, apply:(m,l)=>m.floorPct+=0.02*l},
  {id:'a7', sp:'engrave',nm:{ko:'룬 각인술',en:"Rune Inscription"}, max:Infinity,       c:l=>10*Math.pow(4.5,l), d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${fmt(10*l)} → +${fmt(10*(l+1))}`, apply:(m,l)=>m.runeCap+=10*l},
  {id:'a8', sp:'treasure',      nm:{ko:'보물 감식',en:"Treasure Appraisal"},  max:Infinity,c:l=>8*Math.pow(3.6,l),  d:l=>`${X('결정 획득',"Crystals")} ×${powTxt(2,l)} → ×${powTxt(2,l+1)}`, apply:(m,l)=>m.crystal*=Math.pow(2,l)},
@@ -238,7 +238,7 @@ export const STAR_UPS=[
   d:l=>`${X('결정 획득',"Crystals")} ×${powTxt(3,l)} → ×${powTxt(3,l+1)}`,
   apply:(m,l)=>m.crystal*=Math.pow(3,l)},
  {id:'t9', sp:'touch',  nm:{ko:'초월의 손길',en:"Transcendent Touch"},max:Infinity,c:l=>6*Math.pow(4.2,l),
-  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${fmt(25*l)} → ${fmt(25*(l+1))}${X('개 무료',' free')}`,
+  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${fmt(freeFrom(freeRaw()))} → ${fmt(freeFrom(freeRaw()+25))}${X('개 무료',' free')}`,
   apply:()=>{}},
  {id:'t10',sp:'starcrown', nm:{ko:'별의 왕관',en:"Crown of Stars"}, max:Infinity,  c:l=>8*Math.pow(5,l),
   d:l=>`${X('룬 최대 레벨',"Rune level cap")} +${fmt(25*l)} → +${fmt(25*(l+1))}`, apply:(m,l)=>m.runeCap+=25*l},
@@ -300,7 +300,7 @@ ETER_UPS.push(
   d:l=>`${X('영혼석·오퍼링 획득',"Soul Shards & Offerings")} ×${powTxt(12,l)} → ×${powTxt(12,l+1)}`,
   apply:(m,l)=>{const v=Math.pow(12,l);m.soul*=v;m.offer*=v;}},
  {id:'e13',sp:'formless',  nm:{ko:'무형의 손',en:"Formless Hand"}, max:Infinity,c:l=>7*Math.pow(3.6,l),
-  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${fmt(500*l)} → ${fmt(500*(l+1))}${X('개 무료',' free')}`,
+  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${fmt(freeFrom(freeRaw()))} → ${fmt(freeFrom(freeRaw()+500))}${X('개 무료',' free')}`,
   apply:()=>{}},
  {id:'e14',sp:'scythe',    nm:{ko:'종언의 낫',en:"Scythe of Ending"}, max:Infinity,c:l=>6*Math.pow(3.3,l),
   d:l=>`${X('보스 보상',"Boss rewards")} ×${powTxt(15,l)} → ×${powTxt(15,l+1)}`,
@@ -361,7 +361,7 @@ export const REAL_UPS=[
  {id:'r8', sp:'real_net',   nm:{ko:'인과의 그물',en:"Net of Causes"}, max:Infinity,c:l=>5*Math.pow(3.3,l),
   d:l=>`${X('도전 보상',"Trial rewards")} ×${powTxt(4,l)} → ×${powTxt(4,l+1)}`, apply:(m,l)=>m.chalPow*=Math.pow(4,l)},
  {id:'r9', sp:'real_bloom', nm:{ko:'만개하는 세계',en:"Blooming World"}, max:Infinity,c:l=>5*Math.pow(3.4,l),
-  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${fmt(5000*l)} → ${fmt(5000*(l+1))}${X('개 무료',' free')}`, apply:()=>{}},
+  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${fmt(freeFrom(freeRaw()))} → ${fmt(freeFrom(freeRaw()+5000))}${X('개 무료',' free')}`, apply:()=>{}},
  {id:'r10',sp:'real_key',   nm:{ko:'현실의 열쇠',en:"Key of Reality"}, max:Infinity,c:l=>6*Math.pow(3.6,l),
   d:l=>`${X('승천 유물 획득',"Relics on ascension")} ×${powTxt(10,l)} → ×${powTxt(10,l+1)}`, apply:(m,l)=>m.relic*=Math.pow(10,l)},
 ];
@@ -398,7 +398,7 @@ export const ORIGIN_UPS=[
  {id:'o5', sp:'orig_crown', nm:{ko:'근원의 왕관',en:"Crown of Origin"}, max:Infinity,c:l=>4*Math.pow(4,l),
   d:l=>`${X('게임 속도',"Game speed")} ×${powTxt(10,l)} → ×${powTxt(10,l+1)}`, apply:(m,l)=>m.speed*=Math.pow(10,l)},
  {id:'o6', sp:'orig_all',   nm:{ko:'모든 것의 시작',en:"Beginning of All"}, max:Infinity,c:l=>6*Math.pow(4.5,l),
-  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${fmt(1e5*l)} → ${fmt(1e5*(l+1))}${X('개 무료',' free')}`, apply:()=>{}},
+  d:l=>`${X('환생 후 각 시설',"Free buildings after rebirth:")} ${fmt(freeFrom(freeRaw()))} → ${fmt(freeFrom(freeRaw()+1e5))}${X('개 무료',' free')}`, apply:()=>{}},
 ];
 
 /* 도전 · 승천 1회 후 해금. 제약을 걸고 목표 마나 달성 시 영구 보상 */

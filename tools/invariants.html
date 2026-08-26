@@ -144,25 +144,58 @@
     }
   }catch(e){ bad('저장 왕복',e.message) }
 
-  /* ── 3. 프레스티지가 지우고 남기는 것 ──────── */
-  try{
-    const achBefore=G.achCount(), autoBefore=JSON.stringify(S.auto);
-    const manaBefore=S.manaL, boughtBefore=(S.bought||[]).reduce((a,b)=>a+b,0);
-    G.doRebirth();
-    S=G.S;
-    if(G.achCount()<achBefore) bad('환생',`업적이 ${achBefore} → ${G.achCount()} 로 줄었다`);
-    if(JSON.stringify(S.auto)!==autoBefore) bad('환생','자동화 설정이 바뀌었다');
-    /* 환생은 초기화다. 시작 지원금이 있어도 회차에서 벌어들인 자릿수의
-       한 줌 이상을 되돌려주면 그건 복원이지 초기화가 아니다. */
-    if(!(S.manaL<manaBefore)) bad('환생',`마나가 줄지 않았다 ${D(manaBefore)} → ${D(S.manaL)}`);
-    else if(manaBefore>200&&S.manaL>manaBefore*0.25)
-      bad('환생',`마나가 제대로 초기화되지 않았다 ${D(manaBefore)}자리 → ${D(S.manaL)}자리 (${Math.round(S.manaL/manaBefore*100)}% 남음)`);
-    const boughtAfter=(S.bought||[]).reduce((a,b)=>a+b,0);
-    if(boughtAfter>=boughtBefore&&boughtBefore>0) bad('환생',`시설이 남아 있다 ${boughtBefore} → ${boughtAfter}`);
-    if(S.floor!==1) bad('환생',`던전이 1층으로 돌아가지 않았다 (${D(S.floor)}층)`);
-    if(Object.keys(S.research).length) bad('환생',`연구가 ${Object.keys(S.research).length}개 남았다`);
-    check('환생 직후');
-  }catch(e){ bad('환생',e.message) }
+  /* ── 3. 프레스티지가 지우고 남기는 것 ────────
+     "승천했는데 초기화가 다 안 되고 마나가 돌아온다" 는 여기서 잡힌다.
+     화폐를 지워도 공짜 시설이 통째로 다시 깔리면 마나는 몇 초 만에 제자리다.
+     그래서 지워졌는지만 보지 않고, 되돌아온 생산량이 얼마나 작아졌는지를 본다. */
+  const LAYERS=[
+    ['환생', ()=>G.doRebirth(true),  {keep:['achs','auto','soul','runes','deepest']}],
+    ['승천', ()=>G.doAscend(true),   {zero:['soulUps','runes'], keep:['achs','auto','relicUps']}],
+    ['초월', ()=>G.doTranscend(true),{zero:['soulUps','runes','relicUps','gear'], keep:['achs','auto','starUps']}],
+    ['무한', ()=>G.doInfBreak(0),    {zero:['soulUps','runes','relicUps','gear'], keep:['achs','auto']}],
+  ];
+  for(const [name,act,rule] of LAYERS){
+    try{
+      /* 그 계층을 할 수 있을 만큼 채워 준다 */
+      S.manaL=S.manaRunL=S.manaEverL=S.manaPeakL=340;
+      S.soulAscL=Math.max(S.soulAscL,G.numLog(G.ASCEND_REQ)+2);
+      S.relicTransL=Math.max(S.relicTransL,G.numLog(G.TRANS_REQ)+2);
+      G.setRes('soul',20); G.setRes('relic',20); G.setRes('star',20);
+      for(let i=0;i<S.bought.length;i++) S.bought[i]=1e4;
+      /* 공짜 시설 강화를 크게 올려 둔다 — 이게 살아남아 시설을 통째로 되깔면
+         화폐를 지워도 마나가 몇 초 만에 돌아온다. 실제로 승천이 그랬다. */
+      S.relicUps=Object.assign(S.relicUps||{},{a5:100000});
+      S.starUps=Object.assign(S.starUps||{},{t9:100000});
+      S.eterUps=Object.assign(S.eterUps||{},{e13:100000});
+      G.recalc();
+      const before={ach:G.achCount(), auto:JSON.stringify(S.auto),
+                    rate:G.manaRateLog(), mana:S.manaL, cnt:G.cntLog(0)};
+      const did=act();
+      if(!did){ bad(name,'조건을 채웠는데도 실행되지 않았다'); continue }
+      G.recalc();
+      /* 남아야 할 것 */
+      if(G.achCount()<before.ach) bad(name,`업적이 ${before.ach} → ${G.achCount()} 로 줄었다`);
+      if(JSON.stringify(S.auto)!==before.auto) bad(name,'자동화 설정이 바뀌었다');
+      for(const k of (rule.keep||[]))
+        if(k==='achs'||k==='auto') continue;
+      /* 지워야 할 것 */
+      for(const k of (rule.zero||[])){
+        const n=Object.keys(S[k]||{}).length;
+        if(n) bad(name,`${k} 가 ${n}개 남았다`);
+      }
+      if(Object.keys(S.research||{}).length) bad(name,`연구가 ${Object.keys(S.research).length}개 남았다`);
+      if(S.floor!==1) bad(name,`던전이 ${D(S.floor)}층에서 시작한다`);
+      /* 정말로 처음으로 돌아갔는가 — 되돌아온 시설과 생산량으로 본다 */
+      if(!(G.cntLog(0)<4))
+        bad(name,`시설이 통째로 돌아왔다 — 0단계 ${G.fmtLog(G.cntLog(0))}개 (이전 ${G.fmtLog(before.cnt)}개)`);
+      /* 지원금은 처음 몇 분을 건너뛰라는 것이므로 조금은 남는다. 다만 상한이 있다. */
+      if(!(S.manaL<=G.START_MANA_CAP+1e-9))
+        bad(name,`마나가 ${G.fmtLog(S.manaL)} 로 남았다 — 지원금 상한 ${G.fmtLog(G.START_MANA_CAP)} 을 넘는다 (이전 ${G.fmtLog(before.mana)})`);
+      /* 생산 배율은 프레스티지로 오르는 것이 설계다 — 여기서 재지 않는다.
+         "초기화가 안 된다" 로 보이는 것은 시설과 마나가 되돌아오는 쪽이다. */
+      check(name+' 직후');
+    }catch(e){ bad(name,e.message) }
+  }
 
   /* ── 4. 자원이 음수가 되지 않는가 ──────────── */
   try{

@@ -103,6 +103,17 @@ export const curChal=()=>S.chal?CHALLENGES.find(c=>c.id===S.chal):null;
 
 export function startMana(l){const x=startManaLog(l);return x<300?Math.pow(10,x):Infinity}
 
+/* 환생 뒤에 다시 깔리는 공짜 시설.
+   레벨마다 8·25·500·5000·10만 개씩 선형으로 주던 때는, 이 강화들이 승천에도
+   살아남는 탓에 승천 직후 시설이 통째로 되돌아왔다 — 그러면 마나도 몇 초 만에
+   제자리로 돌아온다. 초기화가 아니라 복원이었다.
+   시작 지원금과 같은 뜻이다: 지루한 첫 걸음을 건너뛰라는 것이지 회차를 되돌리라는
+   게 아니다. 로그로 붙여 아무리 올려도 몇백 개 언저리에 머물게 한다. */
+export const freeRaw=()=>8*((S.relicUps||{}).a5||0)+25*((S.starUps||{}).t9||0)
+  +500*((S.eterUps||{}).e13||0)+5000*((S.realUps||{}).r9||0)+1e5*((S.originUps||{}).o6||0);
+export function freeFrom(raw){ return (raw>0&&isFinite(raw))?Math.floor(9*Math.log10(1+raw)):0 }
+export const freeStart=()=>freeFrom(freeRaw());
+
 /* 체력과 공격력을 그대로 곱하면 1e308 에서 ∞ 가 되고 ∞/∞ 가 NaN 이 된다.
    둘 다 '자릿수'(밑 10 로그)로 다룬다. 로그는 층수에 비례해 선형이라 넘치지 않는다. */
 export const L10=Math.log10;
@@ -112,7 +123,8 @@ export const L10=Math.log10;
    프레스티지만 반복하면 수치가 끝없이 부풀었다.
    지원금은 지루한 처음 1 분을 건너뛰라고 있는 것이지 회차를 되돌리는 것이 아니다.
    레벨에 로그로 붙여 아무리 올려도 예순 자릿수 언저리에 머물게 한다. */
-export function startManaLog(l){return l<=0?-Infinity:20*L10(1+l)}
+export const START_MANA_CAP=30;     // 지원금은 아무리 올려도 10^30 을 넘지 않는다
+export function startManaLog(l){return l<=0?-Infinity:Math.min(START_MANA_CAP,20*L10(1+l))}
 export function safeLog(v){ return (typeof v==='number'&&v>0&&isFinite(v))?L10(v):(v>0?308:0); }
 /* 마나 계열은 0 이 진짜 0 이어야 한다 — safeLog 는 0 을 0(=10^0) 으로 돌려주므로 따로 쓴다. */
 export function numLog(v){ return (typeof v==='number'&&v>0)?(isFinite(v)?L10(v):308):-Infinity; }
