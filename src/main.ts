@@ -138,5 +138,7 @@ else{
   `);
 }
 render();
+/* 여기까지 왔으면 화면이 다 그려졌다 — 정적 부팅 화면을 걷는다 */
+const boot=document.getElementById('boot'); if(boot) boot.remove();
 }catch(e){ bootFail(e) }
 
