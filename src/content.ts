@@ -543,7 +543,7 @@ export const BADGE_FRAME=['disc','ring','shield','hex','gem','burst'];
 export const BADGE_PAL=['gold','steel','wood','blue','lilac','moss','rust','void'];
 export const BADGE_EMB=['dot','cross','chev','moon','flame','eye','spiral','bolt','tri','ring','bar','crown'];
 export const BADGES=[];
-for(const f of BADGE_FRAME) for(const c of BADGE_PAL) for(const e of BADGE_EMB) BADGES.push(`badge_${f}_${fmt(c)}_${e}`);
+for(const f of BADGE_FRAME) for(const c of BADGE_PAL) for(const e of BADGE_EMB) BADGES.push(`badge_${f}_${c}_${e}`);
 export const ACHS=[
  {id:'h1', sp:'apprentice', nm:{ko:'첫 걸음',en:"First Step"},      d:()=>X('견습 마법사 고용',"Hire an Apprentice Mage"),      f:()=>S.bought[0]>=1},
  {id:'h2', sp:'coinpurse', nm:{ko:'소규모 길드',en:"Small Guild"},  d:()=>X('마나 1,000',"1,000 mana"),            f:()=>S.manaPeakL>=3},
@@ -580,31 +580,7 @@ export const ACHS=[
 export const _ac={mx:0,dx:0,rx:0,ax:0,tx:0,ix:0};
 /* 업적도 바닥나지 않는다. 마나·최심층·환생·승천·초월 이정표를 이어 붙인다.
    업적 하나당 마나 생산 +2% 이므로 이 자체가 끝없는 사다리가 된다. */
-for(let e=25;e<=300;e+=3){
-  const v=Math.pow(10,e);
-  ACHS.push({id:'mx'+e, nm:achName('mx',_ac.mx++),
-    d:()=>X(`누적 마나 ${fmtLog(e)}`,`${fmtLog(e)} total mana`), f:()=>S.manaPeakL>=e});
-}
-for(let f=100;f<=3000;f+=50){
-  ACHS.push({id:'dx'+f, nm:achName('dx',_ac.dx++),
-    d:()=>X(`던전 ${f}층`,`Dungeon floor ${f}`), f:()=>(S.deepestEver||S.deepest)>=f});
-}
-for(let n=50;n<=3000;n+=50){
-  ACHS.push({id:'rx'+n, nm:achName('rx',_ac.rx++),
-    d:()=>X(`환생 ${n}회`,`Rebirth ${n} times`), f:()=>(S.rebirthEver||S.rebirths)>=n});
-}
-for(let n=5;n<=500;n+=5){
-  ACHS.push({id:'ax'+n, nm:achName('ax',_ac.ax++),
-    d:()=>X(`승천 ${n}회`,`Ascend ${n} times`), f:()=>(S.ascendEver||S.ascensions)>=n});
-}
-/* 우주 계층과 무한 계층을 밟을 때마다 */
-for(let i=1;i<COSMOS.length;i++){
-  ACHS.push({id:'cx'+i, sp:COSMOS[i].sp, nm:{ko:`${COSMOS[i].ko}에 닿다`,en:`Reach the ${COSMOS[i].en}`},
-    d:()=>X(`탐사에서 ${COSMOS[i].ko} 계층 돌파`,`Break into the ${COSMOS[i].en}`),
-    f:()=>chapterOf(Math.max(1,S.deepest||1))>=i});
-}
-for(let n=1;n<=200;n+=1){
-  ACHS.push({id:'tx'+n, nm:achName('tx',_ac.tx++),
-    d:()=>X(`초월 ${n}회`,`Transcend ${n} times`), f:()=>(S.transEver||S.transcends)>=n});
-}
+/* 업적 생성은 layers.ts 의 buildAchievements() 가 부팅 때 한 번 부른다 —
+   여기서 바로 돌리면 COSMOS·INF_LAYERS 를 모듈 평가 시점에 읽게 되고,
+   순환 고리에서는 그 값이 아직 비어 있다. */
 

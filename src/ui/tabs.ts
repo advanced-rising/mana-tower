@@ -37,6 +37,22 @@ export let curTab='tower', updaters=[], alerts={}, pointerDown=false, needRebuil
 document.addEventListener('pointerdown',()=>{pointerDown=true});
 document.addEventListener('pointerup',()=>{pointerDown=false;if(needRebuild){needRebuild=false;render()}});
 export function flagTab(id){if(curTab!==id){alerts[id]=1;buildTabs()}}
+/* 탭이 열여섯 개라 숫자만으로는 모자란다. 1~9,0 다음은 자판 윗줄을 이어 쓴다.
+   잠긴 탭은 자리를 차지하지 않으므로, 보이는 순서대로 붙는다. */
+export const TAB_KEYS=['1','2','3','4','5','6','7','8','9','0','q','w','e','r','t','y','u','i','o','p'];
+export function tabKeyOf(id){
+  ensureTabs();
+  const open=TABS.filter(t=>t.open());
+  const i=open.findIndex(t=>t.id===id);
+  return i>=0&&i<TAB_KEYS.length?TAB_KEYS[i]:'';
+}
+export function tabByKey(k){
+  ensureTabs();
+  const i=TAB_KEYS.indexOf(k);
+  if(i<0) return null;
+  const open=TABS.filter(t=>t.open());
+  return open[i]||null;
+}
 export function buildTabs(){
   ensureTabs();
   const box=$('tabs'); box.innerHTML='';
@@ -53,7 +69,7 @@ export function buildTabs(){
     b.type='button';
     b.appendChild(ic(open?t.sp:'unknown',16));
     b.appendChild(el('span',null,open?NM(t.nm):'???'));
-    b.appendChild(el('span','n',open?(i<9?String(i+1):i===9?'0':''):''));
+    b.appendChild(el('span','n',open?tabKeyOf(t.id).toUpperCase():''));
     b.appendChild(el('span','dot'));
     if(open) b.addEventListener('click',()=>switchTab(t.id));
     box.appendChild(b);

@@ -1,4 +1,4 @@
-import { INF_LAYERS } from './layers'
+import { INF_LAYERS, buildAchievements } from './layers'
 import { PRODUCERS } from './producers'
 import { DS, DSF, LANG, NM, VERSION, X, ic, icHTML, setLang, spriteURL } from './core'
 import { ACHS, BADGES, CHALLENGES, ETER_UPS, GEAR, INF_UPS, ORIGIN_UPS, REAL_UPS, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, VOID_UPS } from './content'
@@ -10,7 +10,7 @@ import { ASCEND_REQ, TRANS_REQ, doAscend, doInfBreak, doRebirth, doTranscend, in
 import { AUTO_DEF, AUTO_DEFS, autoBuyTree, autoOK, autoUnlocked, buyBulkLog, runAutomation } from './automation'
 import { log, tick } from './tick'
 import { $, modal } from './ui/dom'
-import { TABS, buildTabs, ensureTabs, switchTab, updaters } from './ui/tabs'
+import { TABS, TAB_KEYS, buildTabs, ensureTabs, switchTab, tabByKey, tabKeyOf, updaters } from './ui/tabs'
 import { buildRes } from './ui/resbar'
 import { refresh, render } from './ui/render'
 import { importSave, load, offlineCatchUp, save } from './save'
@@ -42,15 +42,15 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)save(true)}
 document.addEventListener('keydown',e=>{
   if(e.metaKey||e.ctrlKey||e.altKey) return;
   if(e.target.tagName==='INPUT') return;
-  if(/^[0-9]$/.test(e.key)){
-    const i=e.key==='0'?9:(+e.key-1);
-    if(TABS[i]) switchTab(TABS[i].id);
-    return;
-  }
   const k=e.key.toLowerCase();
+  /* 열린 탭에 보이는 순서대로 1~9,0,Q…P 가 붙는다 */
+  if(!['b','s'].includes(k)){
+    const t=tabByKey(k);
+    if(t){ switchTab(t.id); refresh(); return }
+  }
   if(e.key===' '){e.preventDefault();gather();refresh();return}
   if(k==='b'){const o=[1,10,100,'max'];S.buyAmt=o[(o.indexOf(S.buyAmt)+1)%o.length];refresh()}
-  if(k==='e'){S.exploring=!S.exploring;if(!S.exploring)S.prog=0;refresh()}
+  if(k==='x'){S.exploring=!S.exploring;if(!S.exploring)S.prog=0;refresh()}   // 탐험 토글 (E 는 탭에 쓰인다)
   if(k==='s'){save()}
 });
 $('fileIn').addEventListener('change',ev=>{
@@ -71,7 +71,7 @@ document.title=X('무한의 탑','Tower of Infinity');
   fav.rel='icon'; fav.type='image/png'; fav.href=spriteURL('tower');
   document.head.appendChild(fav);
 }
-ensureTabs(); recalc(); buildRes(); syncChapter(true);
+buildAchievements(); ensureTabs(); recalc(); buildRes(); syncChapter(true);
 export function syncTopH(){
   document.documentElement.style.setProperty('--topH', $('top').offsetHeight+'px');
 }
@@ -101,7 +101,7 @@ render();
   PRODUCERS, RESEARCH, RUNES, GEAR, SOUL_UPS, RELIC_UPS, STAR_UPS,
   INF_UPS, ETER_UPS, REAL_UPS, VOID_UPS, ORIGIN_UPS,
   CHALLENGES, ACHS, AUTO_DEFS, TABS, COSMOS, INF_LAYERS, FOES, BADGES,
-  M, computeM, recalc, tick, costLogOf, maxAfford, buyProducer, growth, refresh, render, switchTab, buildTabs, save, load,
+  M, computeM, recalc, tick, tabKeyOf, tabByKey, TAB_KEYS, costLogOf, maxAfford, buyProducer, growth, refresh, render, switchTab, buildTabs, save, load,
   fmt, fmtLog, powTxt, cutTxt, pctTxt, NM, DS, DSF, X, ic, icHTML, spriteURL,
   foeOf, sweepCount, sweepPace, sweepFloors, clearFloor, floorLoot, floorLootManaLog, floorHPLog,
   dungeonPowerLog, cnt, cntLog, syncGen, logAdd, logSub, geoSumLog, numLog, safeLog, L10,

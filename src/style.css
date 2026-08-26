@@ -549,3 +549,29 @@ html[data-chapter="11"]{--gold:#c07ae0;--gold2:#e6b6f6;--goldDk:#703f8a}
 .arena[data-ch="11"]{background-color:#120b16}
 .arena[data-ch="11"]::before{background-image:url('../art/ui/bg_ch11.png')}
 .arena[data-ch="11"]::after{background-image:url('../art/ui/glow_ch11.png')}
+
+/* ══ 좁은 화면 ═══════════════════════════════════
+   자원 띠와 조작 줄이 한 줄로만 늘어서서 화면 밖으로 잘려 나갔다.
+   좁으면 줄을 바꾸게 하고, 어떤 줄도 화면보다 넓어지지 않게 한다. */
+@media(max-width:760px){
+  #res{flex-wrap:wrap; overflow-x:visible}
+  .res{flex:1 1 44%; min-width:0}
+  .row{flex-wrap:wrap}
+  .card{padding:6px 7px 8px}
+  .arena{grid-template-columns:auto 1fr; gap:9px}
+  .arena .foe{width:62px;height:62px}
+  #modal{max-width:94vw}
+  .log{height:120px;font-size:11.5px}
+  .up .ic img,.unit .ico img{width:26px;height:26px}
+}
+@media(max-width:430px){
+  .res{flex:1 1 46%}          /* 한 줄에 하나면 자원만 열 줄이 되어 게임이 저 아래로 밀린다 */
+  .res .sub{display:none}
+  .res .val{font-size:15px}
+  .btn{padding:5px 8px;font-size:12px}
+  .tab{padding:6px 9px}
+  #brandLogo{height:34px}
+  .grid.wide{grid-template-columns:1fr}
+}
+/* 어떤 것도 화면보다 넓게 그리지 않는다 */
+img,.card,.up,.unit,.res,.arena{max-width:100%}

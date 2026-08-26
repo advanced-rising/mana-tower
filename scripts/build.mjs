@@ -43,4 +43,5 @@ if (watch) {
 } else {
   await build(opts)
   stamp()
+  await import('./checkinit.mjs')      // 순환 고리에서 undefined 가 될 코드를 막는다
 }

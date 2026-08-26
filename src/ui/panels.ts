@@ -1,6 +1,6 @@
 import { INF_LAYERS } from '../layers'
 import { PRODUCERS } from '../producers'
-import { updaters } from './tabs'
+import { TABS, tabKeyOf, updaters } from './tabs'
 import { exportSave, hardReset, save } from '../save'
 import { enterChallenge, exitChallenge } from '../trials'
 import { DS, DSF, NM, VERSION, X, ic, icHTML, spriteURL } from '../core'
@@ -526,9 +526,15 @@ export function buildSettings(p){
   const sc=card([X('기록',"Records"),'scroll']);
   const st=el('div','hint'); st.style.cssText='margin:0;line-height:2'; sc.appendChild(st); p.appendChild(sc);
   const hc=card([X('단축키',"Hotkeys"),'book']);
-  hc.appendChild(el('div','hint',X('<b>1~9, 0</b> 탭 이동 · <b>스페이스</b> 마나 채집 · <b>B</b> 구매 수량 · <b>E</b> 탐험 토글 · <b>S</b> 저장',
-    '<b>1~9, 0</b> switch tabs · <b>Space</b> gather · <b>B</b> buy amount · <b>E</b> toggle delving · <b>S</b> save')));
+  const hk=el('div','hint'); hc.appendChild(hk);
+  const hl=el('div'); hl.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-top:8px'; hc.appendChild(hl);
   p.appendChild(hc);
+  updaters.push(()=>{
+    hk.innerHTML=X('<b>스페이스</b> 마나 채집 · <b>B</b> 구매 수량 · <b>X</b> 탐험 토글 · <b>S</b> 저장 · 아래 글쇠로 탭을 옮긴다',
+                   '<b>Space</b> gather · <b>B</b> buy amount · <b>X</b> toggle delving · <b>S</b> save · tab keys below');
+    hl.innerHTML=TABS.filter(t=>t.open()).map(t=>
+      `<span class="tag">${icHTML(t.sp,16)} ${NM(t.nm)} <b class="gold">${tabKeyOf(t.id).toUpperCase()}</b></span>`).join('');
+  });
   updaters.push(()=>{
     const m=M();
     const tot=`${icHTML('mana')}<b>${fmtLog(S.manaEverL)}</b> · ${icHTML('offering')}<b>${fmt(S.offerEver)}</b> · ${icHTML('crystal')}<b>${fmt(S.crystalEver)}</b> · ${icHTML('soul')}<b>${fmt(S.soulEver)}</b> · ${icHTML('relic')}<b>${fmt(S.relicEver)}</b>`;
