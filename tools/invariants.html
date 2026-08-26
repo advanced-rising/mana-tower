@@ -208,6 +208,31 @@
     }catch(e){ bad(name,e.message) }
   }
 
+  /* ── 3.5 던전은 멈추지도 초기화되지도 않는다 ──
+     한 층을 깨면 탐험이 꺼져서, 자동화를 열기 전에는 층마다 다시 눌러야 했다.
+     던전은 층수가 지워지지 않고 계속 도전하는 곳이다. */
+  try{
+    S.auto={};                                  // 자동화를 하나도 켜지 않는다
+    S.manaL=S.manaEverL=S.manaPeakL=60;
+    for(let i=0;i<S.bought.length;i++) S.bought[i]=200;
+    G.recalc(); S.exploring=true;
+    const f0=S.floor;
+    for(let i=0;i<300;i++) G.tick(0.2);         // 60초
+    if(!S.exploring) bad('던전','한 층을 깨고 탐험이 꺼졌다');
+    if(!(S.floor>f0)) bad('던전',`60초를 돌아도 층이 ${D(f0)} → ${D(S.floor)} 로 늘지 않았다`);
+    const f1=S.floor, d1=S.deepest;
+    G.setRes('soul',20); S.soulAscL=Math.max(S.soulAscL,G.numLog(G.ASCEND_REQ)+3); G.recalc();
+    if(G.doAscend(true)){
+      G.recalc();
+      if(S.floor!==f1) bad('던전',`승천이 층을 ${D(f1)} → ${D(S.floor)} 로 바꿨다`);
+      if((S.deepest||0)<d1) bad('던전',`승천이 최심층을 ${D(d1)} → ${D(S.deepest)} 로 줄였다`);
+      if(!S.exploring) bad('던전','승천이 탐험을 껐다');
+      const f2=S.floor;
+      for(let i=0;i<300;i++) G.tick(0.2);
+      if(!(S.floor>f2)) bad('던전',`승천 뒤에는 더 내려가지 않는다 (${D(f2)}층에서 멈춤)`);
+    }
+  }catch(e){ bad('던전',e.message) }
+
   /* ── 4. 자원이 음수가 되지 않는가 ──────────── */
   try{
     for(const k of ['soul','relic','star','crystal','offering']){

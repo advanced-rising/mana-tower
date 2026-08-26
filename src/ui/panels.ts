@@ -96,7 +96,7 @@ export function buildResearch(p){
 }
 
 export function buildDungeon(p){
-  const c=card([X('심연의 던전',"The Abyssal Dungeon"),'sword'],X('원정대의 공격력은 보유한 시설 총합에서 나온다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다.<br>층수는 <b>어떤 프레스티지로도 초기화되지 않는다</b> — 환생하든 승천하든 서 있던 층에서 그대로 이어 간다.',"Your party power comes from every building you own. A <b class='bad'>boss</b> waits every 10th floor, and depth permanently raises your mana multiplier.<br>Your floor <b>never resets</b> — rebirth, ascension, anything: you carry on from where you stood."));
+  const c=card([X('심연의 던전',"The Abyssal Dungeon"),'sword'],X('원정대의 공격력은 보유한 시설 총합에서 나온다. 한 번 내려가기 시작하면 멈추라고 할 때까지 계속 내려간다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다.<br>층수는 <b>어떤 프레스티지로도 초기화되지 않는다</b> — 환생하든 승천하든 서 있던 층에서 그대로 이어 간다.',"Your party power comes from every building you own. Once you start descending you keep going until you stop. A <b class='bad'>boss</b> waits every 10th floor, and depth permanently raises your mana multiplier.<br>Your floor <b>never resets</b> — rebirth, ascension, anything: you carry on from where you stood."));
   const ar=el('div','arena');
   const foe=el('div','foe'); const foeIco=ic(FOES[0].sp,64); foe.appendChild(foeIco);
   const right=el('div');
@@ -110,8 +110,7 @@ export function buildDungeon(p){
   const bDown=btn('sm',X('◀ 이전 층','◀ Prev'),()=>{if(S.floor>1){S.floor--;S.prog=0}});
   const bUp=btn('sm',X('다음 층 ▶','Next ▶'),()=>{if(S.floor<=S.deepest){S.floor++;S.prog=0}});
   const go=btn('','',()=>{S.exploring=!S.exploring;if(!S.exploring)S.prog=0});
-  const auto=btn('sm','',()=>{S.auto.dungeon=S.auto.dungeon?0:1});
-  ctl.append(bDown,bUp,go,auto); c.appendChild(ctl);
+  ctl.append(bDown,bUp,go); c.appendChild(ctl);
   p.appendChild(c);
 
   /* 탐사 계층표 — 못 뚫은 칸은 무엇인지 알 수 없다 */
@@ -175,10 +174,7 @@ export function buildDungeon(p){
     bDown.disabled=S.floor<=1; bUp.disabled=S.floor>S.deepest;
     go.textContent=S.exploring?X('탐험 중단','Stop Delving'):X('탐험 시작','Start Delving');
     go.className='btn '+(S.exploring?'':'gold');
-    const ud=AUTO_DEF('dungeon').unlock();
-    auto.disabled=!ud;
-    auto.className='btn sm '+(!ud?'off':(S.auto.dungeon?'on':'off'));
-    auto.textContent=!ud?X('연속 탐험 잠김 (20층 돌파)','Auto-delve locked (floor 20)'):(S.auto.dungeon?X('연속 탐험 ON','Auto-delve ON'):X('연속 탐험 OFF','Auto-delve OFF'));
+
   });
 }
 

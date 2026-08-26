@@ -32,7 +32,9 @@ export function tick(dt){
     if((S.floorCd||0)<=0&&S.prog>=1){
       S.prog=0; S.floorCd=floorPace();
       clearFloor(1);                       // 한 번에 한 층. 깊이는 시간에 묶인다.
-      if(!autoOK('dungeon')) S.exploring=false;
+      /* 예전에는 한 층을 깨면 탐험이 꺼졌다 — '연속 탐험' 자동화를 열기 전까지는
+         한 층마다 다시 눌러야 했다. 던전은 층수가 초기화되지 않고 계속 도전하는
+         곳이므로, 한 번 내려가기 시작하면 멈추라고 할 때까지 계속 내려간다. */
     }
     S.prog=Math.max(0,Math.min(1,S.prog||0));
   }
