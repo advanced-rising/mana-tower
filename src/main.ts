@@ -125,6 +125,21 @@ try{
 crumb('시작');
 buildAchievements(); crumb('업적 구성'); ensureTabs(); crumb('탭 구성');
 recalc(); crumb('배율 계산'); buildRes(); crumb('자원 바'); syncChapter(true); crumb('장 표시');
+/* 눌린 느낌 — :active 만으로는 손가락을 떼는 순간 사라져서, 빠르게 누르면
+   아무 일도 없었던 것처럼 보인다. 누를 때 표시를 달아 두고 애니메이션이
+   끝나면 뗀다. 버튼의 동작 자체에는 손대지 않는다(듣기만 하고 막지 않는다). */
+document.addEventListener('pointerdown',e=>{
+  const b=(e.target as any)?.closest?.('button');
+  if(!b||b.disabled) return;
+  b.classList.remove('tapped');
+  void (b as any).offsetWidth;         // 연달아 눌러도 다시 재생되도록 되감는다
+  b.classList.add('tapped');
+  setTimeout(()=>b.classList.remove('tapped'),400);   // 애니메이션 이벤트가 안 와도 반드시 뗀다
+},{passive:true,capture:true});
+document.addEventListener('animationend',e=>{
+  const t=e.target as any;
+  if(t&&t.classList&&t.classList.contains('tapped')&&e.animationName==='tapRing') t.classList.remove('tapped');
+},true);
 window.addEventListener('resize',syncTopH);
 setTimeout(syncTopH,0); setInterval(syncTopH,2000);
 const had=load(); crumb('세이브 읽기 '+(had?'있음':'없음'));
