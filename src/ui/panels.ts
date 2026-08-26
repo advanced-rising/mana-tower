@@ -349,58 +349,42 @@ export function buildTrans(p){
   });
 }
 
-export function buildInf(p){
-  const c=card([X('무한',"Infinity"),'infinity'],X(`수가 <b>${fmtLog(300)}</b> 을 넘길 지경이 되면 그 자체가 관문이 된다. 한 칸 위로 올라가고 아래가 접힌다. <b class="gold">별가루와 별 강화는 남는다.</b> 칸을 넘길 때마다 모든 생산에 큰 배율이 영구히 붙는다.<br>칸은 <b>${INF_LAYERS.length}</b> 개가 준비돼 있고, 더 이어 붙일 수 있다.`,`When a number is about to overflow past <b>${fmtLog(300)}</b>, that ceiling becomes a door. You rise one rung and everything below folds away — <b class="gold">stardust and star upgrades stay</b> — leaving a permanent multiplier.`));
-  p.appendChild(c);
-  /* 다섯 계층이 세로로 쌓이면 화면이 길어져 아래쪽은 스크롤해야 보인다.
-     열린 계층만 메뉴로 내어 한 번에 하나씩 본다. */
-  const menu=el('div','row'); menu.style.cssText='gap:6px;margin:2px 0 10px;flex-wrap:wrap';
-  p.appendChild(menu);
-  let pick=0;
-  const cards=[], tabsBtn=[];
-  INF_LAYERS.forEach((L,i)=>{
-    const mb=btn('sm','',()=>{ pick=i; refresh() });
-    mb.innerHTML=icHTML(L.sp,16)+' '+X(L.ko,L.en);
-    menu.appendChild(mb); tabsBtn.push(mb);
-    const lc=card([X(L.ko,L.en),L.sp]);
-    cards.push(lc);
-    const info=el('div','row'); info.style.margin='4px 0 9px'; lc.appendChild(info);
-    const b=btn('gold big','',()=>{
-      if(infGain(i)<=0) return;
-      modal(X(`${L.ko} 돌파`,`${L.en} Break`),
-        X(`<b class="gold">${L.ko} +${fmt(infGain(i))}</b> 을 얻고<br>그 아래 계층이 초기화됩니다.<br><span class="gold">별가루와 별 강화는 남습니다.</span>`,
-          `Gain <b class="gold">+${fmt(infGain(i))} ${L.en}</b>.<br>Everything below resets — stardust and star upgrades stay.`),
-        ()=>doInfBreak(i));
-    });
-    lc.appendChild(b);
-    if(L.ups){
-      lc.appendChild(el('div','hint',X(`${L.ko}으로만 살 수 있다. 아래 계층을 통째로 갈아 넣고 얻는 것이라 효과가 크다.`,
-                                       `Bought with ${L.en} alone. You fed whole layers into this, so it hits hard.`)));
-      const eu=el('div'); eu.style.marginTop='8px';
-      eu.appendChild(buyAmtRow()); eu.appendChild(levelGrid(L.ups(),id=>(S[L.store]||{})[id]||0,L.k,
-        (id,n)=>{(S[L.store]=S[L.store]||{})[id]=((S[L.store]||{})[id]||0)+(n||1)},L.sp));
-      lc.appendChild(eu);
-    }
-    p.appendChild(lc);
-    updaters.push(()=>{
-      const open=infUnlocked(i), g=infGain(i), v=L.from();
-      mb.style.display=open?'':'none';
-      let cls='btn sm '+(pick===i?'on':'');
-      if(mb.className!==cls) mb.className=cls;
-      if(open&&!infUnlocked(pick)) pick=i;            // 고른 칸이 잠기면 열린 칸으로 옮긴다
-      lc.style.display=(open&&pick===i)?'':'none';
-      if(!open||pick!==i) return;
-      info.innerHTML=`<span class="tag">${X('현재',"Now")} <b>${i===0?fmtLog(S.manaEverL):fmt(v)}</b></span>
-        <span class="tag">${X('필요',"Needs")} <b>${reqTxt(i)}</b></span>
-        <span class="tag">${X('보유',"Held")} <b class="gold">${fmt(S[L.k]||0)}</b></span>
-        <span class="tag">${X('전체 배율',"Total")} ×<b>${powTxt(4+i*4,S[L.k+'Ever']||0)}</b></span>`;
-      b.disabled=g<=0;
-      b.innerHTML=icHTML(L.sp,16)+' '+(g>0?X(`${L.ko} 돌파 · +${fmt(g)}`,`${L.en} Break · +${fmt(g)}`)
-        :X(`${reqTxt(i)} 필요`,`Needs ${reqTxt(i)}`));
-    });
+/* 계층 하나를 그린다. 다섯 칸을 한 탭에 쌓아 두면 화면이 길어져
+   아래쪽은 스크롤해야 보였다 — 왼쪽 메뉴에서 칸마다 따로 연다. */
+export function buildLayer(p,i){
+  const L=INF_LAYERS[i];
+  if(i===0) p.appendChild(card([X('넘침이라는 문',"The Overflow Door"),'inf_frame'],X(`수가 <b>${fmtLog(300)}</b> 을 넘길 지경이 되면 그 자체가 관문이 된다. 한 칸 위로 올라가고 아래가 접힌다. <b class="gold">별가루와 별 강화는 남는다.</b> 칸을 넘길 때마다 모든 생산에 큰 배율이 영구히 붙는다.`,`When a number is about to overflow past <b>${fmtLog(300)}</b>, that ceiling becomes a door. You rise one rung and everything below folds away — <b class="gold">stardust and star upgrades stay</b> — leaving a permanent multiplier.`)));
+  const lc=card([X(L.ko,L.en),L.sp]);
+  const info=el('div','row'); info.style.margin='4px 0 9px'; lc.appendChild(info);
+  const b=btn('gold big','',()=>{
+    if(infGain(i)<=0) return;
+    modal(X(`${L.ko} 돌파`,`${L.en} Break`),
+      X(`<b class="gold">${L.ko} +${fmt(infGain(i))}</b> 을 얻고<br>그 아래 계층이 초기화됩니다.<br><span class="gold">별가루와 별 강화는 남습니다.</span>`,
+        `Gain <b class="gold">+${fmt(infGain(i))} ${L.en}</b>.<br>Everything below resets — stardust and star upgrades stay.`),
+      ()=>doInfBreak(i));
+  });
+  lc.appendChild(b);
+  if(L.ups){
+    lc.appendChild(el('div','hint',X(`${L.ko}으로만 살 수 있다. 아래 계층을 통째로 갈아 넣고 얻는 것이라 효과가 크다.`,
+                                     `Bought with ${L.en} alone. You fed whole layers into this, so it hits hard.`)));
+    const eu=el('div'); eu.style.marginTop='8px';
+    eu.appendChild(buyAmtRow());
+    eu.appendChild(levelGrid(L.ups(),id=>(S[L.store]||{})[id]||0,L.k,
+      (id,n)=>{(S[L.store]=S[L.store]||{})[id]=((S[L.store]||{})[id]||0)+(n||1)},L.sp));
+    lc.appendChild(eu);
+  }
+  p.appendChild(lc);
+  updaters.push(()=>{
+    const g=infGain(i), v=L.from();
+    info.innerHTML=`<span class="tag">${X('현재',"Now")} <b>${i===0?fmtLog(S.manaEverL):fmt(v)}</b></span>
+      <span class="tag">${X('필요',"Needs")} <b>${reqTxt(i)}</b></span>
+      <span class="tag">${X('보유',"Held")} <b class="gold">${fmt(S[L.k]||0)}</b></span>
+      <span class="tag">${X('전체 배율',"Total")} ×<b>${powTxt(4+i*4,S[L.k+'Ever']||0)}</b></span>`;
+    b.disabled=g<=0;
+    b.innerHTML=icHTML(L.sp,16)+' '+(g>0?X(`${L.ko} 돌파 · +${fmt(g)}`,`${L.en} Break · +${fmt(g)}`)
+      :X(`${reqTxt(i)} 필요`,`Needs ${reqTxt(i)}`));
   });
 }
-
 export function buildChal(p){
   const c=card([X('시련',"Trials"),'chain'],X('제약을 받아들이고 목표 마나에 도달하면 <b>영구 보상</b>을 얻는다. 시련에 들어가거나 나오면 회차가 초기화된다.',"Accept a handicap, reach the goal mana, keep a <b>permanent reward</b>. Entering or leaving a trial resets the run."));
   const info=el('div','row'); info.style.marginBottom='9px'; c.appendChild(info);
@@ -563,4 +547,11 @@ export function buildSettings(p){
 }
 
 export const BUILDERS={tower:buildTower,research:buildResearch,dungeon:buildDungeon,relics:buildRelics,
-  rebirth:buildRebirth,ascend:buildAscend,trans:buildTrans,inf:buildInf,chal:buildChal,ach:buildAch,auto:buildAuto,settings:buildSettings};
+  rebirth:buildRebirth,ascend:buildAscend,trans:buildTrans,chal:buildChal,ach:buildAch,auto:buildAuto,settings:buildSettings};
+/* 모듈 평가 시점에 INF_LAYERS 를 읽으면 아직 비어 있을 수 있다 (순환 의존).
+   패널을 그릴 때 없으면 그때 채운다. */
+let _layersWired=false;
+export function wireLayerPanels(){
+  if(_layersWired) return; _layersWired=true;
+  INF_LAYERS.forEach((L,i)=>{ BUILDERS[L.k]=p=>buildLayer(p,i) });
+}

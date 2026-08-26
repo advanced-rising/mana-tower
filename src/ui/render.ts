@@ -3,7 +3,7 @@ import { recalc } from '../multipliers'
 import { flushLog } from '../tick'
 import { $, el } from './dom'
 import { TABS, buildTabs, curTab, setCurTab, setUpdaters, updaters } from './tabs'
-import { BUILDERS } from './panels'
+import { BUILDERS, wireLayerPanels } from './panels'
 import { updateRes, updateSide } from './resbar'
 
 /* ══════════════ 렌더 ══════════════ */
@@ -22,6 +22,7 @@ export function render(){
   setUpdaters([]); buildTabs();
   const main=$('main'); main.innerHTML='';
   const p=el('div','panel on'); p.id='p-'+curTab;
+  wireLayerPanels();
   BUILDERS[curTab](p); main.appendChild(p);
   refresh();
 }

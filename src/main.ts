@@ -10,7 +10,7 @@ import { ASCEND_REQ, TRANS_REQ, doAscend, doInfBreak, doRebirth, doTranscend, in
 import { AUTO_DEF, AUTO_DEFS, autoBuyTree, autoOK, autoUnlocked, buyBulkLog, runAutomation } from './automation'
 import { log, tick } from './tick'
 import { $, modal } from './ui/dom'
-import { TABS, buildTabs, switchTab, updaters } from './ui/tabs'
+import { TABS, buildTabs, ensureTabs, switchTab, updaters } from './ui/tabs'
 import { buildRes } from './ui/resbar'
 import { refresh, render } from './ui/render'
 import { importSave, load, offlineCatchUp, save } from './save'
@@ -71,7 +71,7 @@ document.title=X('무한의 탑','Tower of Infinity');
   fav.rel='icon'; fav.type='image/png'; fav.href=spriteURL('tower');
   document.head.appendChild(fav);
 }
-recalc(); buildRes(); syncChapter(true);
+ensureTabs(); recalc(); buildRes(); syncChapter(true);
 export function syncTopH(){
   document.documentElement.style.setProperty('--topH', $('top').offsetHeight+'px');
 }
