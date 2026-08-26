@@ -104,10 +104,13 @@ export function computeM(){
   for(const ms of MILESTONES) if((S.rebirthEver||S.rebirths)>=ms.n) foldUp(st,ms.apply);
   st.prodL+=L10(1+0.02*achCount());
   st.prodL+=L10(1+0.05*S.rebirths);
-  st.prodL+=logAdd(0,st.floorPctL+numLog(S.deepest));   // 1+floorPct*deepest
-  { const v=cosmosBonusLog(S.deepest||1);              // 행성·행성계·은하를 넘길 때마다
+  /* 깊이 배율은 '이번 회차에 서 있는 층' 을 따른다. 최심층(기록) 을 따르게 두면
+     프레스티지가 절대 건드릴 수 없는 영구 배율이 되어, 초기화를 아무리 해도
+     던전 몫만큼은 그대로 남는다. 기록은 기록대로 남되 배율은 다시 쌓는다. */
+  st.prodL+=logAdd(0,st.floorPctL+numLog(S.floor));    // 1+floorPct*floor
+  { const v=cosmosBonusLog(S.floor||1);                // 행성·행성계·은하를 넘길 때마다
     st.prodL+=v; st.soulL+=v; st.offerL+=v; st.crystalL+=v; st.dungeonL+=v; }
-  st.dungeonL+=L10(1+0.03*S.deepest);
+  st.dungeonL+=L10(1+0.03*S.floor);
   if(ch&&ch.rule.drain) st.prodL-=L10(ch.rule.drain);   // 나누기는 로그에서 빼기다
   if(ch&&ch.rule.slow) st.speedL-=L10(ch.rule.slow);
   st.autoSpeedL=Math.max(L10(0.15),st.autoSpeedL);
@@ -133,7 +136,7 @@ export function invalidateM(){ setMC(null) }
 /* 배율의 입력 중 평범한 틱이 바꿀 수 있는 것들. 이게 그대로면 다시 접을 이유가 없다. */
 export function mSignature(){
   const ch=curChal();
-  return `${S.deepest|0}|${S.rebirths|0}|${S.ascensions|0}|${S.transcends|0}|`
+  return `${S.floor|0}|${S.deepest|0}|${S.rebirths|0}|${S.ascensions|0}|${S.transcends|0}|`
     +`${S.inf||0}|${S.eter||0}|${S.real||0}|${S.void||0}|${S.origin||0}|${ch?ch.id:''}`;
 }
 export function M(){ if(!MC) setMC(computeM()); return MC }

@@ -193,9 +193,10 @@
         if(n) bad(name,`${k} 가 ${n}개 남았다`);
       }
       if(Object.keys(S.research||{}).length) bad(name,`연구가 ${Object.keys(S.research).length}개 남았다`);
-      /* 던전 층수는 어떤 프레스티지로도 지워지지 않는다 */
-      if(S.floor!==floorBefore) bad(name,`던전 층수가 ${D(floorBefore)} → ${D(S.floor)} 로 바뀌었다`);
-      if((S.deepest||0)<deepBefore) bad(name,`최심층이 ${D(deepBefore)} → ${D(S.deepest)} 로 줄었다`);
+      /* 던전은 기록에서 이어 간다 — 깊이는 남고, 경제는 초기화된다 */
+      if((S.deepest||0)<deepBefore) bad(name,`최심층 기록이 ${D(deepBefore)} → ${D(S.deepest)} 로 줄었다`);
+      if(S.floor!==Math.max(1,S.deepest||1))
+        bad(name,`던전이 ${D(S.floor)}층에서 시작한다 (기록 ${D(S.deepest)}층에서 이어야 한다)`);
       /* 정말로 처음으로 돌아갔는가 — 되돌아온 시설과 생산량으로 본다 */
       if(!(G.cntLog(0)<4))
         bad(name,`시설이 통째로 돌아왔다 — 0단계 ${G.fmtLog(G.cntLog(0))}개 (이전 ${G.fmtLog(before.cnt)}개)`);
@@ -224,12 +225,12 @@
     G.setRes('soul',20); S.soulAscL=Math.max(S.soulAscL,G.numLog(G.ASCEND_REQ)+3); G.recalc();
     if(G.doAscend(true)){
       G.recalc();
-      if(S.floor!==f1) bad('던전',`승천이 층을 ${D(f1)} → ${D(S.floor)} 로 바꿨다`);
-      if((S.deepest||0)<d1) bad('던전',`승천이 최심층을 ${D(d1)} → ${D(S.deepest)} 로 줄였다`);
+      if((S.deepest||0)<d1) bad('던전',`승천이 최심층 기록을 ${D(d1)} → ${D(S.deepest)} 로 줄였다`);
+      if(S.floor<d1) bad('던전',`승천 뒤 ${D(S.floor)}층에서 시작한다 (기록 ${D(d1)}층에서 이어야 한다)`);
       if(!S.exploring) bad('던전','승천이 탐험을 껐다');
       const f2=S.floor;
       for(let i=0;i<300;i++) G.tick(0.2);
-      if(!(S.floor>f2)) bad('던전',`승천 뒤에는 더 내려가지 않는다 (${D(f2)}층에서 멈춤)`);
+      if(!(S.floor>f2)) bad('던전',`기록 너머로는 더 내려가지 않는다 (${D(f2)}층에서 멈춤)`);
     }
   }catch(e){ bad('던전',e.message) }
 

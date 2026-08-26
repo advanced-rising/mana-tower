@@ -96,7 +96,7 @@ export function buildResearch(p){
 }
 
 export function buildDungeon(p){
-  const c=card([X('심연의 던전',"The Abyssal Dungeon"),'sword'],X('원정대의 공격력은 보유한 시설 총합에서 나온다. 한 번 내려가기 시작하면 멈추라고 할 때까지 계속 내려간다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다.<br>층수는 <b>어떤 프레스티지로도 초기화되지 않는다</b> — 환생하든 승천하든 서 있던 층에서 그대로 이어 간다.',"Your party power comes from every building you own. Once you start descending you keep going until you stop. A <b class='bad'>boss</b> waits every 10th floor, and depth permanently raises your mana multiplier.<br>Your floor <b>never resets</b> — rebirth, ascension, anything: you carry on from where you stood."));
+  const c=card([X('심연의 던전',"The Abyssal Dungeon"),'sword'],X('원정대의 공격력은 보유한 시설 총합에서 나온다. 한 번 내려가기 시작하면 멈추라고 할 때까지 계속 내려간다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다.<br>던전은 회차와 따로 흐른다 — 프레스티지로 마나와 시설은 지워져도, <b class="gold">내려간 깊이</b>는 남아 그 자리에서 이어 간다. 깊이는 배율로 빨라지지 않고 오직 시간으로만 자란다.',"Your party power comes from every building you own. Once you start descending you keep going until you stop. A <b class='bad'>boss</b> waits every 10th floor, and depth permanently raises your mana multiplier.<br>The dungeon runs on its own clock — a prestige clears your mana and buildings, but the <b class='gold'>depth you reached</b> stays and you carry on from it. Depth grows with time alone; no multiplier hurries it."));
   const ar=el('div','arena');
   const foe=el('div','foe'); const foeIco=ic(FOES[0].sp,64); foe.appendChild(foeIco);
   const right=el('div');
@@ -266,7 +266,7 @@ export function buildRebirth(p){
   const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
   const b=btn('gold big','',()=>{
     if(soulGain()<=0) return;
-    modal(X('환생하시겠습니까?','Rebirth?'),X(`영혼석 <b class="soul">${fmtLog(soulGainLog())}</b> · 오퍼링 <b class="offer">${fmtLog(offerGainLog())}</b>을 얻고<br>마나 · 시설 · 연구가 초기화됩니다.<br>던전 <b class="gold">${fmt(S.floor)}</b>층은 그대로 유지됩니다.`,`You gain <b class="soul">${fmtLog(soulGainLog())}</b> soul shards and <b class="offer">${fmtLog(offerGainLog())}</b> offerings.<br>Mana, buildings and research reset. You keep dungeon floor <b class="gold">${fmt(S.floor)}</b>.`),()=>doRebirth());
+    modal(X('환생하시겠습니까?','Rebirth?'),X(`영혼석 <b class="soul">${fmtLog(soulGainLog())}</b> · 오퍼링 <b class="offer">${fmtLog(offerGainLog())}</b>을 얻고<br>마나 · 시설 · 연구가 초기화됩니다.<br>던전은 <b class="gold">${fmt(S.deepest)}</b>층에서 이어 갑니다.`,`You gain <b class="soul">${fmtLog(soulGainLog())}</b> soul shards and <b class="offer">${fmtLog(offerGainLog())}</b> offerings.<br>Mana, buildings and research reset. The dungeon carries on from floor <b class="gold">${fmt(S.deepest)}</b>.`),()=>doRebirth());
   });
   c.appendChild(b); p.appendChild(c);
   const uc=card([X('영혼 강화',"Soul Upgrades"),'gem'],X('환생해도 유지된다. 승천할 때만 초기화된다.',"Kept through rebirths. Only ascension resets them."));

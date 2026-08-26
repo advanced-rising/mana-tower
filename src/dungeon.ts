@@ -13,11 +13,11 @@ export const isBoss=f=>f%10===0;
    내내 같은 것만 보인다. 한 마리가 보일 만큼 머물게 하고, 깊이가 느려지는 몫은
    아래 sweepCount 가 한 걸음에 여러 층을 쓸어 담아 메운다. */
 export const FLOOR_MIN_TIME=0.28;  // 한 층이 화면에 머무는 최소 시간(초)
-export const FLOOR_RETREAD=0.04;   // 이미 지나온 층을 다시 밟을 때
-/* 환생하면 1 층부터 다시 오른다. 되밟는 길에서 얻는 보상이 던전 수입의 대부분인데,
-   한 층에 0.28 초씩이면 회차 안에 예전 깊이까지 닿지도 못한다.
-   가 본 곳은 빠르게 지나가고, 최심층에 닿으면 다시 한 층씩 천천히 간다. */
-export function floorPace(){ return S.floor<(S.deepest||0) ? FLOOR_RETREAD : FLOOR_MIN_TIME }
+/* 프레스티지는 기록에서 이어 가므로 되밟을 일이 거의 없다. 다만 ◀ 로 손수
+   내려간 자리는 이미 가져간 층이다 — 거기서는 싸우지도, 아무것도 나오지도 않는다. */
+export const FLOOR_RETREAD=0.05;   // 이미 지나온 층을 다시 지나갈 때
+export function floorPace(){ return isRetread(S.floor) ? FLOOR_RETREAD : FLOOR_MIN_TIME }
+export function isRetread(f){ return f<(S.deepest||0) }
 
 /* ── 우주 계층 ────────────────────────────────
    실제 천문학의 구조를 그대로 따른다.
@@ -264,14 +264,20 @@ export function syncChapter(force){
    시간에 묶어 두면 깊이가 초당 한 층씩만 자라 고리가 끊긴다. */
 export function clearFloor(show){
   const f=S.floor,l=floorLoot(f);
-  addManaLog(l.manaLog);
-  gainRes('crystal',l.crystalLog);
-  if(l.offeringLog>-Infinity) gainRes('offering',l.offeringLog);
+  /* 되밟는 층에서는 아무것도 나오지 않는다 — 보물은 이미 가져갔다.
+     여기서도 전리품을 주면 최심층까지 열두 초 만에 던전 수입이 통째로 돌아와,
+     회차를 지운 보람이 없어진다. 기록이 주는 것은 '빨리 돌아간다' 는 것뿐이다. */
+  const back=isRetread(f);
+  if(!back){
+    addManaLog(l.manaLog);
+    gainRes('crystal',l.crystalLog);
+    if(l.offeringLog>-Infinity) gainRes('offering',l.offeringLog);
+  }
   const nw=f>S.deepest;
   if(nw){ S.deepest=f; if(f>(S.deepestEver||0)) S.deepestEver=f; syncChapter(); }
   const foe=foeOf(f);
   if(show!==0)
-    log(`${icHTML(foe.sp)}${isBoss(f)?`<b class="bad">${X('보스','BOSS')}</b> `:''}<b>${NM(foe.nm)}</b> ${X('격파','defeated')}${show>1?` <span class="dim">${X(`외 ${show-1}층`,`and ${show-1} more`)}</span>`:''} <span class="dim">${cosmosLabel(f)}</span> · ${icHTML('mana')}${fmtLog(l.manaLog)} ${icHTML('crystal')}${fmtLog(l.crystalLog)}${l.offering?' '+icHTML('offering')+fmtLog(l.offeringLog):''}`, isBoss(f));
+    log(`${icHTML(foe.sp)}${isBoss(f)?`<b class="bad">${X('보스','BOSS')}</b> `:''}<b>${NM(foe.nm)}</b> ${back?X('지나감','passed'):X('격파','defeated')}${show>1?` <span class="dim">${X(`외 ${show-1}층`,`and ${show-1} more`)}</span>`:''} <span class="dim">${cosmosLabel(f)}</span>${back?` <span class="dim">${X('되밟는 길','retreading')}</span>`:` · ${icHTML('mana')}${fmtLog(l.manaLog)} ${icHTML('crystal')}${fmtLog(l.crystalLog)}${l.offering?' '+icHTML('offering')+fmtLog(l.offeringLog):''}`}`, isBoss(f)&&!back);
   S.floor=f+1;
   /* 쓸어 담는 중간에는 배율을 다시 재지 않는다. computeM 은 강화 백여든 개를
      하나씩 따로 재므로 256 층을 쓸면 256 번 도는 셈이 된다. 마지막에 한 번만. */

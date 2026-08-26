@@ -40,10 +40,17 @@ export function softReset(){
      생성은 값을 내지 않기 때문에 막을 방법이 없다.
      0 단계는 손으로 채집하는 것을 대신할 뿐이라 연쇄에 불을 붙이지 않는다. */
   S.bought[0]=Math.max(1,free);
-  /* 던전 층수는 초기화하지 않는다 — 내려간 깊이는 프레스티지가 가져가지 않는다.
-     서 있던 층에서 그대로 이어 간다. */
+  /* 던전은 기록에서 이어 간다.
+     1 층으로 되돌리고 되밟게 해 보았더니, 한 틱에 한 층이라 기록이 5,000 층만
+     되어도 돌아가는 데만 몇 분이고 50 만 층이면 몇 시간이다. 여러 층을 한 번에
+     쓸면 '한 번에 한 층' 이라는 규칙이 깨진다.
+     그리고 깊이 배율은 층수에 선형이라 5,000 층이라야 10^2 남짓 — 초기화를
+     무의미하게 만들던 10^700 대와는 자릿수가 다르다. 게다가 깊이는 최전선에서
+     실제 시간(층당 0.28 초)에 묶여 있어 어떤 배율로도 빨라지지 않는다.
+     그래서 던전만은 회차와 따로 흐르는 기록으로 둔다 — 경제는 초기화되고,
+     내려간 깊이는 남는다. */
   S.research={}; S.sinceRebirth=0;
-  if(!(S.floor>=1)) S.floor=1;
+  S.floor=Math.max(1,S.deepest||1); S.prog=0;
   S.anchorL=0; recalc();      // 먼저 풀고 다시 재야 이번 회차가 들고 온 배율이 나온다
   setAnchor(); recalc();
 }
@@ -72,7 +79,7 @@ export function doAscend(silent){
   S.rebirths=0;  setRes('offering',-Infinity); S.lastSoulGain=0; S.lastSoulGainL=-Infinity; S.sinceAscend=0;
   if(S.chal) exitChallenge(false);
   softReset();
-  log(`${icHTML('relic')}<b>${X('승천','Ascension')}</b> · ${X('유물','Relics')} <b class="relic">+${fmt(g)}</b> · ${X('영혼석과 룬이 초기화되었다 · 던전 층수는 그대로','soul shards and runes reset · dungeon floor kept')}`,true);
+  log(`${icHTML('relic')}<b>${X('승천','Ascension')}</b> · ${X('유물','Relics')} <b class="relic">+${fmt(g)}</b> · ${X('영혼석과 룬이 초기화되었다','soul shards and runes reset')}`,true);
   if(!silent) toast(icHTML('relic')+X(` 승천 · 유물 +${fmt(g)}`,` Ascension · Relics +${fmt(g)}`));
   return true;
 }

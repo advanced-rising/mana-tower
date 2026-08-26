@@ -7,7 +7,7 @@ import { ACHS } from './content'
 import { LOG, S } from './state'
 import { cntLog, curChal, logAdd, numLog, syncGen } from './num'
 import { M, addManaLog, invalidateM, manaRateLog, mSignature, recalc, syncMana } from './multipliers'
-import { clearFloor, dungeonPowerLog, floorHPLog, floorPace } from './dungeon'
+import { clearFloor, dungeonPowerLog, floorHPLog, floorPace, isRetread } from './dungeon'
 import { autoOK, runAutomation } from './automation'
 
 /* ══════════════ 진행 ══════════════ */
@@ -25,9 +25,16 @@ export function tick(dt){
        쿨다운을 속도가 곱해진 시간으로 깎아서, 속도 배율이 커지면 한 틱에
        마흔 걸음이 몰렸고 승천 직후 0.5 초 만에 예전 최심층까지 되돌아갔다.
        진행도는 속도를 타되(d), 걸음 사이 간격은 실제 시간(dt)으로만 식는다. */
-    const gap=dungeonPowerLog()-floorHPLog(S.floor);
-    const per=gap>=8?1e8:(gap<=-300?0:Math.pow(10,gap));   // 초당 채우는 비율
-    S.prog=Math.min(1,(S.prog||0)+per*d);
+    /* 기록 아래의 층은 이미 이긴 곳이다 — 다시 싸우지 않는다.
+       프레스티지로 공격력이 0 이 된 채로 다시 싸우게 두면, 되밟기가 아니라
+       처음부터 다시 오르는 것이 된다(실제로 90 층 언저리에서 막혔다).
+       걸음의 속도만 남기고 전투는 건너뛴다. */
+    if(isRetread(S.floor)) S.prog=1;
+    else{
+      const gap=dungeonPowerLog()-floorHPLog(S.floor);
+      const per=gap>=8?1e8:(gap<=-300?0:Math.pow(10,gap));   // 초당 채우는 비율
+      S.prog=Math.min(1,(S.prog||0)+per*d);
+    }
     S.floorCd=Math.max(0,(S.floorCd||0)-dt);
     if((S.floorCd||0)<=0&&S.prog>=1){
       S.prog=0; S.floorCd=floorPace();
