@@ -31,7 +31,7 @@ function stamp() {
   const idx = new URL('../index.html', import.meta.url)
   let html = readFileSync(idx, 'utf8')
   html = html.replace(/(href="src\/style\.css)(\?v=[a-f0-9]+)?"/, `$1?v=${css}"`)
-             .replace(/(src="dist\/bundle\.js)(\?v=[a-f0-9]+)?"/, `$1?v=${js}"`)
+             .replace(/(data-src="dist\/bundle\.js)(\?v=[a-f0-9]+)?"/, `$1?v=${js}"`)
   writeFileSync(idx, html)
   console.log(`  stamped index.html  js=${js} css=${css}`)
 }

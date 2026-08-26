@@ -13,7 +13,7 @@ import { $, modal, modalOpen } from './ui/dom'
 import { TABS, TAB_KEYS, buildTabs, ensureTabs, switchTab, tabByKey, tabKeyOf, updaters } from './ui/tabs'
 import { buildRes } from './ui/resbar'
 import { refresh, render } from './ui/render'
-import { importSave, load, offlineCatchUp, save } from './save'
+import { crumb, importSave, lastCrumb, load, offlineCatchUp, save } from './save'
 
 /* ══════════════ 루프 & 입력 ══════════════ */
 export let lastFrame=Date.now();
@@ -121,12 +121,14 @@ export function syncTopH(){
   document.documentElement.style.setProperty('--topH', $('top').offsetHeight+'px');
 }
 try{
-buildAchievements(); ensureTabs(); recalc(); buildRes(); syncChapter(true);
+crumb('시작');
+buildAchievements(); crumb('업적 구성'); ensureTabs(); crumb('탭 구성');
+recalc(); crumb('배율 계산'); buildRes(); crumb('자원 바'); syncChapter(true); crumb('장 표시');
 window.addEventListener('resize',syncTopH);
 setTimeout(syncTopH,0); setInterval(syncTopH,2000);
-const had=load();
-recalc();
-if(had) offlineCatchUp();
+const had=load(); crumb('세이브 읽기 '+(had?'있음':'없음'));
+recalc(); crumb('세이브 뒤 배율');
+if(had){ offlineCatchUp(); crumb('오프라인 보정'); }
 else{
   log(icHTML('tower')+X('심연 위에 마탑을 세운다. 견습 마법사부터 불러들이자.','You raise a tower above the abyss. Summon an Apprentice Mage first.'),true);
   modal(`${icHTML('tower',16)} 무한의 탑`,`
@@ -137,8 +139,14 @@ else{
     한계에 닿으면 <b class="soul">환생</b>, 그 위에 <b class="relic">승천</b>, 다시 그 위에 <b>시련</b>이 기다립니다.
   `);
 }
-render();
+render(); crumb('그리기');
 /* 여기까지 왔으면 화면이 다 그려졌다 — 정적 부팅 화면을 걷는다 */
 const boot=document.getElementById('boot'); if(boot) boot.remove();
+const prevCrumb=lastCrumb();                                 // 지우기 전에 읽어 둔다
+try{ localStorage.removeItem('manaTowerBoot') }catch(e){}    // 무사히 떴으니 지운다
+if(/[?&]safe=1/.test(location.search))
+  modal('안전 모드', '세이브를 읽지 않고 열었습니다. 지금 보이는 진행은 새 게임입니다.<br>'
+    +'설정 탭의 <b>세이브 내보내기</b>로 원래 세이브를 파일로 꺼낼 수 있습니다.<br><br>'
+    +'<span class="dim">직전 부팅이 멈춘 지점: <b>'+(prevCrumb||'기록 없음')+'</b></span>');
 }catch(e){ bootFail(e) }
 

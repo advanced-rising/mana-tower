@@ -43,7 +43,7 @@ export function fmtLog(l){
   /* 자릿수를 통째로 적으면 e2,063,726,572,023 처럼 길어져 읽히지 않는다.
      백만을 넘으면 층을 쌓되 소수 넷째 자리까지 남겨, 값이 바뀌면 글자도 바뀐다. */
   let layer=1, v=l;
-  while(v>=1e6&&layer<1e9){ v=L10(v); layer++; }
+  while(v>=1e6&&layer<64){ v=L10(v); layer++; }
   const h = layer===1 ? Math.round(v).toLocaleString()
           : grouped(v, v>=1000?2:v>=100?3:4);
   return layer<=4?'e'.repeat(layer)+h:'(e^'+layer+')'+h;
@@ -148,7 +148,7 @@ export function layerTxt(LL){          // 값의 자릿수가 10^LL 일 때 그 
   if(!isFinite(LL)) return LL>0?'∞':'1';
   if(LL<300) return fmtLog(Math.pow(10,LL));
   let layer=2, v=LL;
-  while(v>=1e6&&layer<1e9){ v=L10(v); layer++; }
+  while(v>=1e6&&layer<64){ v=L10(v); layer++; }
   const h = grouped(v, v>=1000?2:v>=100?3:4);
   return layer<=4?'e'.repeat(layer)+h:'(e^'+layer+')'+h;
 }

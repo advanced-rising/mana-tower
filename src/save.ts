@@ -17,7 +17,18 @@ export function save(quiet){
   try{localStorage.setItem(SAVE_KEY,enc(S)); if(!quiet)toast(X('저장했습니다',"Saved")); return true}
   catch(e){toast(X('저장 실패: ','Save failed: ')+e.message); return false}
 }
+/* 부팅 도중 어디까지 갔는지 남긴다. 메인 스레드가 멈춰 버리면 화면도 콘솔도
+   아무 말을 못 하므로, 멈추기 '전에' 적어 둔 것만이 단서가 된다. */
+export function crumb(where){
+  try{ localStorage.setItem('manaTowerBoot', where+' @ '+new Date().toISOString()) }catch(e){}
+}
+export function lastCrumb(){
+  try{ return localStorage.getItem('manaTowerBoot')||'' }catch(e){ return '' }
+}
 export function load(){
+  /* ?safe=1 로 열면 세이브를 건드리지 않는다. 세이브가 게임을 멈추게 만들 때
+     들어가서 내보내기라도 할 수 있는 유일한 문이다. */
+  try{ if(/[?&]safe=1/.test(location.search)) return false }catch(e){}
   const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false;
   try{
     setS(mergeState(dec(raw))); return true;
