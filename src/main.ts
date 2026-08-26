@@ -72,27 +72,6 @@ document.title=X('무한의 탑','Tower of Infinity');
   fav.rel='icon'; fav.type='image/png'; fav.href=spriteURL('tower');
   document.head.appendChild(fav);
 }
-buildAchievements(); ensureTabs(); recalc(); buildRes(); syncChapter(true);
-export function syncTopH(){
-  document.documentElement.style.setProperty('--topH', $('top').offsetHeight+'px');
-}
-window.addEventListener('resize',syncTopH);
-setTimeout(syncTopH,0); setInterval(syncTopH,2000);
-export const had=load();
-recalc();
-if(had) offlineCatchUp();
-else{
-  log(icHTML('tower')+X('심연 위에 마탑을 세운다. 견습 마법사부터 불러들이자.','You raise a tower above the abyss. Summon an Apprentice Mage first.'),true);
-  modal(`${icHTML('tower',16)} 무한의 탑`,`
-    <b>견습 마법사</b>가 마나를 뽑아내고, 그 위 시설들이 아래 시설을 스스로 지어 올립니다.<br><br>
-    처음에는 <b class="gold">직접</b> 해야 합니다. 마나를 채집하고, 시설을 올리고, 연구를 사고, 던전에 출격하고.<br>
-    진행할수록 <b>자동화</b>가 하나씩 열립니다. 무엇이 언제 열리는지는 자동화 탭에서 볼 수 있습니다.<br><br>
-    마나가 쌓이면 연구가 열리고, 던전 깊이가 곧 배율이 됩니다.
-    한계에 닿으면 <b class="soul">환생</b>, 그 위에 <b class="relic">승천</b>, 다시 그 위에 <b>시련</b>이 기다립니다.
-  `);
-}
-render();
-
 /* ══════════════ 개발용 손잡이 ══════════════
    번들이 IIFE 라 안쪽 이름이 밖에서 안 보인다. 콘솔에서 상태를 들여다보거나
    검증 하네스가 내부를 찔러 볼 수 있도록 하나만 창에 걸어 둔다. */
@@ -113,3 +92,51 @@ render();
   transUnlocked, starGain, starGainLog, relicGain, relicGainLog, soulGain, TRANS_REQ, ASCEND_REQ,
   gather, addManaLog, syncMana, effLevel, softReset, checkAchs, MILESTONES, RESEARCH_ALL: RESEARCH,
 }
+
+/* 부팅이 어디서 터지든 남는 것은 흰 화면뿐이었다 — 무엇이 잘못됐는지도,
+   세이브를 꺼낼 방법도 없다. 터진 자리를 화면에 적고, 세이브를 복사하거나
+   지우고 다시 시작할 길을 준다. 게임을 못 여는 것보다 나쁜 건 없다. */
+function bootFail(e){
+  try{ console.error('boot',e) }catch(_){}
+  let raw=''; try{ raw=localStorage.getItem('manaTowerSave2')||'' }catch(_){}
+  const msg=(e&&(e.message||e))+'';
+  const at=((e&&e.stack)||'').split('\n').slice(1,3).join(' / ');
+  document.body.innerHTML=
+    '<div style="max-width:640px;margin:40px auto;padding:20px;font:14px/1.7 system-ui,sans-serif;color:#ddd">'
+    +'<h2 style="margin:0 0 10px">게임을 여는 중에 문제가 생겼습니다</h2>'
+    +'<p style="color:#f88;word-break:break-all"><b>'+msg.replace(/[<>]/g,'')+'</b></p>'
+    +'<p style="color:#888;font-size:12px;word-break:break-all">'+at.replace(/[<>]/g,'')+'</p>'
+    +'<p>세이브는 아직 그대로 있습니다 ('+raw.length+'자). 먼저 <b>세이브 복사</b>를 눌러 어딘가에 붙여넣어 두세요.</p>'
+    +'<p><button id="bfCopy" style="padding:8px 14px;margin-right:8px">세이브 복사</button>'
+    +'<button id="bfWipe" style="padding:8px 14px">세이브 지우고 새로 시작</button></p>'
+    +'<textarea id="bfRaw" readonly style="width:100%;height:120px;font:11px monospace">'+raw+'</textarea>'
+    +'</div>';
+  const c=document.getElementById('bfCopy'), w=document.getElementById('bfWipe');
+  if(c) c.onclick=()=>{ const t=document.getElementById('bfRaw'); t.select();
+    try{ document.execCommand('copy'); c.textContent='복사했습니다' }catch(_){ c.textContent='직접 선택해 복사해 주세요' } };
+  if(w) w.onclick=()=>{ if(!confirm('세이브를 지우고 처음부터 시작합니다. 계속할까요?')) return;
+    try{ localStorage.removeItem('manaTowerSave2') }catch(_){} location.reload() };
+}
+export function syncTopH(){
+  document.documentElement.style.setProperty('--topH', $('top').offsetHeight+'px');
+}
+try{
+buildAchievements(); ensureTabs(); recalc(); buildRes(); syncChapter(true);
+window.addEventListener('resize',syncTopH);
+setTimeout(syncTopH,0); setInterval(syncTopH,2000);
+const had=load();
+recalc();
+if(had) offlineCatchUp();
+else{
+  log(icHTML('tower')+X('심연 위에 마탑을 세운다. 견습 마법사부터 불러들이자.','You raise a tower above the abyss. Summon an Apprentice Mage first.'),true);
+  modal(`${icHTML('tower',16)} 무한의 탑`,`
+    <b>견습 마법사</b>가 마나를 뽑아내고, 그 위 시설들이 아래 시설을 스스로 지어 올립니다.<br><br>
+    처음에는 <b class="gold">직접</b> 해야 합니다. 마나를 채집하고, 시설을 올리고, 연구를 사고, 던전에 출격하고.<br>
+    진행할수록 <b>자동화</b>가 하나씩 열립니다. 무엇이 언제 열리는지는 자동화 탭에서 볼 수 있습니다.<br><br>
+    마나가 쌓이면 연구가 열리고, 던전 깊이가 곧 배율이 됩니다.
+    한계에 닿으면 <b class="soul">환생</b>, 그 위에 <b class="relic">승천</b>, 다시 그 위에 <b>시련</b>이 기다립니다.
+  `);
+}
+render();
+}catch(e){ bootFail(e) }
+
