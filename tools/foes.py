@@ -34,6 +34,13 @@ AFFIX = {
  'crystal': (['r','s','9'], 'q', 'f', ['r','s','9','f'], 'prism'),
  'plague' : (['h','i','j'], 'g', 'k', ['g','h','i','j'], 'spore'),
  'void'   : (['u','v','w'], '0', 'y', ['u','v','w','x'], 'hole'),
+ # 원소 여섯 — 저마다 다른 파츠를 단다
+ 'water'  : (['q','r','s'], 'p', 't', ['p','q','r','s'], 'wave'),
+ 'lava'   : (['S','T','U'], 'C', 'W', ['T','U','V','W'], 'molten'),
+ 'earth'  : (['A','a','b'], '0', 'c', ['A','a','b','c'], 'clod'),
+ 'wind'   : (['K','L','8'], 'I', 'f', ['J','K','L','8'], 'gust'),
+ 'light'  : (['d','e','f'], 'b', 'f', ['c','d','e','f'], 'ray'),
+ 'sand'   : (['a','b','c'], 'A', 'd', ['A','a','b','c'], 'grain'),
 }
 
 def put(c, mask, t, o):
@@ -1041,6 +1048,51 @@ def part(c, mask, kind, acc):
         for dx,dy in ((-5,-4),(4,-5),(-4,5),(6,3),(0,-6)):
             b=m_ellipse(cx+dx,my+dy,1.2,1.2)-mask
             if b: bands(c,b,acc[1:],n=3,mode='glow',cx=cx+dx,cy=my+dy,r=2); edge(c,b,'g')
+        return
+    if kind=='wave':                        # 물 — 발치의 물결과 방울
+        for dy,amp in ((1,1),(2,1)):
+            w=set()
+            for x in range(x0-2,x1+3):
+                w|=m_ellipse(x,y1+dy+((x%4<2)and 0 or 1)*0.6,0.7,0.6)
+            w-=mask
+            if w: bands(c,w,acc[1:],n=3,mode='axis'); edge(c,w,'p')
+        for dx,dy in ((-5,-3),(5,-4)):
+            d=m_ellipse(cx+dx,my+dy,1.1,1.4)-mask
+            if d: bands(c,d,acc[1:],n=3,mode='glow',cx=cx+dx,cy=my+dy,r=2); edge(c,d,'p')
+        return
+    if kind=='molten':                      # 용암 — 굳은 껍질 사이로 흐르는 불
+        for dx in (-4,0,4):
+            fx=cx+dx
+            d=sm(m_ellipse(fx,y1+1,1.2,1.6))-mask
+            if d: bands(c,d,acc[1:],n=3,mode='glow',cx=fx,cy=y1+1,r=2); edge(c,d,'C')
+        for px in mask:                     # 몸에 갈라진 불줄기
+            if (px[0]+px[1])%5==0: c.px(*px,acc[3],raw=True)
+        return
+    if kind=='clod':                        # 대지 — 발치의 흙덩이와 자갈
+        for dx in (-6,-2,2,6):
+            g=sm(m_ellipse(cx+dx,y1+1,1.6,1.1))-mask
+            if g: bands(c,g,acc[1:],n=3,mode='axis'); edge(c,g,'0')
+        for dx,dy in ((-7,-2),(7,-3)):
+            r=m_ellipse(cx+dx,my+dy,1.0,1.0)-mask
+            if r: bands(c,r,acc[1:],n=2,mode='axis'); edge(c,r,'0')
+        return
+    if kind=='gust':                        # 바람 — 뒤로 끌리는 결
+        for dy,ln in ((-3,5),(0,7),(3,5)):
+            g=m_line(x0-ln,my+dy,x0-1,my+dy,1)-mask
+            if g: bands(c,g,acc[1:],n=3,mode='axis'); edge(c,g,'I')
+        return
+    if kind=='ray':                         # 빛 — 위로 뻗는 살
+        ty=topline(mask,cx)
+        if ty is not None:
+            for dx in (-4,-2,0,2,4):
+                h=3 if dx==0 else 2
+                r=m_line(cx+dx,max(0,ty-h),cx+dx,ty-1,1)-mask
+                if r: bands(c,r,acc[1:],n=3,mode='axis'); edge(c,r,'b')
+        return
+    if kind=='grain':                       # 모래 — 흩날리는 알갱이
+        for dx,dy in ((-6,-4),(-4,2),(5,-3),(6,3),(-2,-6),(3,6),(7,0)):
+            c.px(cx+dx,my+dy,acc[2])
+            c.px(cx+dx+1,my+dy,acc[1])
         return
     if kind=='hole':                        # 공허 — 몸에 뚫린 구멍
         for dx,dy in ((-2,-1),(3,2)):

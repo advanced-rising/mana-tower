@@ -116,6 +116,12 @@ export const FOE_AFFIX=[
  ['crystal','수정의',  "Crystalline",{hp:1.35,loot:1.00,crystal:1.55,offer:1.10}],
  ['plague', '역병의',  "Plagued",   {hp:0.80,loot:1.10,crystal:1.00,offer:1.55}],
  ['void',   '공허의',  "Void-Touched",{hp:1.70,loot:1.30,crystal:1.30,offer:1.30}],
+ ['water',  '물의',    "Drowned",   {hp:0.95,loot:1.05,crystal:1.10,offer:1.25}],
+ ['lava',   '용암의',  "Molten",    {hp:1.50,loot:1.40,crystal:1.05,offer:1.00}],
+ ['earth',  '대지의',  "Earthen",   {hp:1.75,loot:1.00,crystal:1.45,offer:1.00}],
+ ['wind',   '바람의',  "Gale",      {hp:0.75,loot:1.20,crystal:1.00,offer:1.20}],
+ ['light',  '빛의',    "Radiant",   {hp:1.20,loot:1.30,crystal:1.00,offer:1.35}],
+ ['sand',   '모래의',  "Sandworn",  {hp:1.05,loot:1.00,crystal:1.35,offer:1.05}],
 ];
 export const FOE_BASE=[
  ['slug',    '거대 민달팽이',"Great Slug"], ['mantis', '낫사마귀',   "Mantis"],
