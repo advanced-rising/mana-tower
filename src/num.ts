@@ -1,3 +1,4 @@
+import { chapterOf } from './dungeon'
 import { LANG, X } from './core'
 import { CHALLENGES, GEAR, RUNES } from './content'
 import { S } from './state'
@@ -118,15 +119,17 @@ export const freeStart=()=>freeFrom(freeRaw());
    재료마다 나오는 곳도 쓰는 곳도 하나씩이면 그건 경제가 아니라 평행한 사슬이다 —
    고를 것이 없다. 장비는 결정을 주로 쓰되 오퍼링도 함께 든다. 그래야 룬과 장비가
    같은 오퍼링을 놓고 겨루고, 어느 쪽에 먼저 붓느냐가 선택이 된다. */
-export const GEAR_OFFER=0.55;        // 오퍼링은 결정 값의 이만큼(자릿수 비율)
+export const GEAR_OFFER=0.55;        // 곁들이는 재료는 결정 값의 이만큼(자릿수 비율)
 export const gearOfferLog=costLog=>costLog*GEAR_OFFER;
-/* 두 재료로 살 수 있는 최대 수량 — 둘 중 모자란 쪽이 정한다 */
-export function gearBudgetLog(){
-  const c=curL('crystal'), o=curL('offering');
-  if(!(c>-Infinity)) return -Infinity;
-  if(!(o>-Infinity)) return -Infinity;
+/* 장마다 곁들이는 재료가 다르다 — 얕은 곳은 오퍼링, 중간은 영혼석, 깊은 곳은 유물.
+   둘 중 모자란 쪽이 살 수 있는 개수를 정한다. */
+export function gearBudgetLog(g){
+  const c=curL('crystal'), k=(g&&g.mat)||'offering', o=curL(k);
+  if(!(c>-Infinity)||!(o>-Infinity)) return -Infinity;
   return Math.min(c, o/GEAR_OFFER);
 }
+/* 그 장에 닿아야 그 장의 장비가 열린다 */
+export function gearOpen(g){ return chapterOf(Math.max(1,S.deepestEver||S.deepest||1))>=(g.ch||0) }
 
 /* 룬·장비 최대 레벨. 강화가 더해 준 원값(raw)을 로그로 접는다 —
    25 에서 시작해 원값이 20만이 되어도 350 언저리다. */

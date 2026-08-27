@@ -60,45 +60,74 @@ RUNES.push(
 export const runeCost=l=>12*Math.pow(1.30,l);
 
 /* 장비 · 결정으로 강화, 영구 유지 */
-export const GEAR=[
- {id:'grimoire',sp:'grimoire',nm:{ko:'마도서',en:"Grimoire"}, d:(l,p)=>`${X('마나 생산',"Mana output")} ×${powTxt(1.15,l*p)} → ×${powTxt(1.15,l+1*p)}`,    apply:(m,l)=>m.prod*=Math.pow(1.15,l*m.gearExp)},
- {id:'staff',   sp:'staff',   nm:{ko:'지팡이',en:"Staff"}, d:(l,p)=>`${X('던전 공격력',"Dungeon power")} ×${powTxt(1.25,l*p)} → ×${powTxt(1.25,l+1*p)}`,  apply:(m,l)=>m.dungeon*=Math.pow(1.25,l*m.gearExp)},
- {id:'amulet',  sp:'amulet',  nm:{ko:'부적',en:"Amulet"},   d:(l,p)=>`${X('결정·오퍼링',"Crystals & Offerings")} ×${powTxt(1.12,l*p)} → ×${powTxt(1.12,l+1*p)}`,  apply:(m,l)=>{const v=Math.pow(1.12,l*m.gearExp);m.crystal*=v;m.offer*=v;}},
+/* ── 층(章)마다 다른 장비 ──────────────────────────
+   여태 장비 열여덟은 처음부터 모두 열려 있었고, 그림도 이름도 재료도 계층과
+   무관했다 — 깊이 내려가는 일이 장비에 아무 흔적을 남기지 않았다.
+   장마다 세 자리(무기·방어구·장신구) 를 두고, 그 장에 닿아야 열린다.
+   재료도 갈린다: 얕은 곳은 오퍼링, 중간은 영혼석, 깊은 곳은 유물을 함께 쓴다. */
+export const GEAR_SLOTS=[
+ {k:'wp', ko:'무기',   en:"Weapon"},
+ {k:'ar', ko:'방어구', en:"Armour"},
+ {k:'tr', ko:'장신구', en:"Trinket"},
 ];
+/* 장마다 무기·방어구·장신구가 무엇을 올리는가 — 열두 장이 돌아가며 갈린다 */
+const GEAR_FX=[
+ [{f:'dungeon',b:1.25,ko:'던전 공격력',en:"Dungeon power"},
+  {f:'floorLoot',b:1.18,ko:'던전 보상',en:"Dungeon rewards"},
+  {f:'prod',b:1.15,ko:'마나 생산',en:"Mana output"}],
+ [{f:'boss',b:1.22,ko:'보스 보상',en:"Boss rewards"},
+  {f:'crystal',b:1.19,ko:'결정 획득',en:"Crystals"},
+  {f:'offer',b:1.16,ko:'오퍼링 획득',en:"Offerings"}],
+ [{f:'dungeon',b:1.28,ko:'던전 공격력',en:"Dungeon power"},
+  {f:'soul',b:1.16,ko:'영혼석 획득',en:"Soul Shards"},
+  {f:'speed',b:1.02,ko:'게임 속도',en:"Game speed"}],
+ [{f:'prod',b:1.20,ko:'마나 생산',en:"Mana output"},
+  {f:'floorLoot',b:1.22,ko:'던전 보상',en:"Dungeon rewards"},
+  {f:'relic',b:1.14,ko:'유물 획득',en:"Relics"}],
+];
+/* 장 이름을 여기 적어 둔다. COSMOS 에서 읽으면 모듈이 서로를 물어
+   평가 시점에 undefined 가 되고, 페이지가 첫 줄에서 죽는다.
+   (실제로 그렇게 죽었다 — dungeon.ts 와 content.ts 는 서로를 부른다.) */
+const GEAR_CHAP=[
+ ['층','Floor'],['행성','Planet'],['항성계','System'],['성단','Cluster'],
+ ['은하','Galaxy'],['은하군','Group'],['은하단','Supercluster'],['초은하단','Filament'],
+ ['우주 필라멘트','Web'],['우주 거대구조','Structure'],
+ ['관측 가능한 우주','Observable'],['다중우주','Multiverse'],
+];
+export const GEAR=[];
+for(let ch=0;ch<12;ch++){
+  const fx=GEAR_FX[ch%GEAR_FX.length];
+  const mat=ch<4?'offering':(ch<8?'soul':'relic');
+  GEAR_SLOTS.forEach((sl,si)=>{
+    const e=fx[si], base=e.b+ch*0.01;
+    GEAR.push({
+      id:`g${ch}${sl.k}`, ch, mat, slot:sl.k,
+      sp:`gs_${ch}_${sl.k}`,
+      nm:{ko:`${GEAR_CHAP[ch][0]}의 ${sl.ko}`, en:`${GEAR_CHAP[ch][1]} ${sl.en}`},
+      d:(l,p)=>`${X(e.ko,e.en)} ×${powTxt(base,l*p)} → ×${powTxt(base,l+1*p)}`,
+      apply:(m,l)=>{ m[e.f]*=Math.pow(base,l*m.gearExp) },
+    });
+  });
+}
+
+/* 손으로 만든 여덟 점. 장과 재료를 붙여 같은 사다리에 끼운다 —
+   그 장에 닿아야 열리고, 곁들이는 재료도 그 구간의 것을 쓴다. */
 GEAR.push(
- {id:'shield', sp:'shield',  nm:{ko:'수호 방패',en:"Aegis"},
-  d:(l,p)=>`${X('던전 보상',"Dungeon rewards")} ×${powTxt(1.18,l*p)} → ×${powTxt(1.18,l+1*p)}`, apply:(m,l)=>m.floorLoot*=Math.pow(1.18,l*m.gearExp)},
- {id:'gauntlet',sp:'gauntlet',nm:{ko:'강철 건틀릿',en:"Steel Gauntlet"},
-  d:(l,p)=>`${X('보스 보상',"Boss rewards")} ×${powTxt(1.22,l*p)} → ×${powTxt(1.22,l+1*p)}`, apply:(m,l)=>m.boss*=Math.pow(1.22,l*m.gearExp)},
- {id:'ring',   sp:'ring',    nm:{ko:'현자의 반지',en:"Sage Ring"},
-  /* 상한을 장비 지수에 비례시키면 고리가 돈다 — 상한이 오르면 담금질 룬을 더 올릴 수 있고,
-     그 룬이 다시 지수를 올린다. 지수가 1e70 까지 뛴 것이 이 고리 때문이었다. 끊는다. */
-  d:(l,p)=>`${X('룬 최대 레벨',"Rune level cap")} +${fmt(2*l)} → +${fmt(2*(l+1))}`, apply:(m,l)=>m.runeCap+=2*l},
- {id:'robe',   sp:'robe',    nm:{ko:'별빛 로브',en:"Starlit Robe"},
-  d:(l,p)=>`${X('영혼석 획득',"Soul Shards")} ×${powTxt(1.16,l*p)} → ×${powTxt(1.16,l+1*p)}`, apply:(m,l)=>m.soul*=Math.pow(1.16,l*m.gearExp)},
- {id:'crown',  sp:'crown16', nm:{ko:'왕관',en:"Crown"},
-  d:(l,p)=>`${X('오퍼링 획득',"Offerings")} ×${powTxt(1.16,l*p)} → ×${powTxt(1.16,l+1*p)}`, apply:(m,l)=>m.offer*=Math.pow(1.16,l*m.gearExp)},
- {id:'lantern2',sp:'voyager',nm:{ko:'항해 등불',en:"Voyager Lantern"},
-  d:(l,p)=>`${X('게임 속도',"Game speed")} +${fmt(2*l*p)}% → +${fmt(2*(l+1)*p)}%`, apply:(m,l)=>m.speed*=1+0.02*l*m.gearExp},
- {id:'compass2',sp:'compass',nm:{ko:'항성 나침반',en:"Stellar Compass"},
-  d:(l,p)=>`${X('탐사 깊이 배율',"Depth multiplier")} ×${powTxt(1.12,l*p)} → ×${powTxt(1.12,l+1*p)}`, apply:(m,l)=>m.floorPct*=Math.pow(1.12,l*m.gearExp)},
-);
-GEAR.push(
- {id:'helm',  sp:'helm',  nm:{ko:'파쇄 투구',en:"Breaker Helm"},
+ {id:'helm', ch:1, mat:'offering',  sp:'helm',  nm:{ko:'파쇄 투구',en:"Breaker Helm"},
   d:(l,p)=>`${X('보스 보상',"Boss rewards")} ×${powTxt(1.20,l*p)} → ×${powTxt(1.20,l+1*p)}`, apply:(m,l)=>m.boss*=Math.pow(1.20,l*m.gearExp)},
- {id:'boots', sp:'boots', nm:{ko:'질주의 장화',en:"Striding Boots"},
+ {id:'boots', ch:2, mat:'offering', sp:'boots', nm:{ko:'질주의 장화',en:"Striding Boots"},
   d:(l,p)=>`${X('게임 속도',"Game speed")} +${fmt(1.8*l*p)}% → +${fmt(1.8*(l+1)*p)}%`, apply:(m,l)=>m.speed*=1+0.018*l*m.gearExp},
- {id:'cloak', sp:'cloak', nm:{ko:'그림자 망토',en:"Shadow Cloak"},
+ {id:'cloak', ch:4, mat:'soul', sp:'cloak', nm:{ko:'그림자 망토',en:"Shadow Cloak"},
   d:(l,p)=>`${X('던전 보상',"Dungeon rewards")} ×${powTxt(1.17,l*p)} → ×${powTxt(1.17,l+1*p)}`, apply:(m,l)=>m.floorLoot*=Math.pow(1.17,l*m.gearExp)},
- {id:'belt',  sp:'belt',  nm:{ko:'절약의 허리띠',en:"Thrift Belt"},
+ {id:'belt', ch:5, mat:'soul',  sp:'belt',  nm:{ko:'절약의 허리띠',en:"Thrift Belt"},
   d:(l,p)=>`${X('남는 시설 비용',"Building cost left")} ${cutTxt(0.985,l*p)} → ${cutTxt(0.985,l+1*p)}`, apply:(m,l)=>m.costMul*=Math.pow(0.985,l*m.gearExp)},
- {id:'tome',  sp:'tome',  nm:{ko:'대현자의 비망록',en:"Archsage Codex"},
+ {id:'tome', ch:6, mat:'soul',  sp:'tome',  nm:{ko:'대현자의 비망록',en:"Archsage Codex"},
   d:(l,p)=>`${X('상위 시설 효율',"Higher tiers")} ×${powTxt(1.14,l*p)} → ×${powTxt(1.14,l+1*p)}`, apply:(m,l)=>m.tUp*=Math.pow(1.14,l*m.gearExp)},
- {id:'horn',  sp:'horn',  nm:{ko:'시련의 뿔피리',en:"Trialhorn"},
+ {id:'horn', ch:8, mat:'relic',  sp:'horn',  nm:{ko:'시련의 뿔피리',en:"Trialhorn"},
   d:(l,p)=>`${X('도전 보상',"Trial rewards")} ×${powTxt(1.13,l*p)} → ×${powTxt(1.13,l+1*p)}`, apply:(m,l)=>m.chalPow*=Math.pow(1.13,l*m.gearExp)},
- {id:'mirror',sp:'mirror',nm:{ko:'결정 거울',en:"Crystal Mirror"},
+ {id:'mirror', ch:9, mat:'relic',sp:'mirror',nm:{ko:'결정 거울',en:"Crystal Mirror"},
   d:(l,p)=>`${X('결정 획득',"Crystals")} ×${powTxt(1.19,l*p)} → ×${powTxt(1.19,l+1*p)}`, apply:(m,l)=>m.crystal*=Math.pow(1.19,l*m.gearExp)},
- {id:'sigil', sp:'sigil', nm:{ko:'만상의 인장',en:"Sigil of All Things"},
+ {id:'sigil', ch:11, mat:'relic', sp:'sigil', nm:{ko:'만상의 인장',en:"Sigil of All Things"},
   d:(l,p)=>`${X('모든 생산·획득',"All output")} ×${powTxt(1.09,l*p)} → ×${powTxt(1.09,l+1*p)}`,
   apply:(m,l)=>{const v=Math.pow(1.09,l*m.gearExp);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
 );
@@ -477,13 +506,18 @@ CHALLENGES.push(
    퍼센트쯤이고, 시련의 제약(연구 금지·자동화 금지·마나 고갈) 아래에서 그만큼을
    다시 내야 한다. 기록이 자라면 목표도 함께 자라니 영영 공짜가 되지 않는다.
    초반에는 기록이 작아 예전 식이 그대로 하한 노릇을 한다. */
-export const CHAL_STEP=120;          // 단계마다 오르는 배수 (절대 하한 쪽)
-export const CHAL_REL=0.8;           // 내 최고 기록의 몇 할을 요구하는가
-export const CHAL_REL_STEP=3;        // 상대 목표도 단계마다 조금씩 오른다
+export const CHAL_STEP=120;          // 절대 하한이 단계마다 오르는 배수
+/* 상대 목표는 첫 단계에서 아주 낮고 마지막 단계에서 최고 기록에 육박한다.
+   예전에는 단계와 상관없이 기록의 0.8 배를 요구해서, 1 단계가 100 단계만큼
+   어려웠다 — 백 단계가 있는데 사다리가 없는 셈이었다. */
+export const CHAL_REL_LOW=0.06;      // 1 단계는 기록의 이만큼
+export const CHAL_REL_HIGH=0.92;     // 마지막 단계는 이만큼
 export function chalGoalLog(ch,c){
   const abs=numLog(ch.base)+c*L10(CHAL_STEP);
   const best=(typeof S.bestRunL==='number'&&isFinite(S.bestRunL))?S.bestRunL:0;
-  const rel=best>0?CHAL_REL*best+c*L10(CHAL_REL_STEP):-Infinity;
+  const max=Math.max(1,ch.max||100);
+  const frac=Math.min(1,Math.max(0,c)/(max-1||1));
+  const rel=best>0?best*(CHAL_REL_LOW+(CHAL_REL_HIGH-CHAL_REL_LOW)*frac):-Infinity;
   return Math.max(abs,rel);
 }
 /* 돌파마다 새 시련이 열린다. 위로 갈수록 제약이 겹치고, 갚는 재료도 갈린다 —

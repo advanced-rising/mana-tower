@@ -3,7 +3,7 @@ import { PRODUCERS } from './producers'
 import { X } from './core'
 import { GEAR, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, bulkCost, bulkMax, gearCost, runeCost } from './content'
 import { S } from './state'
-import { L10, RES, bulkCostLog, bulkMaxLog, chalTotal, costLogAt, curChal, curL, gearBudgetLog, gearOfferLog, logSub, numLog, round2, spendRes, upMaxOf } from './num'
+import { L10, RES, bulkCostLog, bulkMaxLog, chalTotal, costLogAt, curChal, curL, gearBudgetLog, gearOfferLog, gearOpen, logSub, numLog, round2, spendRes, upMaxOf } from './num'
 import { M, costLogOf, gather, maxAfford, recalc, tierLocked } from './multipliers'
 
 import { doAscend, doInfBreak, doRebirth, doTranscend, INF_AUTO_CD, INF_AUTO_WAIT, infGain, infUnlocked, relicGain, relicGainLog, soulGain, soulGainLog, starGain, starGainLog } from './prestige'
@@ -168,9 +168,9 @@ export function runAutomation(dt){
     let did=0;
     for(const g of [...GEAR].sort((a,b)=>costLogAt(gearCost,S.gear[a.id]||0)-costLogAt(gearCost,S.gear[b.id]||0))){
       const l=S.gear[g.id]||0; const gcap=Math.floor(m.gearCap);
-      if(l>=gcap) continue;
-      const {n,costLog}=buyBulkLog(gearCost,l,gearBudgetLog()-L10(GEAR.length),gcap-l);
-      if(n>0){ spendRes('crystal',costLog); spendRes('offering',gearOfferLog(costLog));
+      if(l>=gcap||!gearOpen(g)) continue;
+      const {n,costLog}=buyBulkLog(gearCost,l,gearBudgetLog(g)-L10(GEAR.length),gcap-l);
+      if(n>0){ spendRes('crystal',costLog); spendRes(g.mat,gearOfferLog(costLog));
                S.gear[g.id]=l+n; did+=n }
     }
     if(did) recalc()

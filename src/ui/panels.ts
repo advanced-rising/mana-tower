@@ -7,7 +7,7 @@ import { chalOpen, enterChallenge, exitChallenge } from '../trials'
 import { DS, DSF, NM, VERSION, X, ic, icHTML, spriteURL } from '../core'
 import { ACHS, bulkCost, buyAmtFor, chalGoal, chalGoalLog, CHALLENGES, GEAR, gearCost, MILESTONES, RELIC_UPS, RESEARCH, runeCost, RUNES, SOUL_UPS, STAR_UPS } from '../content'
 import { LOG, S } from '../state'
-import { achCount, bulkCostLog, chalTotal, cntLog, costLogAt, curChal, curL, fmt, fmtLog, fmtTime, gearBudgetLog, gearOfferLog, gearTotal, logSub, numLog, pctTxt, powTxt, runeTotal, spendRes } from '../num'
+import { achCount, bulkCostLog, chalTotal, cntLog, costLogAt, curChal, curL, fmt, fmtLog, fmtTime, gearBudgetLog, gearOfferLog, gearOpen, gearTotal, logSub, numLog, pctTxt, powTxt, runeTotal, spendRes } from '../num'
 import { M, buyProducer, costLogOf, effLevel, gather, gatherAmountLog, manaRateLog, maxAfford, recalc, tierLocked } from '../multipliers'
 import { COSMOS, COSMOS_MUL, COSMOS_SP, FOES, chapterOf, chapterSeen, cosmos, dungeonPowerLog, floorHPLog, floorLoot, foeOf, isBoss } from '../dungeon'
 import { ASCEND_REQ, ascendReqLog, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, offerGain, offerGainLog, REBIRTH_REQ, rebirthReqLog, relicGain, relicGainLog, reqTxt, soulGain, soulGainLog, starGain, starGainLog, TRANS_REQ, transReqLog } from '../prestige'
@@ -194,25 +194,29 @@ export function buildGear(p){
     b.addEventListener('click',e=>{
       e.preventDefault();
       const l=S.gear[gr.id]||0, cap=Math.floor(M().gearCap);
-      if(l>=cap) return;
+      if(l>=cap||!gearOpen(gr)) return;
       const want=Math.min(cap-l,(S.buyAmt==='max')?Infinity:S.buyAmt);
-      const {n,costLog}=buyBulkLog(gearCost,l,gearBudgetLog(),want);
+      const {n,costLog}=buyBulkLog(gearCost,l,gearBudgetLog(gr),want);
       if(!(n>0)) return;
-      spendRes('crystal',costLog); spendRes('offering',gearOfferLog(costLog));
+      spendRes('crystal',costLog); spendRes(gr.mat,gearOfferLog(costLog));
       S.gear[gr.id]=l+n; recalc(); refresh();
     });
     g2.appendChild(b);
     updaters.push(()=>{
+      /* 그 장에 닿기 전에는 그런 장비가 있다는 것만 보인다 */
+      const open=gearOpen(gr);
+      b.style.display=open?'':'none';
+      if(!open) return;
       const l=S.gear[gr.id]||0, pw=M().gearExp;      // 지수는 자릿수만 실린 평범한 수다
       const cap=Math.floor(M().gearCap), maxed=l>=cap;
       const want=Math.min(cap-l,(S.buyAmt==='max')?Infinity:S.buyAmt);
-      const bb=maxed?{n:0,costLog:Infinity}:buyBulkLog(gearCost,l,gearBudgetLog(),want);
+      const bb=maxed?{n:0,costLog:Infinity}:buyBulkLog(gearCost,l,gearBudgetLog(gr),want);
       const n=Math.max(1,bb.n), costL=bb.n>0?bb.costLog:costLogAt(gearCost,l);
       _t.html=`${NM(gr.nm)} <span class="lv">Lv.${fmt(l)} / ${fmt(cap)}</span>`;
       _d.text=gr.d(effLevel(l),pw);
       _c.html=maxed?`<span class="good">${X('최대','Maxed')}</span>`
-        :`${icHTML('crystal')} ${fmtLog(costL)} ${icHTML('offering')} ${fmtLog(gearOfferLog(costL))}${n>1?` <span class="dim">×${fmt(n)}</span>`:''}`;
-      b.classList.toggle('afford',!maxed&&gearBudgetLog()>=costL);
+        :`${icHTML('crystal')} ${fmtLog(costL)} ${icHTML(gr.mat)} ${fmtLog(gearOfferLog(costL))}${n>1?` <span class="dim">×${fmt(n)}</span>`:''}`;
+      b.classList.toggle('afford',!maxed&&gearBudgetLog(gr)>=costL);
     });
   });
   c2.appendChild(g2); p.appendChild(c2);

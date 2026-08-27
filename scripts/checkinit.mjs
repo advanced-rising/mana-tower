@@ -25,14 +25,19 @@ for (const f of files.sort()) {
     for (const n of m[1].split(',')) imported.add(n.trim())
   if (!imported.size) continue
 
-  let depth = 0
+  /* 최상위 for/while/if 블록 안도 평가 시점에 도는 코드다. 예전에는 문장의
+     첫 줄만 보아서, 루프 몸통에서 COSMOS[ch] 를 읽는 코드를 그냥 지나쳤고
+     페이지가 첫 줄에서 죽었다. 블록이 닫힐 때까지 계속 본다. */
+  let depth = 0, eagerUntil = -1
   src.split('\n').forEach((line, i) => {
     const st = line.trim()
     const open = () => { depth += (line.match(/\{/g)||[]).length - (line.match(/\}/g)||[]).length }
     if (st.startsWith('import ') || st.startsWith('//') || st.startsWith('/*') || st.startsWith('*')) return open()
-    if (depth === 0 && st && !/^(export\s+)?(function|class)\b/.test(st)) {
+    const inEagerBlock = eagerUntil >= 0 && depth > eagerUntil
+    if ((depth === 0 || inEagerBlock) && st && !/^(export\s+)?(function|class)\b/.test(st)) {
       /* 최상위 실행문: for / while / if / 대입 / 직접 호출 */
-      if (/^(for|while|if|switch)\b/.test(st) || /^(export\s+)?(const|let|var)\s/.test(st) || /^[A-Za-z_$][\w$.]*\s*\(/.test(st)) {
+      if (/^(for|while|if|switch|try|\})/.test(st) || /^(export\s+)?(const|let|var)\s/.test(st) || /^[A-Za-z_$][\w$.]*\s*\(/.test(st) || inEagerBlock) {
+        if (depth === 0 && /^(for|while|if|switch|try)\b/.test(st) && /\{\s*$/.test(line)) eagerUntil = depth
         /* 함수 몸통 안에서 읽는 것은 안전하다 — 화살표든 메서드든 잘라 낸다 */
         const eager = st.replace(/=>[\s\S]*/, '').replace(/\)\s*\{[\s\S]*/, '')
         for (const n of imported) {
@@ -44,6 +49,7 @@ for (const f of files.sort()) {
       }
     }
     open()
+    if (eagerUntil >= 0 && depth <= eagerUntil) eagerUntil = -1
   })
 }
 

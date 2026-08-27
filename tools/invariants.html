@@ -407,9 +407,13 @@
       S.bestRunL=best; G.recalc();
       for(const ch of G.CHALLENGES.slice(0,3)){
         const g0=G.chalGoalLog(ch,0), g100=G.chalGoalLog(ch,99);
-        if(!(g0>best*0.5))
-          bad('시련이 너무 쉽다',`최고 기록 ${G.fmtLog(best)} 인데 ${G.NM(ch.nm)} 1단계 목표가 ${G.fmtLog(g0)} 뿐이다`);
-        if(!(g100>g0)) bad('시련',`${G.NM(ch.nm)} 100단계 목표가 1단계보다 높지 않다`);
+        /* 1 단계는 낮아야 하고, 100 단계는 기록에 육박해야 하며,
+           그 사이는 사다리처럼 올라야 한다 — 셋 다 봐야 뜻이 있다. */
+        if(!(g100>best*0.6))
+          bad('시련이 너무 쉽다',`최고 기록 ${G.fmtLog(best)} 인데 ${G.NM(ch.nm)} 100단계 목표가 ${G.fmtLog(g100)} 뿐이다`);
+        if(!(g100>g0+1)) bad('시련',`${G.NM(ch.nm)} 목표가 단계에 따라 오르지 않는다 (${G.fmtLog(g0)} → ${G.fmtLog(g100)})`);
+        const g50=G.chalGoalLog(ch,49);
+        if(!(g50>g0&&g100>g50)) bad('시련',`${G.NM(ch.nm)} 중간 단계가 사다리를 이루지 않는다`);
       }
     }
   }catch(e){ bad('시련 난이도',e.message) }
