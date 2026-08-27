@@ -3,10 +3,10 @@ import { PRODUCERS } from './producers'
 import { X } from './core'
 import { GEAR, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, bulkCost, bulkMax, gearCost, runeCost } from './content'
 import { S } from './state'
-import { L10, RES, bulkCostLog, bulkMaxLog, chalTotal, costLogAt, curChal, curL, logSub, numLog, spendRes, upMaxOf } from './num'
+import { bulkCostLog, bulkMaxLog, chalTotal, costLogAt, curChal, curL, L10, logSub, numLog, RES, spendRes, upMaxOf } from './num'
 import { M, costLogOf, gather, maxAfford, recalc, tierLocked } from './multipliers'
 
-import { INF_AUTO_CD, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, relicGain, soulGain, starGain } from './prestige'
+import { doAscend, doInfBreak, doRebirth, doTranscend, INF_AUTO_CD, INF_AUTO_WAIT, infGain, infUnlocked, relicGain, relicGainLog, soulGain, soulGainLog, starGain, starGainLog } from './prestige'
 import { autoEnterChallenge } from './trials'
 
 /* ══════════════ 자동화 ══════════════
@@ -54,11 +54,11 @@ export const allAuto=()=>AUTO_DEFS.every(d=>autoUnlocked(d.k));
 export const autoOK=k=>autoUnlocked(k)&&!!S.auto[k];
 /* 강화 나무는 여덟인데 자동 구매는 영혼·유물 둘뿐이었다.
    나머지도 같은 규칙으로 — 가장 싼 것부터, 살 수 있는 만큼. */
-/* 한 번에 여덟 단계씩만 사고 있었다. 자원이 남아돌아도 강화가 기어가서
+/* 한 번에 여덟 단계씩만 사고 있었다. 재료가 남아돌아도 강화가 기어가서
    결국 손으로 눌러야 했다. 이제는 예산이 닿는 만큼 한 번에 산다 —
    비용이 등비수열이라 몇 단계를 살 수 있는지는 닫힌 식으로 바로 나온다.
    한 항목이 예산을 독차지하지 않도록 회차마다 남은 항목 수로 나눠 쓴다. */
-/* 예산도 비용도 자릿수로 다룬다. 평범한 수로 하면 자원이 1e308 을 넘는 순간
+/* 예산도 비용도 자릿수로 다룬다. 평범한 수로 하면 재료가 1e308 을 넘는 순간
    예산이 ∞ 가 되고, 살 수 있는 단계도 ∞ 가 되어 n 을 절반씩 줄이는 고리가
    Infinity/2 = Infinity 로 영원히 돌았다 — 게임이 통째로 멈추던 자리다. */
 /* 모듈 평가 시점에 RES 를 읽으면, 순환 의존에 걸렸을 때 undefined 가 되어
@@ -174,13 +174,19 @@ export function runAutomation(dt){
      않는다. 실제로 삼십 분을 돌려도 환생이 다섯 번뿐이었고, 환생·승천 횟수를
      보는 업적이 통째로 멈췄다. 나아지면 바로 넘어가되, 회차가 충분히 길어지면
      더 나아지지 않아도 넘어간다. */
+  /* '직전보다 1.2 배 이상 나아질 때만' 을 평범한 수로 재고 있었다.
+     보상이 1e308 을 넘으면 양쪽 다 Infinity 가 되어 Infinity >= 1.2*Infinity 가
+     참이 된다 — 그래서 후반에는 쿨다운이 끝나는 족족 승천이 터졌고, 영혼석도
+     룬도 장비도 쌓이기 전에 쓸려 나갔다. 자릿수로 견준다. */
+  const better=(nowLog,lastLog,over)=>
+    nowLog>=(typeof lastLog==='number'&&!isNaN(lastLog)?lastLog:-Infinity)+L10(1.2)||over;
   if(autoOK('rebirth')&&!S.chal&&S.sinceRebirth>60){
-    const g=soulGain();
-    if(g>=10&&(g>=1.2*(S.lastSoulGain||0)||S.sinceRebirth>240)) doRebirth(true);
+    const gl=soulGainLog();
+    if(gl>=L10(10)&&better(gl,S.lastSoulGainL,S.sinceRebirth>240)) doRebirth(true);
   }
   if(autoOK('ascend')&&!S.chal&&S.sinceAscend>90){
-    const g=relicGain();
-    if(g>=3&&(g>=1.2*(S.lastRelicGain||0)||S.sinceAscend>360)) doAscend(true);
+    const rl=relicGainLog();
+    if(rl>=L10(3)&&better(rl,S.lastRelicGainL,S.sinceAscend>360)) doAscend(true);
   }
   /* 첫 돌파는 손으로 해야 한다 — 아래 계층을 통째로 갈아 넣는 결정이기 때문이다.
      한 번 해 본 뒤로는 그 계층을 자동으로 뚫는다. 위 계층부터 살핀다.
@@ -194,6 +200,13 @@ export function runAutomation(dt){
       if(!autoOK(key)) continue;
       if(i>0 && (S[L.k+'Count']||0)<1) continue;   // 아직 손으로 한 번도 안 뚫었다
       if(!infUnlocked(i)||infGain(i)<=0) continue;
+      /* 여기에는 '나아질 때만' 판정이 아예 없었다. 조건만 서면 60 초마다 무조건
+         뚫었고, 돌파는 아래 계층을 통째로 지우므로 영혼석도 별가루도 룬도 장비도
+         쌓이기 전에 쓸려 나갔다 — 후반에 아무것도 안 모이던 것이 이것이다.
+         직전 돌파보다 나을 때 뚫고, 아니면 한참 기다렸다가 뚫는다. */
+      const g=infGain(i), last=S[L.k+'LastG']||0;
+      if(!(g>last||S.sinceInf>=INF_AUTO_WAIT)) continue;
+      S[L.k+'LastG']=g;
       doInfBreak(i); break;
     }
   }
@@ -209,7 +222,7 @@ export function runAutomation(dt){
     if(!S.chal) autoEnterChallenge();
   }
   if(autoOK('trans')&&!S.chal&&S.sinceTrans>180){
-    const g=starGain();
-    if(g>=2&&(g>=1.2*(S.lastStarGain||0)||S.sinceTrans>600)) doTranscend(true);
+    const sl=starGainLog();
+    if(sl>=L10(2)&&better(sl,S.lastStarGainL,S.sinceTrans>600)) doTranscend(true);
   }
 }

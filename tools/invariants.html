@@ -303,7 +303,7 @@
   }catch(e){ bad('시련',e.message) }
   try{ S.chal=null; G.recalc() }catch(e){}
 
-  /* ── 4. 자원이 음수가 되지 않는가 ──────────── */
+  /* ── 4. 재료가 음수가 되지 않는가 ──────────── */
   try{
     for(const k of ['soul','relic','star','crystal','offering']){
       const before=G.curL(k);

@@ -8,7 +8,9 @@ import { curChal, curL, fmt, fmtLog, gearTotal, numLog, pctTxt, runeTotal } from
 import { M, manaRateLog } from '../multipliers'
 import { infUnlocked, transUnlocked } from '../prestige'
 
-/* ══════════════ 자원 바 ══════════════ */
+/* ══════════════ 재료 바 ══════════════
+   용어: 마나·영혼석·유물·별가루·결정·오퍼링처럼 모아서 쓰는 것은 '재료',
+   장비·룬·강화처럼 올려서 힘이 되는 것은 '아이템' 이라 부른다. */
 /* 목록을 모듈 평가 시점에 만들면 INF_LAYERS 가 아직 안 채워져 있을 수 있다.
    (모듈끼리 서로를 물면 먼저 들어간 쪽이 빈 채로 보인다.)
    그릴 때 한 번 만들고 그 뒤로는 재사용한다. */

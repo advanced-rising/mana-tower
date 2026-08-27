@@ -35,7 +35,7 @@ export function levelGrid(defs,lvOf,curKey,setLv,curSp){
     const _t=memo(b.querySelector('.t')),_d=memo(b.querySelector('.d')),_c=memo(b.querySelector('.c'));
     const _goal=b.querySelector('.goal')&&memo(b.querySelector('.goal'));
     /* 예전에는 비용을 한 단계씩 평범한 수로 더했다. 레벨이 1,340 을 넘으면
-       c(l) 자체가 ∞ 라 그 위로는 아무것도 살 수 없었고, 자원이 ∞ 이면
+       c(l) 자체가 ∞ 라 그 위로는 아무것도 살 수 없었고, 재료가 ∞ 이면
        ∞ - ∞ = NaN 이 되어 잔액이 통째로 망가졌다. 전부 자릿수로 다룬다. */
     b.addEventListener('click',e=>{
       e.preventDefault();

@@ -4,7 +4,7 @@ import { S } from './state'
 import { ACHS, ACH_NOUN, BADGES, ETER_UPS, INF_UPS, ORIGIN_UPS, REAL_UPS, VOID_UPS, _ac, achName } from './content'
 import { X } from './core'
 
-/* 무한 위의 다섯 칸. 자원 바가 이것을 모듈 평가 시점에 읽으므로
+/* 무한 위의 다섯 칸. 재료 바가 이것을 모듈 평가 시점에 읽으므로
    프레스티지 본체와 떼어 둔다 — 같이 두면 고리가 돌아 undefined 가 된다. */
 export const INF_LAYERS=[
  {k:'inf',  ko:'무한',  en:"Infinity",  from:()=>S.manaEver, sp:'tab_inf', ups:()=>INF_UPS,   store:'infUps'},

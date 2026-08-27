@@ -89,7 +89,8 @@ export function doAscend(silent){
    그 벽을 게임의 관문으로 쓴다 — 수가 넘칠 지경이 되면 한 칸 위로 올라가고,
    아래는 전부 초기화된다. 칸은 얼마든지 이어 붙일 수 있다. */
 export const INF_CAP=1e300;
-export const INF_AUTO_CD=60;                  // 자동 돌파는 60초에 한 번까지
+export const INF_AUTO_CD=60;                  // 자동 돌파 최소 간격
+export const INF_AUTO_WAIT=900;               // 나아지지 않아도 이만큼 지나면 뚫는다                  // 자동 돌파는 60초에 한 번까지
 /* 무한만 마나가 넘칠 때 열린다. 그 위로는 아래 계층을 열 개 모아야 한 칸 오른다. */
 export const INF_STACK=10;
 /* 차례는 환생 → 승천 → 초월 → 무한 이다. 무한이 마나만 보고 열려 있어서

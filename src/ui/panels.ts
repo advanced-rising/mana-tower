@@ -96,7 +96,7 @@ export function buildResearch(p){
 }
 
 export function buildDungeon(p){
-  const c=card([X('심연의 던전',"The Abyssal Dungeon"),'sword'],X('원정대의 공격력은 보유한 시설 총합에서 나온다. 한 번 내려가기 시작하면 멈추라고 할 때까지 계속 내려간다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다.<br>프레스티지를 하면 던전도 <b>1층</b>으로 돌아간다. 다만 이미 깬 층은 <b>되밟는 길</b>이라 싸우지도, 아무것도 나오지도 않고 빠르게 지나간다 — <b class="gold">최심층</b>이 아무리 깊어도 제자리로 돌아가는 데 걸리는 시간은 늘 비슷하다.',"Your party power comes from every building you own. Once you start descending you keep going until you stop. A <b class='bad'>boss</b> waits every 10th floor, and depth permanently raises your mana multiplier.<br>A prestige sends the dungeon back to <b>floor 1</b>. Ground you have already cleared is <b>retread</b>: no fighting, nothing drops, and you pass through it quickly — getting back to your <b class='gold'>deepest</b> takes about the same time however deep it is."));
+  const c=card([X('심연의 던전',"The Abyssal Dungeon"),'sword'],X('원정대의 공격력은 보유한 시설 총합에서 나온다. 한 번 내려가기 시작하면 멈추라고 할 때까지 계속 내려간다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다. 층마다 <b>광맥</b>이 달라 마나·결정·오퍼링 중 무엇이 두터운지 갈린다.<br>프레스티지를 하면 던전도 <b>1층</b>으로 돌아간다. 다만 이미 깬 층은 <b>되밟는 길</b>이라 싸우지도, 아무것도 나오지도 않고 빠르게 지나간다 — <b class="gold">최심층</b>이 아무리 깊어도 제자리로 돌아가는 데 걸리는 시간은 늘 비슷하다.',"Your party power comes from every building you own. Once you start descending you keep going until you stop. A <b class='bad'>boss</b> waits every 10th floor, and depth permanently raises your mana multiplier. Each floor runs a different <b>vein</b> — mana, crystal or votive.<br>A prestige sends the dungeon back to <b>floor 1</b>. Ground you have already cleared is <b>retread</b>: no fighting, nothing drops, and you pass through it quickly — getting back to your <b class='gold'>deepest</b> takes about the same time however deep it is."));
   const ar=el('div','arena');
   const foe=el('div','foe'); const foeIco=ic(FOES[0].sp,64); foe.appendChild(foeIco);
   const right=el('div');
@@ -160,7 +160,7 @@ export function buildDungeon(p){
        줄을 갈라 놓고 숫자는 짧은 표기로 적는다. */
     ftitle.innerHTML=`<b class="gold">${NM(fo.nm)}</b>${boss?' <span class="tag bad" style="vertical-align:2px">'+X('보스','BOSS')+'</span>':''}`
       +`<div class="dim" style="font-size:12px;margin-top:2px">${X('층','Floor')} <b>${fmt(f)}</b> <span style="opacity:.5">·</span> ${X('최심층','Deepest')} <b>${fmt(S.deepest)}</b>`
-      +`</div>`;
+      +` <span class="tag" style="vertical-align:1px">${X(l.vein.ko,l.vein.en)}</span></div>`;
     const r=Math.max(0,Math.min(1,S.prog||0));
     const gap=pl-hl, per=gap>=8?1e8:(gap<=-300?0:Math.pow(10,gap));
     hp.querySelector('i').style.width=(r*100).toFixed(1)+'%';

@@ -126,7 +126,7 @@ export function syncTopH(){
 try{
 crumb('시작');
 buildAchievements(); crumb('업적 구성'); ensureTabs(); crumb('탭 구성');
-recalc(); crumb('배율 계산'); buildRes(); crumb('자원 바'); syncChapter(true); crumb('장 표시');
+recalc(); crumb('배율 계산'); buildRes(); crumb('재료 바'); syncChapter(true); crumb('장 표시');
 /* 눌린 느낌 — :active 만으로는 손가락을 떼는 순간 사라져서, 빠르게 누르면
    아무 일도 없었던 것처럼 보인다. 누를 때 표시를 달아 두고 애니메이션이
    끝나면 뗀다. 버튼의 동작 자체에는 손대지 않는다(듣기만 하고 막지 않는다). */

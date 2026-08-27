@@ -278,22 +278,41 @@ export function floorHP(f){ const l=floorHPLog(f); return l<300?Math.pow(10,l):I
    보상 기울기를 체력 아래(×1.08 → 힘 대비 0.89 배)로 내리면 고리가 수렴한다.
    깊이는 여전히 이득이지만, 스스로를 밀어 올리지는 못한다. */
 export const LOOT_PER_FLOOR=1.08;
+/* ── 층마다 무엇이 나오는가 ──────────────────────
+   예전에는 마나만 층수에 지수로 자라고 결정은 선형, 오퍼링은 보스에서만 나왔다.
+   그러니 깊이 내려가도 결국 마나만 불어나고 나머지는 뒤처졌다.
+   셋 다 같은 기울기로 자라게 하되, 층마다 '광맥' 이 달라 무엇이 두터운지 갈린다. */
+export const VEINS=[
+ {k:'mana',   ko:'마나맥',  en:"Mana Vein",    mana: 0.55, crystal:-0.35, offer:-0.35},
+ {k:'crystal',ko:'결정맥',  en:"Crystal Vein", mana:-0.35, crystal: 0.55, offer:-0.20},
+ {k:'offer',  ko:'봉헌맥',  en:"Votive Vein",  mana:-0.35, crystal:-0.20, offer: 0.55},
+ {k:'rich',   ko:'풍요로운 층',en:"Rich Floor", mana: 0.20, crystal: 0.20, offer: 0.20},
+ {k:'even',   ko:'고른 층', en:"Even Floor",   mana: 0,    crystal: 0,    offer: 0},
+];
+export function veinOf(f){
+  /* foeHash 와 다른 씨앗을 써야 같은 적이 늘 같은 광맥을 물고 나오지 않는다 */
+  const h=((f*2654435761)^(f>>>7))>>>0;
+  return VEINS[h%VEINS.length];
+}
 export function floorLootManaLog(f){
-  const m=M(), bl=isBoss(f)?L10(10)+m.bossLog:0, e=elemOf(f);
-  return L10(80)+(f-1)*L10(LOOT_PER_FLOOR)+m.prodLog+m.floorLootLog+bl+numLog(e.loot);
+  const m=M(), bl=isBoss(f)?L10(10)+m.bossLog:0, e=elemOf(f), v=veinOf(f);
+  return L10(80)+(f-1)*L10(LOOT_PER_FLOOR)+m.prodLog+m.floorLootLog+bl+numLog(e.loot)+v.mana;
 }
 export function floorLoot(f){
-  const m=M(), b=isBoss(f)?10*m.boss:1, e=elemOf(f);
+  const m=M(), b=isBoss(f)?10*m.boss:1, e=elemOf(f), v=veinOf(f);
   const ml=floorLootManaLog(f);
-  /* 결정·오퍼링도 자릿수를 함께 들고 다닌다. 평범한 수만 두면 1e308 위에서
-     화면에 ∞ 만 남는다 (보유량 자체를 로그로 옮기는 일은 아직 남아 있다). */
   const bl=isBoss(f)?L10(10)+m.bossLog:0;
-  const cl=numLog(1+f*0.5)+m.crystalLog+m.floorLootLog+bl+numLog(e.crystal)-L10(8);
-  const ol=isBoss(f)?numLog(f*0.8)+m.offerLog+bl+numLog(e.offer)-L10(6):-Infinity;
+  const grow=(f-1)*L10(LOOT_PER_FLOOR);
+  /* 결정과 오퍼링도 마나와 같은 기울기로 자란다 — 시작점만 낮게 둔다.
+     오퍼링은 보스에서만 나던 것을 모든 층으로 넓히고, 보스는 그 위에 얹는다. */
+  const cl=L10(6)+grow+m.crystalLog+m.floorLootLog+bl+numLog(e.crystal)+v.crystal;
+  const ol=L10(2)+grow+m.offerLog+m.floorLootLog+bl+numLog(e.offer)+v.offer;
+  const num=l=>l<300?Math.pow(10,l):Infinity;
   return{
-    manaLog:ml, mana:ml<300?Math.pow(10,ml):Infinity,
-    crystalLog:cl, crystal:Math.max(1,Math.floor((1+f*0.5)*m.crystal*m.floorLoot*b*e.crystal/8)),
-    offeringLog:ol, offering:isBoss(f)?Math.max(1,Math.floor(f*0.8*m.offer*b*e.offer/6)):0,
+    manaLog:ml, mana:num(ml),
+    crystalLog:cl, crystal:num(cl),
+    offeringLog:ol, offering:num(ol),
+    vein:v,
   };
 }
 export let curChapter=-1;
