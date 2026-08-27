@@ -94,10 +94,14 @@ const GEAR_CHAP=[
  ['우주 필라멘트','Web'],['우주 거대구조','Structure'],
  ['관측 가능한 우주','Observable'],['다중우주','Multiverse'],
 ];
+/* 장 두 개마다 곁들이는 재료가 한 칸씩 깊어진다 */
+export const GEAR_MAT=['offering','offering','soul','soul','relic','star','inf'];
 export const GEAR=[];
 for(let ch=0;ch<12;ch++){
   const fx=GEAR_FX[ch%GEAR_FX.length];
-  const mat=ch<4?'offering':(ch<8?'soul':'relic');
+  /* 곁들이는 재료가 깊이를 따라 바뀐다. 별가루와 무한까지 여기서 쓰여야
+     그 둘도 '강화에만 쓰는 화폐' 를 벗어난다. */
+  const mat=GEAR_MAT[Math.min(GEAR_MAT.length-1,Math.floor(ch/2))];
   GEAR_SLOTS.forEach((sl,si)=>{
     const e=fx[si], base=e.b+ch*0.01;
     GEAR.push({
@@ -113,21 +117,21 @@ for(let ch=0;ch<12;ch++){
 /* 손으로 만든 여덟 점. 장과 재료를 붙여 같은 사다리에 끼운다 —
    그 장에 닿아야 열리고, 곁들이는 재료도 그 구간의 것을 쓴다. */
 GEAR.push(
- {id:'helm', ch:1, mat:'offering',  sp:'helm',  nm:{ko:'파쇄 투구',en:"Breaker Helm"},
+ {id:'helm', slot:'ar', ch:1, mat:'offering',  sp:'helm',  nm:{ko:'파쇄 투구',en:"Breaker Helm"},
   d:(l,p)=>`${X('보스 보상',"Boss rewards")} ×${powTxt(1.20,l*p)} → ×${powTxt(1.20,l+1*p)}`, apply:(m,l)=>m.boss*=Math.pow(1.20,l*m.gearExp)},
- {id:'boots', ch:2, mat:'offering', sp:'boots', nm:{ko:'질주의 장화',en:"Striding Boots"},
+ {id:'boots', slot:'tr', ch:2, mat:'offering', sp:'boots', nm:{ko:'질주의 장화',en:"Striding Boots"},
   d:(l,p)=>`${X('게임 속도',"Game speed")} +${fmt(1.8*l*p)}% → +${fmt(1.8*(l+1)*p)}%`, apply:(m,l)=>m.speed*=1+0.018*l*m.gearExp},
- {id:'cloak', ch:4, mat:'soul', sp:'cloak', nm:{ko:'그림자 망토',en:"Shadow Cloak"},
+ {id:'cloak', slot:'ar', ch:4, mat:'soul', sp:'cloak', nm:{ko:'그림자 망토',en:"Shadow Cloak"},
   d:(l,p)=>`${X('던전 보상',"Dungeon rewards")} ×${powTxt(1.17,l*p)} → ×${powTxt(1.17,l+1*p)}`, apply:(m,l)=>m.floorLoot*=Math.pow(1.17,l*m.gearExp)},
- {id:'belt', ch:5, mat:'soul',  sp:'belt',  nm:{ko:'절약의 허리띠',en:"Thrift Belt"},
+ {id:'belt', slot:'tr', ch:5, mat:'soul',  sp:'belt',  nm:{ko:'절약의 허리띠',en:"Thrift Belt"},
   d:(l,p)=>`${X('남는 시설 비용',"Building cost left")} ${cutTxt(0.985,l*p)} → ${cutTxt(0.985,l+1*p)}`, apply:(m,l)=>m.costMul*=Math.pow(0.985,l*m.gearExp)},
- {id:'tome', ch:6, mat:'soul',  sp:'tome',  nm:{ko:'대현자의 비망록',en:"Archsage Codex"},
+ {id:'tome', slot:'tr', ch:6, mat:'soul',  sp:'tome',  nm:{ko:'대현자의 비망록',en:"Archsage Codex"},
   d:(l,p)=>`${X('상위 시설 효율',"Higher tiers")} ×${powTxt(1.14,l*p)} → ×${powTxt(1.14,l+1*p)}`, apply:(m,l)=>m.tUp*=Math.pow(1.14,l*m.gearExp)},
- {id:'horn', ch:8, mat:'relic',  sp:'horn',  nm:{ko:'시련의 뿔피리',en:"Trialhorn"},
+ {id:'horn', slot:'ar', ch:8, mat:'star',  sp:'horn',  nm:{ko:'시련의 뿔피리',en:"Trialhorn"},
   d:(l,p)=>`${X('도전 보상',"Trial rewards")} ×${powTxt(1.13,l*p)} → ×${powTxt(1.13,l+1*p)}`, apply:(m,l)=>m.chalPow*=Math.pow(1.13,l*m.gearExp)},
- {id:'mirror', ch:9, mat:'relic',sp:'mirror',nm:{ko:'결정 거울',en:"Crystal Mirror"},
+ {id:'mirror', slot:'tr', ch:9, mat:'star',sp:'mirror',nm:{ko:'결정 거울',en:"Crystal Mirror"},
   d:(l,p)=>`${X('결정 획득',"Crystals")} ×${powTxt(1.19,l*p)} → ×${powTxt(1.19,l+1*p)}`, apply:(m,l)=>m.crystal*=Math.pow(1.19,l*m.gearExp)},
- {id:'sigil', ch:11, mat:'relic', sp:'sigil', nm:{ko:'만상의 인장',en:"Sigil of All Things"},
+ {id:'sigil', slot:'tr', ch:11, mat:'inf', sp:'sigil', nm:{ko:'만상의 인장',en:"Sigil of All Things"},
   d:(l,p)=>`${X('모든 생산·획득',"All output")} ×${powTxt(1.09,l*p)} → ×${powTxt(1.09,l+1*p)}`,
   apply:(m,l)=>{const v=Math.pow(1.09,l*m.gearExp);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
 );

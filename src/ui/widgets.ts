@@ -3,7 +3,7 @@ import { DS, DSF, NM, X, ic, icHTML } from '../core'
 import { S } from '../state'
 import { costLogAt, fmt, fmtLog, upMaxOf } from '../num'
 import { effLevel, recalc } from '../multipliers'
-import { autoUnlocked, budgetLogOf, buyBulkLog, payFrom } from '../automation'
+import { BELOW_RATIO, LAYER_BELOW, autoUnlocked, budgetLogOf, buyBulkLog, pay2, payFrom } from '../automation'
 import { btn, el, toast } from './dom'
 import { refresh } from './render'
 
@@ -43,21 +43,23 @@ export function levelGrid(defs,lvOf,curKey,setLv,curSp){
       if(l>=lim) return;
       const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
       const cap=Math.min(lim-l, want);
-      const {n,costLog}=buyBulkLog(u.c,l,budgetLogOf(curKey),cap);
+      const {n,costLog}=buyBulkLog(u.c,l,budget2Log(curKey),cap);
       if(!(n>0)) return;
-      payFrom(curKey,costLog); setLv(u.id,n); recalc(); refresh();
+      pay2(curKey,costLog); setLv(u.id,n); recalc(); refresh();
       toast(icHTML(u.sp)+' '+NM(u.nm)+' Lv.'+fmt(l+n));
     });
     g.appendChild(b);
     updaters.push(()=>{
       const l=lvOf(u.id), lim=upMaxOf(u,curKey), maxed=l>=lim;
-      const bud=budgetLogOf(curKey), cl=costLogAt(u.c,l), afford=!maxed&&bud>=cl;
+      const bud=budget2Log(curKey), cl=costLogAt(u.c,l), afford=!maxed&&bud>=cl;
       _t.html=`${NM(u.nm)} <span class="lv">Lv.${fmt(l)} / ${fmt(lim)}</span>`;
       _d.text=u.d(effLevel(l));
       const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
       const {n:bn,costLog:bs}=buyBulkLog(u.c,l,bud,Math.min(lim-l,want));
       _c.html=maxed?`<span class="good">${X('최대치 도달','Maxed')}</span>`
-        :`${icHTML(curSp)} ${fmtLog(bn>0?bs:cl)}${bn>1?` <span class="dim">×${fmt(bn)}</span>`:''}`;
+        :`${icHTML(curSp)} ${fmtLog(bn>0?bs:cl)}`
+          +(LAYER_BELOW[curKey]?` ${icHTML(LAYER_BELOW[curKey])} ${fmtLog((bn>0?bs:cl)*BELOW_RATIO)}`:'')
+          +(bn>1?` <span class="dim">×${fmt(bn)}</span>`:'');
       b.classList.toggle('done',maxed); b.classList.toggle('afford',afford); b.disabled=maxed;
     });
   });

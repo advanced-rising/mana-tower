@@ -1,4 +1,4 @@
-import { chapterOf } from './dungeon'
+import { chapterOf, chapterProgress } from './dungeon'
 import { LANG, X } from './core'
 import { CHALLENGES, GEAR, RUNES } from './content'
 import { S } from './state'
@@ -128,8 +128,19 @@ export function gearBudgetLog(g){
   if(!(c>-Infinity)||!(o>-Infinity)) return -Infinity;
   return Math.min(c, o/GEAR_OFFER);
 }
-/* 그 장에 닿아야 그 장의 장비가 열린다 */
-export function gearOpen(g){ return chapterOf(Math.max(1,S.deepestEver||S.deepest||1))>=(g.ch||0) }
+/* 장비는 쌓이지 않는다 — 장이 바뀌면 통째로 갈린다.
+   지금 있는 장의 장비만 쓸 수 있고, 그 장 안에서 층을 뚫을수록 자리가 하나씩
+   열린다. 다음 장에 들어서면 그 셋은 물러나고 새 셋이 온다.
+   (예전에는 지나온 장의 장비가 계속 쌓여, 깊이 내려가도 장비는 그대로 늘기만 했다.) */
+export const GEAR_UNLOCK=[0, 0.25, 0.6];     // 자리마다 그 장을 이만큼 지나야 열린다
+export function gearChapter(){ return chapterOf(Math.max(1,S.deepestEver||S.deepest||1)) }
+export function gearOpen(g){
+  if((g.ch||0)!==gearChapter()) return false;
+  const i=GEAR_SLOT_ORDER.indexOf(g.slot);
+  const need=GEAR_UNLOCK[i<0?0:Math.min(i,GEAR_UNLOCK.length-1)];
+  return chapterProgress(Math.max(1,S.deepestEver||S.deepest||1))>=need;
+}
+export const GEAR_SLOT_ORDER=['wp','ar','tr'];
 
 /* 룬·장비 최대 레벨. 강화가 더해 준 원값(raw)을 로그로 접는다 —
    25 에서 시작해 원값이 20만이 되어도 350 언저리다. */

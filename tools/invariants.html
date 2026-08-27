@@ -445,6 +445,33 @@
     }
   }catch(e){ bad('소수 검사',e.message) }
 
+  /* ── 4.96 장비는 장마다 갈리는가 ───────────────
+     장비가 쌓이기만 하면 깊이 내려가는 일이 장비에 아무 흔적을 남기지 않는다.
+     한 장 안에서는 층을 뚫을수록 자리가 열리고, 다음 장에 들어서면 통째로 갈린다. */
+  try{
+    const seen=new Set();
+    let prevCh=-1, prevSet='';
+    for(const d of [1,60,99,300,700,5000,80000,8e6,8e10,8e14]){
+      S.deepest=S.deepestEver=d; G.recalc();
+      const ch=G.chapterOf(d);
+      const open=G.GEAR.filter(g=>G.gearOpen(g));
+      if(!open.length) bad('장비',`깊이 ${D(d)} (${ch}장) 에서 쓸 장비가 하나도 없다`);
+      for(const g of open){
+        if((g.ch||0)!==ch) bad('장비',`${ch}장인데 ${g.ch}장 장비 ${G.NM(g.nm)} 가 열려 있다`);
+        seen.add(g.id);
+      }
+      const set=open.map(g=>g.id).sort().join(',');
+      if(ch!==prevCh&&prevSet&&set===prevSet) bad('장비',`${prevCh}장 → ${ch}장 인데 장비가 그대로다`);
+      prevCh=ch; prevSet=set;
+    }
+    /* 한 장 안에서 층을 뚫으면 자리가 늘어야 한다 */
+    S.deepest=S.deepestEver=1; G.recalc();
+    const a=G.GEAR.filter(g=>G.gearOpen(g)).length;
+    S.deepest=S.deepestEver=99; G.recalc();
+    const b=G.GEAR.filter(g=>G.gearOpen(g)).length;
+    if(!(b>a)) bad('장비',`같은 장에서 층을 뚫어도 자리가 안 열린다 (${a} → ${b})`);
+  }catch(e){ bad('장비 검사',e.message) }
+
   /* ── 5. 표기 ───────────────────────────────── */
   try{
     for(const l of [-Infinity,0,1,2.5,5.999,6,15,100,2039,2041,54767,54769,1e6,1e9,Infinity,NaN]){

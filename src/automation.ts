@@ -67,6 +67,25 @@ export const autoOK=k=>autoUnlocked(k)&&!!S.auto[k];
 let _logged=null;
 const LOGGED={ has(k){ return (_logged||(_logged=new Set(RES))).has(k) } };
 export function budgetLogOf(k){ return LOGGED.has(k)?curL(k):numLog(S[k]||0) }
+/* ── 계층 강화는 아래 칸 화폐도 함께 쓴다 ──────────────
+   무한·영원·현실·공허·근원은 저마다 제 강화에만 쓰였다 — 나오는 곳도 쓰는 곳도
+   하나씩이면 그건 경제가 아니라 평행한 사슬이다.
+   위 칸 강화에 아래 칸 화폐를 함께 물리면, 돌파해서 위로 갈지 아래를 더 다질지가
+   선택이 된다. 아래 칸은 제 값의 절반(자릿수) 만큼 든다. */
+export const LAYER_BELOW={eter:'inf', real:'eter', void:'real', origin:'void'};
+export const BELOW_RATIO=0.5;
+export function budget2Log(k){
+  const own=budgetLogOf(k), b=LAYER_BELOW[k];
+  if(!b) return own;
+  const bel=budgetLogOf(b);
+  if(!(bel>-Infinity)) return -Infinity;
+  return Math.min(own, bel/BELOW_RATIO);
+}
+export function pay2(k,costLog){
+  payFrom(k,costLog);
+  const b=LAYER_BELOW[k];
+  if(b) payFrom(b,costLog*BELOW_RATIO);
+}
 export function payFrom(k,costLog){
   if(LOGGED.has(k)){ spendRes(k,costLog); return }
   /* 재료 잔액은 소수 두 자리까지만 쓴다.
@@ -103,10 +122,10 @@ export function autoBuyTree(defs,store,curKey){
     let did=0;
     for(const u of open){
       const l=st[u.id]||0;
-      const share=budgetLogOf(curKey)-L10(open.length);   // 한 항목이 예산을 독차지하지 않게
+      const share=budget2Log(curKey)-L10(open.length);   // 한 항목이 예산을 독차지하지 않게
       const {n,costLog}=buyBulkLog(u.c,l,share,upMaxOf(u,curKey)-l);
       if(!(n>0)) continue;
-      payFrom(curKey,costLog); st[u.id]=l+n; bought+=n; did+=n;
+      pay2(curKey,costLog); st[u.id]=l+n; bought+=n; did+=n;
     }
     if(!did) break;
   }

@@ -65,6 +65,19 @@ export function cosmos(f){
   }
   return o;
 }
+/* 장이 시작하는 층. per 를 곱해 나가면 그 장의 첫 층이 나온다.
+   (0 장은 1 층, 1 장은 100 층, 2 장은 800 층 …) */
+export function chapterStart(i){
+  let f=1;
+  for(let k=1;k<=i&&k<COSMOS.length;k++) f*=COSMOS[k].per;
+  return f;
+}
+/* 그 장을 얼마나 지났는가 — 0(막 들어섬) ~ 1(다음 장 문턱) */
+export function chapterProgress(f){
+  const i=chapterOf(f), a=chapterStart(i), b=chapterStart(i+1);
+  if(!(b>a)) return 1;
+  return Math.max(0,Math.min(1,(f-a)/(b-a)));
+}
 /* 지금 어느 장(章)에 있는가 — 1 보다 큰 가장 높은 칸 */
 export function chapterOf(f){
   const c=cosmos(f);

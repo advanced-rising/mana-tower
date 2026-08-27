@@ -2,7 +2,7 @@ import { INF_LAYERS } from './layers'
 import { PRODUCERS } from './producers'
 import { CHALLENGES, GEAR, MILESTONES, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS } from './content'
 import { MC, S, setMC } from './state'
-import { L10, achCount, capFrom, cntLog, curChal, geoSumLog, logAdd, logSub, numLog } from './num'
+import { L10, achCount, capFrom, cntLog, curChal, gearOpen, geoSumLog, logAdd, logSub, numLog } from './num'
 import { cosmosBonus, cosmosBonusLog, floorLoot } from './dungeon'
 import { infBonus, infBonusLog } from './prestige'
 import { log } from './tick'
@@ -85,7 +85,9 @@ export function computeM(){
   if(!(ch&&ch.rule.noResearch)) for(const r of RESEARCH) if(S.research[r.id]) foldUp(st,r.apply);
   if(!(ch&&ch.rule.noRelicGear)){
     for(const r of RUNES){const l=S.runes[r.id]||0; if(l) foldUp(st,r.apply,l);}
-    for(const g of GEAR){const l=S.gear[g.id]||0; if(l) foldUp(st,g.apply,l);}
+    /* 지금 장의 장비만 힘이 된다 — 물러난 장비는 창고에 남을 뿐이다.
+       레벨은 지우지 않는다. 그 장으로 되돌아가면 그대로 다시 쓰인다. */
+    for(const g of GEAR){const l=S.gear[g.id]||0; if(l&&gearOpen(g)) foldUp(st,g.apply,l);}
   }
   for(const u of SOUL_UPS){const l=S.soulUps[u.id]||0; if(l) foldUp(st,u.apply,l);}
   for(const u of RELIC_UPS){const l=S.relicUps[u.id]||0; if(l) foldUp(st,u.apply,l);}
