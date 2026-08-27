@@ -284,10 +284,14 @@ export function buildRebirth(p){
     b.innerHTML=icHTML('soul',24)+' '+(g>0?X(`환생하여 영혼석 ${fmtLog(soulGainLog())} 획득`,`Rebirth for ${fmtLog(soulGainLog())} soul shards`)
       :X(`누적 마나 ${fmt(REBIRTH_REQ)} 필요`,`Needs ${fmt(REBIRTH_REQ)} total mana`));
   });
+  /* 마일스톤은 배율에는 이미 적용되고 있었는데 이 패널을 아무도 부르지 않아,
+     무엇을 받았는지도 다음이 무엇인지도 볼 수 없었다. 환생 횟수로 열리는
+     것이므로 환생 탭에 둔다. */
+  buildMilestones(p);
 }
 
 export function buildMilestones(p){
-  if(S.rebirths<1 && !S.ascensions) return;
+  if(!(S.rebirthEver||S.rebirths||S.ascensions)) return;   // 한 번이라도 환생해 봤다면 보여 준다
   const c=card([X('환생 마일스톤',"Rebirth Milestones"),'milestone'],
     X('환생 횟수만으로 열리는 영구 보너스. 승천하면 다시 처음부터 쌓는다.',
       "Permanent bonuses that unlock from rebirth count alone. Ascension starts the count over."));
@@ -300,7 +304,9 @@ export function buildMilestones(p){
     updaters.push(()=>{
       const got=S.rebirths>=ms.n;
       d.classList.toggle('got',got);
-      t.innerHTML=`<div class="t">${X('환생 '+ms.n+'회','Rebirth ×'+ms.n)}</div><div class="d">${ms.d()}</div>`;
+      t.innerHTML=`<div class="t">${X('환생 '+fmt(ms.n)+'회','Rebirth ×'+fmt(ms.n))}`
+        +(got?'':` <span class="dim">(${fmt(S.rebirths)}/${fmt(ms.n)})</span>`)
+        +`</div><div class="d">${ms.d()}</div>`;
     });
   });
   c.appendChild(g); p.appendChild(c);

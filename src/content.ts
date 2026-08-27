@@ -417,7 +417,7 @@ export const CHALLENGES=[
   desc:()=>X('위의 시련이 한꺼번에 몰아친다',"All of the above at once"),    rw:c=>`${X('모든 생산·획득',"All output")} ×${powTxt(2,c)}`, apply:(m,c)=>{const v=Math.pow(2,c);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
 ];
 CHALLENGES.push(
- {id:'c7',sp:'torpor',nm:{ko:'무기력의 시련',en:"Trial of Torpor"}, rule:{noAuto:1,drain:100}, base:1e11, max:100,
+ {id:'c7',sp:'torpor',nm:{ko:'무기력의 시련',en:"Trial of Torpor"}, rule:{noAuto:1,drain:100,slow:3}, base:1e11, max:100,
   desc:()=>X('자동화가 멈추고 마나 생산이 100분의 1이 된다',"No automation, and mana output cut to 1/100"),
   rw:c=>`${X('게임 속도',"Game speed")} +${fmt((6*c))}%`, apply:(m,c)=>m.speed*=1+0.06*c},
  {id:'c8',sp:'narrow',nm:{ko:'좁은 길의 시련',en:"Trial of the Narrow Path"}, rule:{maxTier:1}, base:1e7, max:100,
