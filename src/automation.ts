@@ -3,7 +3,7 @@ import { PRODUCERS } from './producers'
 import { X } from './core'
 import { GEAR, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, bulkCost, bulkMax, gearCost, runeCost } from './content'
 import { S } from './state'
-import { bulkCostLog, bulkMaxLog, chalTotal, costLogAt, curChal, curL, L10, logSub, numLog, RES, spendRes, upMaxOf } from './num'
+import { L10, RES, bulkCostLog, bulkMaxLog, chalTotal, costLogAt, curChal, curL, gearBudgetLog, gearOfferLog, logSub, numLog, spendRes, upMaxOf } from './num'
 import { M, costLogOf, gather, maxAfford, recalc, tierLocked } from './multipliers'
 
 import { doAscend, doInfBreak, doRebirth, doTranscend, INF_AUTO_CD, INF_AUTO_WAIT, infGain, infUnlocked, relicGain, relicGainLog, soulGain, soulGainLog, starGain, starGainLog } from './prestige'
@@ -75,7 +75,10 @@ const STEP_CAP=1e12;          // 한 번에 사들이는 단계 수 상한 — �
 export function buyBulkLog(costFn,l,budgetLog,cap){
   if(!(budgetLog>-Infinity)) return {n:0,costLog:-Infinity};
   let n=bulkMaxLog(costFn,l,budgetLog);
-  n=Math.min(n, isFinite(cap)?cap:STEP_CAP, STEP_CAP);
+  /* 개수는 언제나 정수다. 상한이 소수로 들어오면(레벨이 소수였거나 상한 계산이
+     소수를 냈거나) 그대로 소수 개를 사 버려서, 레벨이 12.5 같은 값이 된다.
+     한 번 소수가 되면 그 뒤로는 상한도 소수가 되어 계속 번진다. 여기서 끊는다. */
+  n=Math.floor(Math.min(n, isFinite(cap)?cap:STEP_CAP, STEP_CAP));
   if(!(n>0)) return {n:0,costLog:-Infinity};
   let costLog=bulkCostLog(costFn,l,n);
   if(!(costLog<=budgetLog)){                        // 반올림으로 살짝 넘칠 때만 한 단계 물러선다
@@ -161,8 +164,9 @@ export function runAutomation(dt){
     for(const g of [...GEAR].sort((a,b)=>costLogAt(gearCost,S.gear[a.id]||0)-costLogAt(gearCost,S.gear[b.id]||0))){
       const l=S.gear[g.id]||0; const gcap=Math.floor(m.gearCap);
       if(l>=gcap) continue;
-      const {n,costLog}=buyBulkLog(gearCost,l,curL('crystal')-L10(GEAR.length),gcap-l);
-      if(n>0){ spendRes('crystal',costLog); S.gear[g.id]=l+n; did+=n }
+      const {n,costLog}=buyBulkLog(gearCost,l,gearBudgetLog()-L10(GEAR.length),gcap-l);
+      if(n>0){ spendRes('crystal',costLog); spendRes('offering',gearOfferLog(costLog));
+               S.gear[g.id]=l+n; did+=n }
     }
     if(did) recalc()
   }

@@ -24,6 +24,7 @@ export function floorPace(){ return isRetread(S.floor) ? 0 : FLOOR_MIN_TIME }
    5,000 층이 몇 분, 50 만 층이면 몇 시간이다 — 그건 등반이 아니라 대기다.
    한 틱에 지나갈 층수를 기록에서 거꾸로 정해 걸리는 시간을 일정하게 둔다.
    층수는 여전히 눈에 보이게 올라가고, 전리품이 없으므로 아무것도 불어나지 않는다. */
+export const SOUL_FLOOR=100;      // 이 층부터 영혼석이 나온다
 export const RETREAD_SECONDS=10;   // 최심층까지 되밟는 데 걸리는 시간
 export const RETREAD_MAX_STEP=4096;
 export function retreadSteps(dt){
@@ -308,11 +309,18 @@ export function floorLoot(f){
      오퍼링은 보스에서만 나던 것을 모든 층으로 넓히고, 보스는 그 위에 얹는다. */
   const cl=L10(6)+grow+m.crystalLog+m.floorLootLog+bl+numLog(e.crystal)+v.crystal;
   const ol=L10(2)+grow+m.offerLog+m.floorLootLog+bl+numLog(e.offer)+v.offer;
+  /* 깊은 곳에서는 영혼석도 나온다. 여태 영혼석은 오직 환생에서만 나왔고,
+     던전은 아무리 내려가도 그쪽 경제에 한 방울도 보태지 못했다.
+     100 층부터, 보스에서 더 두텁게. */
+  const sl=f>=SOUL_FLOOR
+    ? L10(0.5)+(f-SOUL_FLOOR)*L10(LOOT_PER_FLOOR)+m.soulLog+m.floorLootLog+bl
+    : -Infinity;
   const num=l=>l<300?Math.pow(10,l):Infinity;
   return{
     manaLog:ml, mana:num(ml),
     crystalLog:cl, crystal:num(cl),
     offeringLog:ol, offering:num(ol),
+    soulLog:sl, soul:num(sl),
     vein:v,
   };
 }
@@ -351,6 +359,7 @@ export function clearFloor(show){
     addManaLog(l.manaLog);
     gainRes('crystal',l.crystalLog);
     if(l.offeringLog>-Infinity) gainRes('offering',l.offeringLog);
+    if(l.soulLog>-Infinity){ gainRes('soul',l.soulLog); S.soulAscL=logAdd(S.soulAscL,l.soulLog); }
   }
   if(show!==0) sfx(isBoss(f)?'boss':'floor');    // 되밟는 중에는 조용히 지나간다
   const nw=f>S.deepest;

@@ -101,6 +101,9 @@ export function doAscend(silent){
   const g=relicGain();
   if(g<=0) return false;
   const rl=relicGainLog();
+  /* 돌파마다 갚는 재료가 달라야 한다. 승천은 유물과 함께 결정을 얹는다 —
+     장비를 벼릴 밑천이 되어, 승천이 던전 쪽 경제와도 이어진다. */
+  gainRes('crystal',rl+L10(0.4));
   gainRes('relic',rl); S.relicTransL=logAdd(S.relicTransL,rl); S.relicTrans=S.relicTransL<308?Math.pow(10,S.relicTransL):Infinity;
   sfx('prestige');
   pushReq('bestAscL',S.soulAscL);
@@ -193,6 +196,13 @@ export function doInfBreak(i){
   const L=INF_LAYERS[i];
   markReq(i, i===0?S.manaEverL:numLog(L.from()));   // 다음은 여기보다 멀리 가야 한다
   S[L.k]=(S[L.k]||0)+g; S[L.k+'Ever']=(S[L.k+'Ever']||0)+g; S[L.k+'Count']=(S[L.k+'Count']||0)+1;
+  /* 계층 돌파는 아래를 통째로 지우므로, 다시 굴릴 씨앗을 계층마다 다르게 준다 */
+  { const seed=L10(1+g)*6+30;
+    if(i===0){ gainRes('crystal',seed); gainRes('offering',seed*0.9) }
+    else if(i===1){ gainRes('soul',seed); gainRes('crystal',seed*0.9) }
+    else if(i===2){ gainRes('relic',seed); gainRes('offering',seed*0.9) }
+    else if(i===3){ gainRes('star',seed); gainRes('soul',seed*0.9) }
+    else { gainRes('relic',seed); gainRes('crystal',seed*0.9); gainRes('offering',seed*0.8) } }
   sfx('prestige');
   S.sinceInf=0;                        // 자동 돌파 쿨다운 시작 (수동 버튼은 즉시 가능)
   /* 무한 돌파에서는 별가루와 별 강화가 남는다 — 초월 탭이 약속한 것이 그것이다.
@@ -239,6 +249,9 @@ export function doTranscend(silent){
   const sl=starGainLog();
   sfx('prestige');
   pushReq('bestTransL',S.relicTransL);
+  /* 초월은 별가루와 함께 오퍼링·영혼석을 얹는다 — 룬과 영혼 강화를 다시
+     세울 밑천이다. 아래를 전부 갈아엎는 돌파이니 씨앗은 돌려준다. */
+  gainRes('offering',sl+L10(0.6)); gainRes('soul',sl+L10(0.3));
   gainRes('star',sl); S.lastStarGainL=sl; S.lastStarGain=g; S.transcends++; S.transEver=(S.transEver||0)+1;
   /* 자릿수가 진실이므로 파생값만 0 으로 두면 아무것도 초기화되지 않는다.
      초월 뒤에도 영혼석과 유물이 그대로 남아 있던 자리다. */

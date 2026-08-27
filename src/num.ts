@@ -114,6 +114,20 @@ export const freeRaw=()=>8*((S.relicUps||{}).a5||0)+25*((S.starUps||{}).t9||0)
 export function freeFrom(raw){ return (raw>0&&isFinite(raw))?Math.floor(9*Math.log10(1+raw)):0 }
 export const freeStart=()=>freeFrom(freeRaw());
 
+/* 장비는 결정만으로 벼리지 않는다.
+   재료마다 나오는 곳도 쓰는 곳도 하나씩이면 그건 경제가 아니라 평행한 사슬이다 —
+   고를 것이 없다. 장비는 결정을 주로 쓰되 오퍼링도 함께 든다. 그래야 룬과 장비가
+   같은 오퍼링을 놓고 겨루고, 어느 쪽에 먼저 붓느냐가 선택이 된다. */
+export const GEAR_OFFER=0.55;        // 오퍼링은 결정 값의 이만큼(자릿수 비율)
+export const gearOfferLog=costLog=>costLog*GEAR_OFFER;
+/* 두 재료로 살 수 있는 최대 수량 — 둘 중 모자란 쪽이 정한다 */
+export function gearBudgetLog(){
+  const c=curL('crystal'), o=curL('offering');
+  if(!(c>-Infinity)) return -Infinity;
+  if(!(o>-Infinity)) return -Infinity;
+  return Math.min(c, o/GEAR_OFFER);
+}
+
 /* 룬·장비 최대 레벨. 강화가 더해 준 원값(raw)을 로그로 접는다 —
    25 에서 시작해 원값이 20만이 되어도 350 언저리다. */
 export const CAP_BASE=25;
@@ -138,7 +152,7 @@ export function upMaxOf(u,curKey){
   const c=upCapFrom(everLogOf(curKey));
   const m=(typeof u.max==='number'&&isFinite(u.max))?u.max:Infinity;
   const v=Math.min(m,c);
-  return isFinite(v)?v:UP_CAP_BASE;        // 상한이 ∞ 로 새지 않게 한다
+  return Math.floor(isFinite(v)?v:UP_CAP_BASE);   // 상한도 개수이므로 정수다
 }
 export function capFrom(raw){
   /* raw 가 무한대면 log10 도 무한대라 상한 자체가 ∞ 가 되고, 화면에 'Lv.x / ∞' 가

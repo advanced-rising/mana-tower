@@ -414,6 +414,23 @@
     }
   }catch(e){ bad('시련 난이도',e.message) }
 
+  /* ── 4.95 아이템 레벨은 정수인가 ────────────────
+     buyBulkLog 이 상한을 그대로 개수 상한으로 썼다. 상한이 소수면 소수 개를
+     사고, 레벨이 12.5 가 되면 그 다음 상한도 소수가 되어 계속 번진다. */
+  try{
+    const bb=G.buyBulkLog(l=>12*Math.pow(1.3,l),0,100,7.5);
+    if(bb.n!==Math.floor(bb.n)) bad('소수 구매',`상한 7.5 를 주니 ${bb.n} 개를 산다`);
+    for(const [store,ko] of [['runes','룬'],['gear','장비'],['soulUps','영혼 강화'],
+        ['relicUps','유물 강화'],['starUps','별 강화'],['infUps','무한 강화']]){
+      for(const k in (S[store]||{})){
+        const v=S[store][k];
+        if(typeof v==='number'&&v!==Math.floor(v)) bad('소수 레벨',`${ko} ${k} = ${D(v)}`);
+      }
+    }
+    for(let i=0;i<S.bought.length;i++)
+      if(S.bought[i]!==Math.floor(S.bought[i])) bad('소수 레벨',`시설[${i}] = ${D(S.bought[i])}`);
+  }catch(e){ bad('소수 검사',e.message) }
+
   /* ── 5. 표기 ───────────────────────────────── */
   try{
     for(const l of [-Infinity,0,1,2.5,5.999,6,15,100,2039,2041,54767,54769,1e6,1e9,Infinity,NaN]){
