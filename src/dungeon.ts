@@ -1,3 +1,4 @@
+import { setChapterMusic } from './audio'
 import { $ } from './ui/dom'
 import { PRODUCERS } from './producers'
 import { log } from './tick'
@@ -322,6 +323,7 @@ export function syncChapter(force){
   const first=curChapter<0;
   curChapter=ch;
   document.documentElement.dataset.chapter=ch;
+  setChapterMusic(ch);                 // 장이 오르면 곡도 바뀐다
   if(first) return;
   const box=$('chapter'); if(!box) return;
   box.querySelector('.k').textContent=X(`제 ${ch+1} 장`,`CHAPTER ${ch+1}`);

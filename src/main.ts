@@ -1,3 +1,4 @@
+import { applyBgm, bgmOn, setChapterMusic, setVol, trackFor, TRACKS, unlockAudio, vol } from './audio'
 import { chalUnlocked, checkChallenge, enterChallenge, exitChallenge } from './trials'
 import { INF_LAYERS, buildAchievements } from './layers'
 import { PRODUCERS } from './producers'
@@ -94,6 +95,7 @@ document.title=X('무한의 탑','Tower of Infinity');
   gather, addManaLog, syncMana, effLevel, START_MANA_CAP, freeStart, freeFrom, freeRaw, upMaxOf, upCapFrom, everLogOf, capFrom, softReset, checkAchs, MILESTONES, RESEARCH_ALL: RESEARCH,
   importSave, mergeState, load, offlineCatchUp, dec, enc, crumb, lastCrumb, exportSave, safeMode, skippedSave,
   enterChallenge, exitChallenge, checkChallenge, chalUnlocked,
+  trackFor, TRACKS, bgmOn, vol, setVol, applyBgm, unlockAudio, setChapterMusic,
 }
 
 /* 부팅이 어디서 터지든 남는 것은 흰 화면뿐이었다 — 무엇이 잘못됐는지도,
@@ -130,6 +132,14 @@ recalc(); crumb('배율 계산'); buildRes(); crumb('재료 바'); syncChapter(t
 /* 눌린 느낌 — :active 만으로는 손가락을 떼는 순간 사라져서, 빠르게 누르면
    아무 일도 없었던 것처럼 보인다. 누를 때 표시를 달아 두고 애니메이션이
    끝나면 뗀다. 버튼의 동작 자체에는 손대지 않는다(듣기만 하고 막지 않는다). */
+/* 브라우저는 사람이 한 번 건드리기 전에는 소리를 내주지 않는다.
+   첫 클릭이나 첫 글쇠에서 음악을 연다 — 한 번만 하고 스스로 물러난다. */
+const _unlock=()=>{ unlockAudio();
+  document.removeEventListener('pointerdown',_unlock,true);
+  document.removeEventListener('keydown',_unlock,true); };
+document.addEventListener('pointerdown',_unlock,true);
+document.addEventListener('keydown',_unlock,true);
+
 document.addEventListener('pointerdown',e=>{
   const b=(e.target as any)?.closest?.('button');
   if(!b||b.disabled) return;

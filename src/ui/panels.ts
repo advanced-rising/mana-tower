@@ -1,3 +1,4 @@
+import { applyBgm, bgmOn, setVol, trackFor, vol } from '../audio'
 import { INF_LAYERS } from '../layers'
 import { PRODUCERS } from '../producers'
 import { TABS, tabKeyOf, updaters } from './tabs'
@@ -522,6 +523,28 @@ export function buildSettings(p){
     btn('sm',X('처음부터 다시','Hard reset'),()=>modal(X('정말 초기화할까요?','Reset everything?'),X('유물까지 <b>전부</b> 사라지며 되돌릴 수 없습니다.<br>먼저 내보내기로 백업해 두세요.','<b>Everything</b> goes, relics included. This cannot be undone.<br>Export a backup first.'),hardReset))
   );
   c.appendChild(row); p.appendChild(c);
+
+  /* ── 소리 ─────────────────────────────────── */
+  const ac=card([X('소리',"Sound"),'sparkle'],X('배경 음악은 장(章)이 오를 때마다 바뀐다. 전부 퍼블릭 도메인(CC0) 이고, 출처는 저장소의 audio/CREDITS.md 에 적어 두었다.',
+    "The music changes as the chapters rise. All of it is public domain (CC0); sources are listed in audio/CREDITS.md."));
+  const arow=el('div','row'); arow.style.alignItems='center'; arow.style.gap='10px';
+  const abtn=btn('sm','',()=>{ S.bgm=S.bgm===0?1:0; applyBgm(); refresh() });
+  const vlab=el('span','dim'); vlab.style.fontSize='12px';
+  const sl=document.createElement('input');
+  sl.type='range'; sl.min='0'; sl.max='100'; sl.step='5';
+  sl.style.cssText='flex:1;max-width:220px;accent-color:var(--gold)';
+  sl.addEventListener('input',()=>{ setVol(+sl.value/100); vlab.textContent=`${sl.value}%` });
+  arow.append(abtn,sl,vlab); ac.appendChild(arow);
+  const anow=el('div','hint'); ac.appendChild(anow); p.appendChild(ac);
+  updaters.push(()=>{
+    abtn.className='btn sm '+(bgmOn()?'on':'off');
+    abtn.textContent=bgmOn()?X('음악 켬','Music on'):X('음악 끔','Music off');
+    if(document.activeElement!==sl) sl.value=String(Math.round(vol()*100));
+    vlab.textContent=`${Math.round(vol()*100)}%`;
+    const t=trackFor(chapterSeen());
+    anow.textContent=X(`지금 흐르는 곡: ${t.k}`,`Now playing: ${t.k}`);
+  });
+
   const sc=card([X('기록',"Records"),'scroll']);
   const st=el('div','hint'); st.style.cssText='margin:0;line-height:2'; sc.appendChild(st); p.appendChild(sc);
   const hc=card([X('단축키',"Hotkeys"),'book']);
