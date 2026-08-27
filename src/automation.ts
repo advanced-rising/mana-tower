@@ -68,8 +68,12 @@ let _logged=null;
 const LOGGED={ has(k){ return (_logged||(_logged=new Set(RES))).has(k) } };
 export function budgetLogOf(k){ return LOGGED.has(k)?curL(k):numLog(S[k]||0) }
 export function payFrom(k,costLog){
-  if(LOGGED.has(k)) spendRes(k,costLog);
-  else S[k]=Math.max(0,(S[k]||0)-(costLog<300?Math.pow(10,costLog):Infinity));
+  if(LOGGED.has(k)){ spendRes(k,costLog); return }
+  /* 계층 화폐(무한·영원·현실·공허·근원) 는 돌파 횟수다 — 반쪽이 있을 수 없다.
+     실수로 빼면 잔액이 37.4 같은 값이 되고, 그 값이 다시 다음 예산이 되어
+     소수가 계속 번진다. 값은 올려서 물리고 잔액은 정수로 남긴다. */
+  const cost=costLog<300?Math.ceil(Math.pow(10,costLog)):Infinity;
+  S[k]=Math.max(0,Math.floor(S[k]||0)-cost);
 }
 const STEP_CAP=1e12;          // 한 번에 사들이는 단계 수 상한 — 정수 정밀도를 지킨다
 export function buyBulkLog(costFn,l,budgetLog,cap){

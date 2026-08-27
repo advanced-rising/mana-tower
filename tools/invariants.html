@@ -429,6 +429,14 @@
     }
     for(let i=0;i<S.bought.length;i++)
       if(S.bought[i]!==Math.floor(S.bought[i])) bad('소수 레벨',`시설[${i}] = ${D(S.bought[i])}`);
+    /* 계층 화폐도 돌파 횟수라 자연수여야 한다 */
+    for(const L of G.INF_LAYERS){
+      for(const suf of ['','Ever','Count']){
+        const v=S[L.k+suf];
+        if(typeof v==='number'&&isFinite(v)&&v!==Math.floor(v))
+          bad('소수 재료',`${L.ko}${suf} = ${D(v)}`);
+      }
+    }
   }catch(e){ bad('소수 검사',e.message) }
 
   /* ── 5. 표기 ───────────────────────────────── */

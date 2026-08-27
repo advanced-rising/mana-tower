@@ -13,8 +13,8 @@
     "check": "tsc --noEmit",
     "art": "python3 tools/build_sprites.py && python3 tools/build_ui.py",
     "smoke": "node scripts/smoke.mjs",
-    "verify": "node scripts/verify.mjs",
-    "sim": "node scripts/sim.mjs"
+    "verify": "node scripts/build.mjs && node scripts/smoke.mjs && node scripts/verify.mjs",
+    "sim": "node scripts/build.mjs && node scripts/sim.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",

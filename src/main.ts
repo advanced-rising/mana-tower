@@ -93,7 +93,7 @@ document.title=X('무한의 탑','Tower of Infinity');
   achCount, runeTotal, gearTotal, chalTotal, chapterSeen, chapterOf, cosmos, cosmosBonusLog, infBonusLog, gatherAmountLog, manaRateLog,
   transUnlocked, starGain, starGainLog, relicGain, relicGainLog, soulGain, soulGainLog, offerGainLog, breakAmount, TRANS_REQ, ASCEND_REQ, REBIRTH_REQ, rebirthReqLog, ascendReqLog, transReqLog, markReq, REQ_GROWTH,
   gather, addManaLog, syncMana, effLevel, START_MANA_CAP, freeStart, freeFrom, freeRaw, upMaxOf, upCapFrom, everLogOf, capFrom, softReset, checkAchs, MILESTONES, RESEARCH_ALL: RESEARCH,
-  importSave, mergeState, load, offlineCatchUp, dec, enc, crumb, lastCrumb, exportSave, safeMode, skippedSave,
+  importSave, mergeState,  offlineCatchUp, dec, enc, crumb, lastCrumb, exportSave, safeMode, skippedSave,
   enterChallenge, exitChallenge, checkChallenge, chalUnlocked, chalOpen, chalGoalLog, chalGoal,
   trackFor, TRACKS, bgmOn, sfxOn, vol, sfxVol, setVol, setSfxVol, applyBgm, unlockAudio, setChapterMusic, nextTrack, nowTrack, sfx,
   INF_STACK, reqFor, reqLog,
