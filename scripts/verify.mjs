@@ -15,7 +15,7 @@ const ROOT=new URL('..',import.meta.url).pathname
 const HARNESS=[
   ['numlint',    'tools/numlint.html',    45,  '축약 안 된 숫자'],
   ['numaudit',   'tools/numaudit.html',   60,  '숫자 연산·비용 수학'],
-  ['tabsweep',   'tools/tabsweep.html',   240,  '탭마다 이미지와 표기'],
+  ['tabsweep',   'tools/tabsweep.html',   420,  '탭마다 이미지와 표기'],
   ['infsweep',   'tools/infsweep.html',   180, '유한한 값이 ∞ 로 새는 곳'],
   ['matflow',    'tools/matflow.html',    200, '프레스티지 뒤 재료가 흐르는가'],
   ['stalem',     'tools/stalem.html',     200, '배율 캐시가 낡는 자리'],
@@ -66,7 +66,7 @@ for(const [name,rel,secs,what] of HARNESS){
   console.log(`\n── ${name}  (${what})`)
   if(!done){ console.log('   [!] 도중에 멈췄다 — 아래는 마지막 출력'); }
   for(const l of body.split("\n").slice(-60)) if(l.trim()) console.log('   '+l)
-  if(!ok) failed++
+  if(!ok){ failed++; console.log(`   >>> 실패로 친 이유: done=${done} 문제=${problems.length} tally="${tally}"`) }
 }
 failed+=failedText
 console.log(failed?`\n검증 실패 ${failed}건`:'\n모든 검증 통과')
