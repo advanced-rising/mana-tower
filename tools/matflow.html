@@ -43,6 +43,19 @@
     ['초월',()=>{ S.relicTransL=Math.max(S.relicTransL,G.numLog(G.TRANS_REQ)+3); G.recalc(); return G.doTranscend(true) }],
     ['무한 돌파',()=>{ S.manaEverL=Math.max(S.manaEverL,400); G.recalc(); return G.doInfBreak(0) }],
   ];
+  /* 무한 위의 네 칸도 같은 잣대로 본다. 앞 칸을 열 개 모아야 다음 칸이 열리므로
+     그 조건을 채워 준 뒤 돌파한다 — 시뮬에서는 영원 7 에서 멈춰 현실 위로는
+     한 번도 돌아 본 적이 없던 자리다. */
+  for(let i=1;i<G.INF_LAYERS.length;i++){
+    const L=G.INF_LAYERS[i], P=G.INF_LAYERS[i-1];
+    LAYERS.push([`${L.ko} 돌파`,()=>{
+      S[P.k+'Ever']=Math.max(S[P.k+'Ever']||0,G.INF_STACK*3);   // 앞 칸을 넉넉히 모았다
+      S[P.k]=Math.max(S[P.k]||0,G.reqFor(i)*5);                  // 돌파에 쓸 만큼 들고 있다
+      G.recalc();
+      if(!G.infUnlocked(i)) return false;
+      return G.doInfBreak(i);
+    }]);
+  }
   for(const [nm,act] of LAYERS){
     const beforeEver=snapEver(), beforeAuto=autoState(), beforePeak=S.manaPeakL;
     let ok=false;
@@ -55,9 +68,9 @@
     if(lost.length) bad(nm,`자동화가 꺼졌다: ${lost.join(', ')}`);
     /* 2) 누적이 줄지 않았는가 */
     for(const [k,ko] of MATS){
-      /* 무한 돌파만은 마나 누적을 일부러 지운다 — 다음 돌파 조건을 다시 벌게
+      /* 돌파는 어느 칸이든 마나 누적을 일부러 지운다 — 다음 돌파 조건을 다시 벌게
          하기 위해서다. 지워지지 않는 진짜 기록은 manaPeakL 이고, 그건 봐야 한다. */
-      if(nm==='무한 돌파'&&k==='mana') continue;
+      if(/돌파/.test(nm)&&k==='mana') continue;   // 돌파는 모두 마나 누적을 지운다
       const b=beforeEver[k], a=everL(k);
       if(a<b-1e-9) bad(nm,`${ko} 누적이 ${F(b)} → ${F(a)} 로 줄었다`);
     }

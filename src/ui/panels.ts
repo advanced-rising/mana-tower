@@ -5,7 +5,7 @@ import { TABS, tabKeyOf, updaters } from './tabs'
 import { exportSave, hardReset, save } from '../save'
 import { enterChallenge, exitChallenge } from '../trials'
 import { DS, DSF, NM, VERSION, X, ic, icHTML, spriteURL } from '../core'
-import { ACHS, CHALLENGES, GEAR, MILESTONES, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, bulkCost, buyAmtFor, chalGoal, gearCost, runeCost } from '../content'
+import { ACHS, bulkCost, buyAmtFor, chalGoal, chalGoalLog, CHALLENGES, GEAR, gearCost, MILESTONES, RELIC_UPS, RESEARCH, runeCost, RUNES, SOUL_UPS, STAR_UPS } from '../content'
 import { LOG, S } from '../state'
 import { achCount, bulkCostLog, chalTotal, cntLog, costLogAt, curChal, curL, fmt, fmtLog, fmtTime, gearTotal, logSub, numLog, pctTxt, powTxt, runeTotal, spendRes } from '../num'
 import { M, buyProducer, costLogOf, effLevel, gather, gatherAmountLog, manaRateLog, maxAfford, recalc, tierLocked } from '../multipliers'
@@ -412,7 +412,7 @@ export function buildChal(p){
       const n=S.chalDone[ch.id]||0, maxed=n>=ch.max, active=S.chal===ch.id;
       _t.html=`${NM(ch.nm)} <span class="lv">${X(`${n} / ${ch.max} 단계`,`stage ${n} / ${ch.max}`)}</span>`;
       _d.text=DSF(ch.desc);
-      _goal.html=maxed?'':`${X('목표',"Goal")} ${icHTML('mana')} ${fmt(chalGoal(ch,n))}`;
+      _goal.html=maxed?'':`${X('목표',"Goal")} ${icHTML('mana')} ${fmtLog(chalGoalLog(ch,n))}`;
       _c.html=maxed?`<span class="good">${X('완주',"Complete")} · ${ch.rw(n)}</span>`
         :active?`<span class="bad">진행 중 · 눌러서 포기</span>`
         :`${X('현재 보상','Current reward')} ${n?ch.rw(n):X('없음','none')}`;

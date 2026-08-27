@@ -1,9 +1,9 @@
 import { recalc } from './multipliers'
 
 import { NM, X, icHTML } from './core'
-import { CHALLENGES, chalGoal } from './content'
+import { chalGoal, chalGoalLog, CHALLENGES } from './content'
 import { S } from './state'
-import { L10, chalTotal, curChal, fmt, numLog } from './num'
+import { L10, chalTotal, curChal, fmt, fmtLog, numLog } from './num'
 import { softReset } from './prestige'
 import { autoOK } from './automation'
 import { log } from './tick'
@@ -16,7 +16,7 @@ export function enterChallenge(id){
   if(!ch||!chalUnlocked()) return;
   if((S.chalDone[id]||0)>=ch.max) return;
   S.chal=id; S.chalTime=0; softReset();
-  log(`${icHTML('chain')}<b>${NM(ch.nm)}</b> ${X('시작 · 목표','started · goal')} ${icHTML('mana')}${fmt(chalGoal(ch,S.chalDone[id]||0))}`,true);
+  log(`${icHTML('chain')}<b>${NM(ch.nm)}</b> ${X('시작 · 목표','started · goal')} ${icHTML('mana')}${fmtLog(chalGoalLog(ch,S.chalDone[id]||0))}`,true);
   toast(icHTML('chain')+' '+NM(ch.nm)+X(' 시작',' started'));
 }
 export const CHAL_CD=300;   // 너무 잦으면 회차가 초기화돼 던전 진행이 망가진다                     // 시련을 나온 뒤 자동 재진입까지 최소 대기(초)
@@ -28,7 +28,7 @@ export function exitChallenge(reset=true){
 export function checkChallenge(){
   const ch=curChal(); if(!ch) return;
   const c=S.chalDone[ch.id]||0;
-  if(S.manaRunL>=numLog(chalGoal(ch,c))){
+  if(S.manaRunL>=chalGoalLog(ch,c)){
     S.chalDone[ch.id]=c+1;
     log(`${icHTML('medal')}<b class="gold">${NM(ch.nm)} ${X(`${c+1}단계 돌파!`,`stage ${c+1} cleared!`)}</b> · ${ch.rw(c+1)}`,true);
     achToast(NM(ch.nm)+X(' 돌파',' cleared'), ch.rw(c+1),'medal');
@@ -43,7 +43,7 @@ export function chalReachable(ch){
   const penalty=(ch.rule.drain||1)*(ch.rule.noResearch?4:1)*(ch.rule.noAuto?3:1)*(ch.rule.maxTier!==undefined?3:1);
   /* 목표가 1e308 을 넘으면 평범한 수로는 ∞ 가 되어 어떤 시련도 "닿을 수 없음" 이
      되고, 반대로 기록이 ∞ 면 전부 "닿을 수 있음" 이 된다. 자릿수로 견준다. */
-  return numLog(chalGoal(ch,n))+numLog(penalty) <= (S.bestRunL||-Infinity)+L10(0.6);
+  return chalGoalLog(ch,n)+numLog(penalty) <= (S.bestRunL||-Infinity)+L10(0.6);
 }
 export function autoEnterChallenge(){
   if(!chalUnlocked()||S.chal) return;

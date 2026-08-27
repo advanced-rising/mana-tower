@@ -3,7 +3,7 @@ import { INF_LAYERS } from './layers'
 import { COSMOS, chapterOf } from './dungeon'
 import { X } from './core'
 import { S } from './state'
-import { chalTotal, cnt, cutTxt, cutTxtL, fmt, fmtLog, freeFrom, freeRaw, gearTotal, mulTxtL, pctTxt, powTxt, powTxtL, runeTotal, smallMul, startManaLog } from './num'
+import { L10, chalTotal, cnt, cutTxt, cutTxtL, fmt, fmtLog, freeFrom, freeRaw, gearTotal, mulTxtL, numLog, pctTxt, powTxt, powTxtL, runeTotal, smallMul, startManaLog } from './num'
 import { M } from './multipliers'
 
 /* ══════════════ 콘텐츠 정의 ══════════════
@@ -469,7 +469,24 @@ CHALLENGES.push(
   apply:(m,c)=>{const v=Math.pow(4,c);m.prod*=v;m.soul*=v;m.offer*=v;m.crystal*=v;m.dungeon*=v;}},
 );
 
-export const chalGoal=(ch,c)=>ch.base*Math.pow(120,c);
+/* 시련 목표.
+   예전에는 base × 120^단계 뿐이었다. 가장 비싼 시련도 100 단계가 10^224 에서
+   끝나는데 후반 회차는 10^2000 을 넘으므로, 어느 순간부터 100 단계가 한 회차에
+   통째로 쓸려 나갔다 — 시련이 시련이 아니게 된다.
+   그래서 '내 최고 회차' 에도 붙여 둔다. 목표는 늘 여태 낸 최고치의 여든 몇
+   퍼센트쯤이고, 시련의 제약(연구 금지·자동화 금지·마나 고갈) 아래에서 그만큼을
+   다시 내야 한다. 기록이 자라면 목표도 함께 자라니 영영 공짜가 되지 않는다.
+   초반에는 기록이 작아 예전 식이 그대로 하한 노릇을 한다. */
+export const CHAL_STEP=120;          // 단계마다 오르는 배수 (절대 하한 쪽)
+export const CHAL_REL=0.8;           // 내 최고 기록의 몇 할을 요구하는가
+export const CHAL_REL_STEP=3;        // 상대 목표도 단계마다 조금씩 오른다
+export function chalGoalLog(ch,c){
+  const abs=numLog(ch.base)+c*L10(CHAL_STEP);
+  const best=(typeof S.bestRunL==='number'&&isFinite(S.bestRunL))?S.bestRunL:0;
+  const rel=best>0?CHAL_REL*best+c*L10(CHAL_REL_STEP):-Infinity;
+  return Math.max(abs,rel);
+}
+export const chalGoal=(ch,c)=>{ const l=chalGoalLog(ch,c); return l<300?Math.pow(10,l):Infinity };
 
 /* ── 끝이 없도록 ──────────────────────────────
    손으로 만든 항목이 바닥나면 게임이 끝난 느낌이 든다.
