@@ -1,3 +1,4 @@
+import { sfx } from './audio'
 import { INF_LAYERS } from './layers'
 import { PRODUCERS } from './producers'
 import { toast } from './ui/dom'
@@ -14,19 +15,41 @@ import { log } from './tick'
 /* ══════════════ 프레스티지 ══════════════ */
 export const REBIRTH_REQ=1e6, ASCEND_REQ=300;
 /* 회차 마나가 1e300 을 넘어도 획득량이 ∞ 로 튀지 않게 자릿수에서 계산한다 */
+/* ── 돌파 조건은 돌파할수록 멀어진다 ────────────────
+   환생·승천·초월·무한·영원·현실·공허·근원 — 이 게임의 모든 단계는 '돌파' 다.
+   그런데 아래 셋만 조건이 고정이었다. 처음 정한 마나 100만, 영혼석 300,
+   유물 500 은 후반에 한 틱이면 넘는 값이라, 돌파가 '더 멀리 가는 일' 이 아니라
+   그냥 눌러야 하는 버튼이 되었다.
+   여태 낸 최고치의 아홉 할을 요구한다 — 기록이 자라면 조건도 함께 자라므로
+   언제나 '거의 최고만큼' 다시 가야 한다. 처음 정한 값이 하한으로 남는다. */
+export const REQ_REL=0.9;
+/* 최고치를 넘지 못한 돌파라도 조건은 한 걸음 밀린다 — '돌파할 때마다 더 멀리' 다.
+   자릿수로 0.3(=약 두 배) 씩이라, 쉰 번을 해도 열다섯 자릿수만 오른다. */
+export const REQ_STEP=0.3;
+export function pushReq(field,reached){
+  const b=S[field], now=(typeof reached==='number'&&isFinite(reached))?reached:-Infinity;
+  const base=(typeof b==='number'&&isFinite(b))?b:-Infinity;
+  S[field]=Math.max(base,now)+REQ_STEP;
+}
+const reqOf=(base,best)=>Math.max(numLog(base),(typeof best==='number'&&isFinite(best)&&best>0)?REQ_REL*best:-Infinity);
+export const rebirthReqLog=()=>reqOf(REBIRTH_REQ,S.bestRunL);
+export const ascendReqLog =()=>reqOf(ASCEND_REQ, S.bestAscL);
+export const transReqLog  =()=>reqOf(TRANS_REQ,  S.bestTransL);
+
 export function soulGainLog(){
-  if(!(S.manaRunL>=numLog(REBIRTH_REQ))) return -Infinity;
+  const r=rebirthReqLog();
+  if(!(S.manaRunL>=r)) return -Infinity;
   return L10(3)+0.45*(S.manaRunL-numLog(REBIRTH_REQ))+M().soulLog;
 }
 export function soulGain(){ const l=soulGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
 export function offerGainLog(){
-  if(!(S.manaRunL>=numLog(REBIRTH_REQ))) return -Infinity;
+  if(!(S.manaRunL>=rebirthReqLog())) return -Infinity;
   return L10(2)+0.33*(S.manaRunL-numLog(REBIRTH_REQ))+M().offerLog;
 }
 export function offerGain(){ const l=offerGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
 export function relicGainLog(){
   const a=(typeof S.soulAscL==='number'&&!isNaN(S.soulAscL))?S.soulAscL:-Infinity;
-  if(!(a>=numLog(ASCEND_REQ))) return -Infinity;
+  if(!(a>=ascendReqLog())) return -Infinity;
   return L10(2)+0.35*(a-numLog(ASCEND_REQ))+M().relicLog;
 }
 export function relicGain(){ const l=relicGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
@@ -57,10 +80,15 @@ export function softReset(){
 export function doRebirth(silent){
   const g=soulGain(), o=offerGain();
   if(g<=0) return false;
+  /* 조건은 여태 낸 최고치를 따라간다. 그 최고치는 tick 이 기르는데, 돌파가
+     manaRunL 을 먼저 지워 버리면 이번에 닿은 높이가 기록되지 않는다 —
+     그래서 조건이 그대로 남고 같은 값을 계속 얻게 된다. 여기서 새긴다. */
   const gl=soulGainLog(), ol=offerGainLog();
   gainRes('soul',gl); S.soulAscL=logAdd(S.soulAscL,gl); S.soulAsc=S.soulAscL<308?Math.pow(10,S.soulAscL):Infinity;
   S.lastSoulGainL=gl; S.lastSoulGain=g; S.rebirthEver=(S.rebirthEver||0)+1;
   gainRes('offering',ol);
+  sfx('prestige');
+  pushReq('bestRunL',S.manaRunL);      // 다음 환생은 여기보다 멀리
   S.rebirths++;
   if(S.chal) exitChallenge(false);
   softReset();
@@ -74,6 +102,8 @@ export function doAscend(silent){
   if(g<=0) return false;
   const rl=relicGainLog();
   gainRes('relic',rl); S.relicTransL=logAdd(S.relicTransL,rl); S.relicTrans=S.relicTransL<308?Math.pow(10,S.relicTransL):Infinity;
+  sfx('prestige');
+  pushReq('bestAscL',S.soulAscL);
   S.lastRelicGainL=rl; S.lastRelicGain=g; S.ascensions++; S.ascendEver=(S.ascendEver||0)+1;
   setRes('soul',-Infinity); S.soulAsc=0; S.soulAscL=-Infinity; S.soulUps={}; S.runes={};
   S.rebirths=0;  setRes('offering',-Infinity); S.lastSoulGain=0; S.lastSoulGainL=-Infinity; S.sinceAscend=0;
@@ -103,10 +133,35 @@ export const infUnlocked=i=>i===0
   : (S[INF_LAYERS[i-1].k+'Ever']||0)>=INF_STACK;
 /* 돌파 요구치는 돌파할수록 오른다 — 1e300 → 1e303 → 1e306 … (돌파 1회마다 1000배).
    1e308 을 넘어가면 double 로는 못 적으므로 지수(로그) 로 다룬다. */
-export function reqLog(i){ return 300+3*(S[INF_LAYERS[i].k+'Count']||0); }
+/* 돌파 조건.
+   돌파마다 3 자릿수(1000배) 씩만 올랐다. 생산은 그보다 훨씬 빨리 자라므로
+   후반에는 돌파한 그 자리에서 곧바로 조건이 다시 차고, 같은 값을 계속 얻는다 —
+   그러면 초기화가 아니라 버튼이 된다.
+   그래서 '지난번에 실제로 닿았던 높이' 를 기준으로 삼는다. 다음 돌파는 그보다
+   확실히 더 멀리 가야 한다. 자릿수에 곱으로 붙으므로 생산이 아무리 커져도
+   따라잡는 데 시간이 든다. */
+export const REQ_GROWTH=1.15;         // 다음 돌파는 지난번 높이의 1.15 배 자릿수
+export function reqLog(i){
+  const k=INF_LAYERS[i].k;
+  const base=300+3*(S[k+'Count']||0);
+  const a=S[k+'ReqL'];
+  return (typeof a==='number'&&isFinite(a))?Math.max(base,a):base;
+}
+/* 돌파한 순간의 높이를 다음 조건으로 새긴다 */
+export function markReq(i,reachedLog){
+  const k=INF_LAYERS[i].k;
+  const now=(typeof reachedLog==='number'&&isFinite(reachedLog))?reachedLog:reqLog(i);
+  S[k+'ReqL']=Math.max(reqLog(i),now)*REQ_GROWTH;
+}
 export function reqFor(i){
-  if(i>0) return INF_STACK*Math.pow(3,S[INF_LAYERS[i].k+'Count']||0);   // 10 → 30 → 90 …
-  return Math.pow(10,reqLog(i));
+  if(i>0){
+    const k=INF_LAYERS[i].k;
+    const base=INF_STACK*Math.pow(3,S[k+'Count']||0);   // 10 → 30 → 90 …
+    const a=S[k+'ReqL'];                                 // 지난번에 실제로 모았던 양
+    return (typeof a==="number"&&isFinite(a))?Math.max(base,Math.pow(10,a)):base;
+  }
+  const l=reqLog(i);
+  return l<300?Math.pow(10,l):Infinity;
 }
 export function reqTxt(i){ const r=reqFor(i); return isFinite(r)?fmt(r):('1e'+reqLog(i)); }
 /* ── 돌파로 얻는 양은 넘긴 폭의 로그에 비례한다 ──────────
@@ -136,7 +191,9 @@ export function doInfBreak(i){
   const g=infGain(i);
   if(g<=0) return false;
   const L=INF_LAYERS[i];
+  markReq(i, i===0?S.manaEverL:numLog(L.from()));   // 다음은 여기보다 멀리 가야 한다
   S[L.k]=(S[L.k]||0)+g; S[L.k+'Ever']=(S[L.k+'Ever']||0)+g; S[L.k+'Count']=(S[L.k+'Count']||0)+1;
+  sfx('prestige');
   S.sinceInf=0;                        // 자동 돌파 쿨다운 시작 (수동 버튼은 즉시 가능)
   /* 무한 돌파에서는 별가루와 별 강화가 남는다 — 초월 탭이 약속한 것이 그것이다.
      그러나 영원 위로는 진짜 처음부터다. 별 강화까지 전부 접힌다. */
@@ -172,7 +229,7 @@ export function infBonus(){ const l=infBonusLog(); return l<300?Math.pow(10,l):I
 export const TRANS_REQ=500;
 export function starGainLog(){
   const r=(typeof S.relicTransL==='number'&&!isNaN(S.relicTransL))?S.relicTransL:-Infinity;
-  if(!(r>=numLog(TRANS_REQ))) return -Infinity;
+  if(!(r>=transReqLog())) return -Infinity;
   return L10(2)+0.4*(r-numLog(TRANS_REQ));
 }
 export function starGain(){ const l=starGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
@@ -180,6 +237,8 @@ export function doTranscend(silent){
   const g=starGain();
   if(g<=0) return false;
   const sl=starGainLog();
+  sfx('prestige');
+  pushReq('bestTransL',S.relicTransL);
   gainRes('star',sl); S.lastStarGainL=sl; S.lastStarGain=g; S.transcends++; S.transEver=(S.transEver||0)+1;
   /* 자릿수가 진실이므로 파생값만 0 으로 두면 아무것도 초기화되지 않는다.
      초월 뒤에도 영혼석과 유물이 그대로 남아 있던 자리다. */

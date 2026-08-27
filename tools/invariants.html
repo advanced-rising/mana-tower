@@ -97,7 +97,7 @@
       if(t-lastPres>20){
         const gl=G.soulGainLog();
         if(G.transUnlocked&&G.transUnlocked()&&G.starGainLog()>0){ G.doTranscend(); lastPres=t; bestGain=-Infinity; }
-        else if(G.relicGainLog()>0&&S.soulAscL>=G.numLog(G.ASCEND_REQ)){ G.doAscend(); lastPres=t; bestGain=-Infinity; }
+        else if(G.relicGainLog()>0&&S.soulAscL>=G.ascendReqLog()){ G.doAscend(); lastPres=t; bestGain=-Infinity; }
         else if(gl>bestGain+G.L10(1.5)){ G.doRebirth(); lastPres=t; bestGain=gl; }
       }
       G.tick(STEP);
@@ -164,8 +164,9 @@
     try{
       /* 그 계층을 할 수 있을 만큼 채워 준다 */
       S.manaL=S.manaRunL=S.manaEverL=S.manaPeakL=340;
-      S.soulAscL=Math.max(S.soulAscL,G.numLog(G.ASCEND_REQ)+2);
-      S.relicTransL=Math.max(S.relicTransL,G.numLog(G.TRANS_REQ)+2);
+      S.bestRunL=Math.min(S.bestRunL||0,300);   // 조건이 기록을 따라오므로 기록을 낮춰 둔다
+      S.soulAscL=Math.max(S.soulAscL,G.ascendReqLog()+2);
+      S.relicTransL=Math.max(S.relicTransL,G.transReqLog()+2);
       G.setRes('soul',20); G.setRes('relic',20); G.setRes('star',20);
       for(let i=0;i<S.bought.length;i++) S.bought[i]=1e4;
       /* 공짜 시설 강화를 크게 올려 둔다 — 이게 살아남아 시설을 통째로 되깔면
@@ -180,6 +181,8 @@
       S.floor=Math.max(S.floor||1,7); S.deepest=Math.max(S.deepest||0,S.floor);
       S.deepestEver=Math.max(S.deepestEver||0,S.deepest);
       const floorBefore=S.floor, deepBefore=S.deepest||0;
+      const reqBefore={'환생':()=>G.rebirthReqLog(),'승천':()=>G.ascendReqLog(),
+                       '초월':()=>G.transReqLog(),'무한':()=>G.reqLog(0)}[name]?.()??-Infinity;
       const before={ach:G.achCount(), auto:JSON.stringify(S.auto),
                     rate:G.manaRateLog(), mana:S.manaL, cnt:G.cntLog(0)};
       const did=act();
@@ -211,6 +214,11 @@
          지원금을 '이번 회차에 번 마나' 로 세는 바람에 실제로 그렇게 되었다. */
       /* 어느 계층이든 하고 나서 곧바로 또 할 수 있으면 무한 반복이다.
          '이번 주기에 번 것' 을 세는 값이 초기화되지 않으면 그렇게 된다. */
+      /* 돌파는 할수록 멀어져야 한다 — 조건이 그대로면 같은 값을 계속 얻는다 */
+      const reqNow={'환생':()=>G.rebirthReqLog(),'승천':()=>G.ascendReqLog(),
+                    '초월':()=>G.transReqLog(),'무한':()=>G.reqLog(0)}[name];
+      if(reqNow&&reqBefore>-Infinity&&!(reqNow()>reqBefore+1e-9))
+        bad(name,`돌파했는데 조건이 ${D(reqBefore)} → ${D(reqNow())} 로 그대로다`);
       const again={
         '환생': ()=>G.soulGainLog(),
         '승천': ()=>G.relicGainLog(),

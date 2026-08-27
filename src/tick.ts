@@ -65,6 +65,9 @@ export function tick(dt){
     S.chalTime=0;
     /* 파생값으로 재면 1e308 위에서 둘 다 ∞ 가 되어 기록이 멈춘다 */
     if(!(S.bestRunL>=S.manaRunL)) S.bestRunL=S.manaRunL;
+    /* 승천·초월의 조건도 여태 낸 최고치를 따라간다 — 그 최고치를 여기서 기른다 */
+    if(!(S.bestAscL>=S.soulAscL)) S.bestAscL=S.soulAscL;
+    if(!(S.bestTransL>=S.relicTransL)) S.bestTransL=S.relicTransL;
   }
   checkChallenge();
   S.chalCd=Math.max(0,(S.chalCd||0)-dt);

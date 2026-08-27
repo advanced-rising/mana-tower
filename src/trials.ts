@@ -11,10 +11,24 @@ import { achToast, toast } from './ui/dom'
 
 /* ══════════════ 도전 ══════════════ */
 export const chalUnlocked=()=>(S.ascendEver||S.ascensions)>=1||chalTotal()>0;
+/* 시련은 돌파를 지날 때마다 열린다 — 스무 개가 승천 한 번에 쏟아지면
+   무엇이 새로 생겼는지 알 수가 없고, 위 계층에는 아무 일도 일어나지 않는다. */
+export function chalOpen(ch){
+  switch(ch.at){
+    case 'trans':  return (S.transEver||S.transcends)>=1;
+    case 'inf':    return (S.infEver||0)>0;
+    case 'eter':   return (S.eterEver||0)>0;
+    case 'real':   return (S.realEver||0)>0;
+    case 'void':   return (S.voidEver||0)>0;
+    case 'origin': return (S.originEver||0)>0;
+    default:       return chalUnlocked();
+  }
+}
 export function enterChallenge(id){
   const ch=CHALLENGES.find(c=>c.id===id);
   if(!ch||!chalUnlocked()) return;
   if((S.chalDone[id]||0)>=ch.max) return;
+  if(!chalOpen(ch)) return;
   S.chal=id; S.chalTime=0; softReset();
   log(`${icHTML('chain')}<b>${NM(ch.nm)}</b> ${X('시작 · 목표','started · goal')} ${icHTML('mana')}${fmtLog(chalGoalLog(ch,S.chalDone[id]||0))}`,true);
   toast(icHTML('chain')+' '+NM(ch.nm)+X(' 시작',' started'));
@@ -39,7 +53,7 @@ export function checkChallenge(){
 /* 도달 가능성 판정 · 최고 회차 기록 대비 목표가 현실적인 시련만 고른다 */
 export function chalReachable(ch){
   const n=S.chalDone[ch.id]||0;
-  if(n>=ch.max) return false;
+  if(n>=ch.max||!chalOpen(ch)) return false;
   const penalty=(ch.rule.drain||1)*(ch.rule.noResearch?4:1)*(ch.rule.noAuto?3:1)*(ch.rule.maxTier!==undefined?3:1);
   /* 목표가 1e308 을 넘으면 평범한 수로는 ∞ 가 되어 어떤 시련도 "닿을 수 없음" 이
      되고, 반대로 기록이 ∞ 면 전부 "닿을 수 있음" 이 된다. 자릿수로 견준다. */

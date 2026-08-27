@@ -48,7 +48,7 @@
     b.click();
     await new Promise(r=>setTimeout(r,220));
     const txt=(document.getElementById('main')||{}).innerText||'';
-    const hits=(txt.match(/[^\n]{0,40}∞[^\n]{0,20}/g)||[]);
+    const hits=(txt.match(/[^\n]{0,80}∞[^\n]{0,40}/g)||[]);
     out(`  ${label.padEnd(12)} ∞ ${hits.length}`);
     for(const h of hits.slice(0,4)){ bad++; out(`     [!] ${h.replace(/\s+/g,' ').trim()}`) }
   }

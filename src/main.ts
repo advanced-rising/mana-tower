@@ -1,5 +1,5 @@
-import { applyBgm, bgmOn, setChapterMusic, setVol, trackFor, TRACKS, unlockAudio, vol } from './audio'
-import { chalUnlocked, checkChallenge, enterChallenge, exitChallenge } from './trials'
+import { applyBgm, bgmOn, nextTrack, nowTrack, setChapterMusic, setSfxVol, setVol, sfx, sfxOn, sfxVol, trackFor, TRACKS, unlockAudio, vol } from './audio'
+import { chalOpen, chalUnlocked, checkChallenge, enterChallenge, exitChallenge } from './trials'
 import { INF_LAYERS, buildAchievements } from './layers'
 import { PRODUCERS } from './producers'
 import { DS, DSF, LANG, NM, VERSION, X, ic, icHTML, setLang, spriteURL } from './core'
@@ -8,7 +8,7 @@ import { S, setS } from './state'
 import { achCount, bulkCostLog, bulkMaxLog, capFrom, chalTotal, cnt, cntLog, costLogAt, curL, cutTxt, everLogOf, fmt, fmtLog, freeFrom, freeRaw, freeStart, gainRes, gearTotal, geoSumLog, L10, logAdd, logSub, numLog, pctTxt, powTxt, ratioOf, RES, runeTotal, safeLog, setRes, spendRes, START_MANA_CAP, syncGen, syncRes, upCapFrom, upMaxOf } from './num'
 import { addManaLog, buyProducer, computeM, costLogOf, effLevel, gather, gatherAmountLog, growth, M, manaRateLog, maxAfford, recalc, syncMana } from './multipliers'
 import { COSMOS, FOES, chapterOf, chapterSeen, clearFloor, cosmos, cosmosBonusLog, dungeonPowerLog, floorHPLog, floorLoot, floorLootManaLog, foeOf, syncChapter } from './dungeon'
-import { ASCEND_REQ, breakAmount, doAscend, doInfBreak, doRebirth, doTranscend, INF_STACK, infBonusLog, infGain, infUnlocked, offerGainLog, REBIRTH_REQ, relicGain, relicGainLog, reqFor, reqLog, softReset, soulGain, soulGainLog, starGain, starGainLog, TRANS_REQ, transUnlocked } from './prestige'
+import { ASCEND_REQ, ascendReqLog, breakAmount, doAscend, doInfBreak, doRebirth, doTranscend, INF_STACK, infBonusLog, infGain, infUnlocked, markReq, offerGainLog, REBIRTH_REQ, rebirthReqLog, relicGain, relicGainLog, REQ_GROWTH, reqFor, reqLog, softReset, soulGain, soulGainLog, starGain, starGainLog, TRANS_REQ, transReqLog, transUnlocked } from './prestige'
 import { AUTO_DEF, AUTO_DEFS, autoBuyTree, autoOK, autoUnlocked, buyBulkLog, runAutomation } from './automation'
 import { checkAchs, log, tick } from './tick'
 import { $, modal, modalOpen } from './ui/dom'
@@ -91,11 +91,11 @@ document.title=X('무한의 탑','Tower of Infinity');
   costLogAt, bulkCostLog, bulkMaxLog, curL, spendRes, gainRes, setRes, syncRes, RES, ratioOf,
   infGain, infUnlocked, doInfBreak, doRebirth, doAscend, doTranscend,
   achCount, runeTotal, gearTotal, chalTotal, chapterSeen, chapterOf, cosmos, cosmosBonusLog, infBonusLog, gatherAmountLog, manaRateLog,
-  transUnlocked, starGain, starGainLog, relicGain, relicGainLog, soulGain, soulGainLog, offerGainLog, breakAmount, TRANS_REQ, ASCEND_REQ, REBIRTH_REQ,
+  transUnlocked, starGain, starGainLog, relicGain, relicGainLog, soulGain, soulGainLog, offerGainLog, breakAmount, TRANS_REQ, ASCEND_REQ, REBIRTH_REQ, rebirthReqLog, ascendReqLog, transReqLog, markReq, REQ_GROWTH,
   gather, addManaLog, syncMana, effLevel, START_MANA_CAP, freeStart, freeFrom, freeRaw, upMaxOf, upCapFrom, everLogOf, capFrom, softReset, checkAchs, MILESTONES, RESEARCH_ALL: RESEARCH,
   importSave, mergeState, load, offlineCatchUp, dec, enc, crumb, lastCrumb, exportSave, safeMode, skippedSave,
-  enterChallenge, exitChallenge, checkChallenge, chalUnlocked, chalGoalLog, chalGoal,
-  trackFor, TRACKS, bgmOn, vol, setVol, applyBgm, unlockAudio, setChapterMusic,
+  enterChallenge, exitChallenge, checkChallenge, chalUnlocked, chalOpen, chalGoalLog, chalGoal,
+  trackFor, TRACKS, bgmOn, sfxOn, vol, sfxVol, setVol, setSfxVol, applyBgm, unlockAudio, setChapterMusic, nextTrack, nowTrack, sfx,
   INF_STACK, reqFor, reqLog,
 }
 
@@ -147,6 +147,7 @@ document.addEventListener('pointerdown',e=>{
   b.classList.remove('tapped');
   void (b as any).offsetWidth;         // 연달아 눌러도 다시 재생되도록 되감는다
   b.classList.add('tapped');
+  sfx(b.classList.contains('gold')?'buy':'click');    // 금색 버튼은 큰 결정이라 소리도 다르다
   setTimeout(()=>b.classList.remove('tapped'),400);   // 애니메이션 이벤트가 안 와도 반드시 뗀다
 },{passive:true,capture:true});
 document.addEventListener('animationend',e=>{

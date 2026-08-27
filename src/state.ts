@@ -32,7 +32,7 @@ export function newState(){return{
   deepestEver:0, manaPeakL:-Infinity,         // 업적이 기다릴 수 있는 최고 기록
   lastSoulGain:0, lastRelicGain:0, lastStarGain:0,
   sinceRebirth:0, sinceAscend:0, sinceTrans:0, sinceInf:0,
-  deepest:0, floor:1, prog:0, lootFloor:0, bgm:1, bgmVol:0.35, exploring:false,
+  deepest:0, floor:1, prog:0, lootFloor:0, bgm:1, bgmVol:0.35, sfx:1, sfxVol:0.4, bestAscL:-Infinity, bestTransL:-Infinity, infReqL:0, eterReqL:0, realReqL:0, voidReqL:0, originReqL:0, exploring:false,
   chal:null, chalDone:{}, chalTime:0, chalCd:0, bestRun:0, bestRunL:-Infinity, floorCd:0, anchorL:0, anchorUpL:0, autoUnlocked:{},
   achs:{},
   auto:{gather:1,build:1,research:1,rune:1,gear:1,dungeon:1,soulup:1,rebirth:1,relicup:1,starup:1,upinf:1,upeter:1,upreal:1,upvoid:1,uporigin:1,brketer:1,brkreal:1,brkvoid:1,brkorigin:1,ascend:1,trans:1,inf:1,chal:1},

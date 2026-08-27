@@ -1,16 +1,16 @@
-import { applyBgm, bgmOn, setVol, trackFor, vol } from '../audio'
+import { applyBgm, bgmOn, nextTrack, nowTrack, setSfxVol, setVol, sfxOn, sfxVol, trackFor, TRACKS, vol } from '../audio'
 import { INF_LAYERS } from '../layers'
 import { PRODUCERS } from '../producers'
 import { TABS, tabKeyOf, updaters } from './tabs'
 import { exportSave, hardReset, save } from '../save'
-import { enterChallenge, exitChallenge } from '../trials'
+import { chalOpen, enterChallenge, exitChallenge } from '../trials'
 import { DS, DSF, NM, VERSION, X, ic, icHTML, spriteURL } from '../core'
 import { ACHS, bulkCost, buyAmtFor, chalGoal, chalGoalLog, CHALLENGES, GEAR, gearCost, MILESTONES, RELIC_UPS, RESEARCH, runeCost, RUNES, SOUL_UPS, STAR_UPS } from '../content'
 import { LOG, S } from '../state'
 import { achCount, bulkCostLog, chalTotal, cntLog, costLogAt, curChal, curL, fmt, fmtLog, fmtTime, gearTotal, logSub, numLog, pctTxt, powTxt, runeTotal, spendRes } from '../num'
 import { M, buyProducer, costLogOf, effLevel, gather, gatherAmountLog, manaRateLog, maxAfford, recalc, tierLocked } from '../multipliers'
 import { COSMOS, COSMOS_MUL, COSMOS_SP, FOES, chapterOf, chapterSeen, cosmos, dungeonPowerLog, floorHPLog, floorLoot, foeOf, isBoss } from '../dungeon'
-import { ASCEND_REQ, REBIRTH_REQ, TRANS_REQ, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, offerGain, offerGainLog, relicGain, relicGainLog, reqTxt, soulGain, soulGainLog, starGain, starGainLog } from '../prestige'
+import { ASCEND_REQ, ascendReqLog, doAscend, doInfBreak, doRebirth, doTranscend, infGain, infUnlocked, offerGain, offerGainLog, REBIRTH_REQ, rebirthReqLog, relicGain, relicGainLog, reqTxt, soulGain, soulGainLog, starGain, starGainLog, TRANS_REQ, transReqLog } from '../prestige'
 import { AUTO_DEF, AUTO_DEFS, allAuto, autoUnlocked, buyBulkLog } from '../automation'
 import { $, btn, el, modal, toast } from './dom'
 import { buyAmtRow, card, levelGrid, memo, toggleRow } from './widgets'
@@ -263,7 +263,7 @@ export function buildRelics(p){
 }
 
 export function buildRebirth(p){
-  const c=card([X('환생',"Rebirth"),'soul'],X(`마나·시설·연구를 모두 버리고 <b class="soul">영혼석</b>과 <b class="offer">오퍼링</b>을 얻는다. 영혼 강화는 승천 전까지 남는다.<br>필요 조건: 이번 회차 누적 마나 ${fmt(REBIRTH_REQ)}`,`Throw away mana, buildings and research for <b class="soul">soul shards</b> and <b class="offer">offerings</b>. Soul upgrades last until you ascend.<br>Requires ${fmt(REBIRTH_REQ)} total mana this run.`));
+  const c=card([X('환생',"Rebirth"),'soul'],X(`마나·시설·연구를 모두 버리고 <b class="soul">영혼석</b>과 <b class="offer">오퍼링</b>을 얻는다. 영혼 강화는 승천 전까지 남는다.<br>필요 조건: 이번 회차 누적 마나 ${fmtLog(rebirthReqLog())} <span class="dim">— 돌파할수록 멀어진다</span>`,`Throw away mana, buildings and research for <b class="soul">soul shards</b> and <b class="offer">offerings</b>. Soul upgrades last until you ascend.<br>Requires ${fmtLog(rebirthReqLog())} total mana this run — each breakthrough asks for more.`));
   const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
   const b=btn('gold big','',()=>{
     if(soulGain()<=0) return;
@@ -281,8 +281,8 @@ export function buildRebirth(p){
       <span class="tag">${X('영혼석 배율',"Shard multiplier")} <b>×${fmtLog(M().soulLog)}</b></span>
       <span class="tag">${X(`환생 <b>${fmt(S.rebirths)}</b>회 · 생산 +${5*S.rebirths}%`,`<b>${fmt(S.rebirths)}</b> rebirths · output +${5*S.rebirths}%`)}</span>`;
     b.disabled=g<=0;
-    b.innerHTML=icHTML('soul',24)+' '+(g>0?X(`환생하여 영혼석 ${fmtLog(soulGainLog())} 획득`,`Rebirth for ${fmtLog(soulGainLog())} soul shards`)
-      :X(`누적 마나 ${fmt(REBIRTH_REQ)} 필요`,`Needs ${fmt(REBIRTH_REQ)} total mana`));
+    b.innerHTML=icHTML('soul',24)+' '+(g>0?X(`환생 돌파 · 영혼석 ${fmtLog(soulGainLog())} 획득`,`Rebirth for ${fmtLog(soulGainLog())} soul shards`)
+      :X(`누적 마나 ${fmtLog(rebirthReqLog())} 필요`,`Needs ${fmtLog(rebirthReqLog())} total mana`));
   });
   /* 마일스톤은 배율에는 이미 적용되고 있었는데 이 패널을 아무도 부르지 않아,
      무엇을 받았는지도 다음이 무엇인지도 볼 수 없었다. 환생 횟수로 열리는
@@ -312,7 +312,7 @@ export function buildMilestones(p){
   c.appendChild(g); p.appendChild(c);
 }
 export function buildAscend(p){
-  const c=card([X('승천',"Ascension"),'relic'],X(`영혼석·영혼 강화·룬을 전부 버리고 <b class="relic">유물</b>을 얻는다. 유물 강화는 <b>영원히</b> 남는다.<br>필요 조건: 이번 주기 누적 영혼석 ${fmt(ASCEND_REQ)}`,`Give up soul shards, soul upgrades and runes for <b class="relic">relics</b>. Relic upgrades last <b>forever</b>.<br>Requires ${fmt(ASCEND_REQ)} soul shards this cycle.`));
+  const c=card([X('승천',"Ascension"),'relic'],X(`영혼석·영혼 강화·룬을 전부 버리고 <b class="relic">유물</b>을 얻는다. 유물 강화는 <b>영원히</b> 남는다.<br>필요 조건: 이번 주기 누적 영혼석 ${fmtLog(ascendReqLog())} <span class="dim">— 돌파할수록 멀어진다</span>`,`Give up soul shards, soul upgrades and runes for <b class="relic">relics</b>. Relic upgrades last <b>forever</b>.<br>Requires ${fmtLog(ascendReqLog())} soul shards this cycle — each breakthrough asks for more.`));
   const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
   const b=btn('gold big','',()=>{
     if(relicGain()<=0) return;
@@ -328,13 +328,13 @@ export function buildAscend(p){
       <span class="tag">${X('획득 예정',"You gain")} ${icHTML('relic')}<b class="relic">${fmtLog(relicGainLog())}</b></span>
       <span class="tag">${X(`승천 <b>${fmt(S.ascensions)}</b>회`,`<b>${fmt(S.ascensions)}</b> ascensions`)}</span>`;
     b.disabled=g<=0;
-    b.innerHTML=icHTML('relic',24)+' '+(g>0?X(`승천하여 유물 ${fmtLog(relicGainLog())} 획득`,`Ascend for ${fmtLog(relicGainLog())} relics`)
-      :X(`누적 영혼석 ${fmt(ASCEND_REQ)} 필요`,`Needs ${fmt(ASCEND_REQ)} soul shards`));
+    b.innerHTML=icHTML('relic',24)+' '+(g>0?X(`승천 돌파 · 유물 ${fmtLog(relicGainLog())} 획득`,`Ascend for ${fmtLog(relicGainLog())} relics`)
+      :X(`누적 영혼석 ${fmtLog(ascendReqLog())} 필요`,`Needs ${fmtLog(ascendReqLog())} soul shards`));
   });
 }
 
 export function buildTrans(p){
-  const c=card([X('초월',"Transcendence"),'star'],X(`유물·유물 강화·승천 횟수까지 전부 버리고 <b class="gold">별가루</b>를 얻는다. 별 강화는 <b>무엇을 해도</b> 사라지지 않는다.<br>필요 조건: 이번 주기 누적 유물 ${fmt(TRANS_REQ)}`,`Give up relics, relic upgrades and ascensions for <b class="gold">stardust</b>. Star upgrades survive <b>everything</b>.<br>Requires ${fmt(TRANS_REQ)} relics this cycle.`));
+  const c=card([X('초월',"Transcendence"),'star'],X(`유물·유물 강화·승천 횟수까지 전부 버리고 <b class="gold">별가루</b>를 얻는다. 별 강화는 <b>무엇을 해도</b> 사라지지 않는다.<br>필요 조건: 이번 주기 누적 유물 ${fmtLog(transReqLog())} <span class="dim">— 돌파할수록 멀어진다</span>`,`Give up relics, relic upgrades and ascensions for <b class="gold">stardust</b>. Star upgrades survive <b>everything</b>.<br>Requires ${fmtLog(transReqLog())} relics this cycle — each breakthrough asks for more.`));
   const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
   const b=btn('gold big','',()=>{
     if(starGain()<=0) return;
@@ -350,8 +350,8 @@ export function buildTrans(p){
       <span class="tag">${X('획득 예정',"You gain")} ${icHTML('star')}<b class="gold">${fmtLog(starGainLog())}</b></span>
       <span class="tag">${X(`초월 <b>${fmt(S.transcends)}</b>회`,`<b>${fmt(S.transcends)}</b> transcends`)}</span>`;
     b.disabled=g<=0;
-    b.innerHTML=icHTML('star',16)+' '+(g>0?X(`초월하여 별가루 ${fmtLog(starGainLog())} 획득`,`Transcend for ${fmtLog(starGainLog())} stardust`)
-      :X(`누적 유물 ${fmt(TRANS_REQ)} 필요`,`Needs ${fmt(TRANS_REQ)} relics`));
+    b.innerHTML=icHTML('star',16)+' '+(g>0?X(`초월 돌파 · 별가루 ${fmtLog(starGainLog())} 획득`,`Transcend for ${fmtLog(starGainLog())} stardust`)
+      :X(`누적 유물 ${fmtLog(transReqLog())} 필요`,`Needs ${fmtLog(transReqLog())} relics`));
   });
 }
 
@@ -409,6 +409,11 @@ export function buildChal(p){
     });
     g.appendChild(b);
     updaters.push(()=>{
+      /* 아직 그 돌파를 지나지 않았으면 시련도 아직 없다 — 스무 개가 한꺼번에
+         쏟아지면 무엇이 새로 생겼는지 알 수가 없다. */
+      const open=chalOpen(ch);
+      b.style.display=open?'':'none';
+      if(!open) return;
       const n=S.chalDone[ch.id]||0, maxed=n>=ch.max, active=S.chal===ch.id;
       _t.html=`${NM(ch.nm)} <span class="lv">${X(`${n} / ${ch.max} 단계`,`stage ${n} / ${ch.max}`)}</span>`;
       _d.text=DSF(ch.desc);
@@ -424,7 +429,7 @@ export function buildChal(p){
     const ch=curChal();
     info.innerHTML=`<span class="tag">${X('완료',"Cleared")} <b>${fmt(chalTotal())}</b> / ${CHALLENGES.reduce((a,c2)=>a+c2.max,0)}</span>
       <span class="tag">${X('보상 지수',"Reward exponent")} <b>×${fmtLog(M().chalPowLog)}</b></span>
-      ${ch?`<span class="tag bad">${X('진행 중','In trial')}: <b>${NM(ch.nm)}</b> · ${icHTML('mana')}${fmtLog(S.manaRunL)} / ${fmt(chalGoal(ch,S.chalDone[ch.id]||0))}</span>`:''}`;
+      ${ch?`<span class="tag bad">${X('진행 중','In trial')}: <b>${NM(ch.nm)}</b> · ${icHTML('mana')}${fmtLog(S.manaRunL)} / ${fmtLog(chalGoalLog(ch,S.chalDone[ch.id]||0))}</span>`:''}`;
   });
 }
 
@@ -531,24 +536,33 @@ export function buildSettings(p){
   c.appendChild(row); p.appendChild(c);
 
   /* ── 소리 ─────────────────────────────────── */
-  const ac=card([X('소리',"Sound"),'sparkle'],X('배경 음악은 장(章)이 오를 때마다 바뀐다. 전부 퍼블릭 도메인(CC0) 이고, 출처는 저장소의 audio/CREDITS.md 에 적어 두었다.',
-    "The music changes as the chapters rise. All of it is public domain (CC0); sources are listed in audio/CREDITS.md."));
-  const arow=el('div','row'); arow.style.alignItems='center'; arow.style.gap='10px';
-  const abtn=btn('sm','',()=>{ S.bgm=S.bgm===0?1:0; applyBgm(); refresh() });
-  const vlab=el('span','dim'); vlab.style.fontSize='12px';
-  const sl=document.createElement('input');
-  sl.type='range'; sl.min='0'; sl.max='100'; sl.step='5';
-  sl.style.cssText='flex:1;max-width:220px;accent-color:var(--gold)';
-  sl.addEventListener('input',()=>{ setVol(+sl.value/100); vlab.textContent=`${sl.value}%` });
-  arow.append(abtn,sl,vlab); ac.appendChild(arow);
-  const anow=el('div','hint'); ac.appendChild(anow); p.appendChild(ac);
+  const ac=card([X('소리',"Sound"),'sparkle'],X('배경 음악은 곡을 이어서 튼다 — 지금 장의 곡부터 시작해 차례로 돈다. 전부 퍼블릭 도메인(CC0) 이고 출처는 저장소의 audio/CREDITS.md 에 있다. 효과음은 파일 없이 그 자리에서 만든다.',
+    "The music plays through in sequence, starting from this chapter's track. All public domain (CC0); sources in audio/CREDITS.md. The effects are generated on the spot, no files."));
+  const mkRow=(labelOn,labelOff,getOn,toggle,getV,setV)=>{
+    const r=el('div','row'); r.style.alignItems='center'; r.style.gap='10px';
+    const b=btn('sm','',()=>{ toggle(); refresh() });
+    const sl=document.createElement('input');
+    sl.type='range'; sl.min='0'; sl.max='100'; sl.step='5';
+    sl.style.cssText='flex:1;max-width:200px;accent-color:var(--gold)';
+    const lab=el('span','dim'); lab.style.cssText='font-size:12px;min-width:38px';
+    sl.addEventListener('input',()=>{ setV(+sl.value/100); lab.textContent=`${sl.value}%` });
+    r.append(b,sl,lab); ac.appendChild(r);
+    updaters.push(()=>{
+      const on=getOn();
+      b.className='btn sm '+(on?'on':'off');
+      b.textContent=on?labelOn:labelOff;
+      if(document.activeElement!==sl) sl.value=String(Math.round(getV()*100));
+      lab.textContent=`${Math.round(getV()*100)}%`;
+    });
+  };
+  mkRow(X('음악 켬','Music on'),X('음악 끔','Music off'),bgmOn,()=>{ S.bgm=S.bgm===0?1:0; applyBgm() },vol,setVol);
+  mkRow(X('효과음 켬','Effects on'),X('효과음 끔','Effects off'),sfxOn,()=>{ S.sfx=S.sfx===0?1:0 },sfxVol,setSfxVol);
+  const nrow=el('div','row'); nrow.style.marginTop='6px';
+  nrow.appendChild(btn('sm',X('다음 곡 ▶','Next track ▶'),()=>{ nextTrack(); refresh() }));
+  const anow=el('div','hint'); nrow.appendChild(anow); ac.appendChild(nrow); p.appendChild(ac);
   updaters.push(()=>{
-    abtn.className='btn sm '+(bgmOn()?'on':'off');
-    abtn.textContent=bgmOn()?X('음악 켬','Music on'):X('음악 끔','Music off');
-    if(document.activeElement!==sl) sl.value=String(Math.round(vol()*100));
-    vlab.textContent=`${Math.round(vol()*100)}%`;
-    const t=trackFor(chapterSeen());
-    anow.textContent=X(`지금 흐르는 곡: ${t.k}`,`Now playing: ${t.k}`);
+    const t=nowTrack();
+    anow.textContent=X(`지금 흐르는 곡: ${t.ko} (${TRACKS.length}곡을 차례로)`,`Now playing: ${t.k} (${TRACKS.length} in rotation)`);
   });
 
   const sc=card([X('기록',"Records"),'scroll']);

@@ -124,7 +124,7 @@ export const CAP_BASE=25;
    둔다 — 10^100 을 벌었으면 90 레벨, 10^10000 을 벌었어도 140 레벨쯤이다. */
 export const UP_CAP_BASE=40;
 export function upCapFrom(everLog){
-  const e=(typeof everLog==='number'&&isFinite(everLog))?Math.max(0,everLog):0;
+  const e=(typeof everLog==='number'&&isFinite(everLog))?Math.max(0,Math.min(1e300,everLog)):0;
   return UP_CAP_BASE+Math.floor(25*Math.log10(1+e));
 }
 /* 화폐 이름으로 '여태 번 자릿수' 를 찾는다. 자릿수 필드가 없으면 평범한 수에서 만든다. */
@@ -136,10 +136,15 @@ export function everLogOf(curKey){
 }
 export function upMaxOf(u,curKey){
   const c=upCapFrom(everLogOf(curKey));
-  return Math.min(typeof u.max==='number'?u.max:Infinity, c);
+  const m=(typeof u.max==='number'&&isFinite(u.max))?u.max:Infinity;
+  const v=Math.min(m,c);
+  return isFinite(v)?v:UP_CAP_BASE;        // 상한이 ∞ 로 새지 않게 한다
 }
 export function capFrom(raw){
-  const over=Math.max(0,(typeof raw==='number'&&isFinite(raw)?raw:CAP_BASE)-CAP_BASE);
+  /* raw 가 무한대면 log10 도 무한대라 상한 자체가 ∞ 가 되고, 화면에 'Lv.x / ∞' 가
+     찍힌다. 상한은 어떤 경우에도 적을 수 있는 수여야 한다. */
+  const r=(typeof raw==='number'&&isFinite(raw))?raw:CAP_BASE;
+  const over=Math.max(0,Math.min(1e300,r)-CAP_BASE);
   return CAP_BASE+Math.floor(60*Math.log10(1+over));
 }
 

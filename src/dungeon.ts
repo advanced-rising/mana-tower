@@ -1,4 +1,4 @@
-import { setChapterMusic } from './audio'
+import { setChapterMusic, sfx } from './audio'
 import { $ } from './ui/dom'
 import { PRODUCERS } from './producers'
 import { log } from './tick'
@@ -352,6 +352,7 @@ export function clearFloor(show){
     gainRes('crystal',l.crystalLog);
     if(l.offeringLog>-Infinity) gainRes('offering',l.offeringLog);
   }
+  if(show!==0) sfx(isBoss(f)?'boss':'floor');    // 되밟는 중에는 조용히 지나간다
   const nw=f>S.deepest;
   if(nw){ S.deepest=f; if(f>(S.deepestEver||0)) S.deepestEver=f; syncChapter(); }
   const foe=foeOf(f);
