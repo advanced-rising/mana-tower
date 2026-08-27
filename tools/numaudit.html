@@ -92,7 +92,7 @@ for(const [store,defs,cur] of [['soulUps',G.SOUL_UPS,'soul'],['starUps',G.STAR_U
        나눠서 여러 번 빼면 한 번에 뺀 것과 소수점 아주 아래에서 갈린다(4e-6 자릿수,
        값으로는 0.00001%). 그건 누적이지 계산이 틀린 게 아니다. */
     const r=Math.abs(spentLog-trueLog);
-    if(got>0 && before-trueLog<14 && r>1e-4){  mism++; if(mism<4) bad('구매',`${cur} 예산 e${30+t*40}: 깎인 값 e${spentLog.toFixed(12)} vs 실제 e${trueLog.toFixed(12)} (차 ${r.toExponential(2)})`); }
+    if(got>0 && before-trueLog<10 && r>1e-4){  mism++; if(mism<4) bad('구매',`${cur} 예산 e${30+t*40}: 깎인 값 e${spentLog.toFixed(12)} vs 실제 e${trueLog.toFixed(12)} (차 ${r.toExponential(2)})`); }
   }
 }
 out('  어긋난 구매 '+mism+'건');

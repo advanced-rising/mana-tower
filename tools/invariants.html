@@ -71,11 +71,11 @@
       if(!(S.manaL>=c)) continue;
       const before=S.manaL;
       S.manaL=G.logSub(S.manaL,c); S.research[r.id]=1; G.recalc();
-      /* 값이 배정도로 표현되는 범위 안에서만 줄어드는 것이 보인다 —
-         10^1000 을 들고 100 을 쓰면 자릿수는 그대로다. 그건 옳다.
-         비용이 잔액과 열네 자릿수 안쪽일 때만 실제로 줄었는지 따진다. */
+      /* 자릿수 자체도 배정도 수다. 잔액 자릿수가 200 쯤이면 그 한 칸이 2.8e-14 라,
+         비용이 잔액보다 열세 자릿수쯤 작아지는 순간 빼도 자릿수가 그대로다 —
+         계산이 틀린 게 아니라 볼 수 없는 것이다. 여유를 두고 열 자릿수 안쪽만 따진다. */
       if(S.manaL>before+1e-12) bad('연구 구매',`${r.id} 를 샀는데 마나가 늘었다 ${D(before)} → ${D(S.manaL)}`);
-      else if(before-c<14&&!(S.manaL<before)) bad('연구 구매',`${r.id}(${D(c)}자리) 를 ${D(before)}자리로 샀는데 줄지 않았다`);
+      else if(before-c<10&&!(S.manaL<before)) bad('연구 구매',`${r.id}(${D(c)}자리) 를 ${D(before)}자리로 샀는데 줄지 않았다`);
       if(isNaN(S.manaL)) bad('연구 구매',`${r.id} 뒤 마나가 NaN`);
       return true;
     }

@@ -12,16 +12,16 @@ import { autoEnterChallenge, exitChallenge } from './trials'
 import { log } from './tick'
 
 /* ══════════════ 프레스티지 ══════════════ */
-export const REBIRTH_REQ=1e6, ASCEND_REQ=1000;
+export const REBIRTH_REQ=1e6, ASCEND_REQ=300;
 /* 회차 마나가 1e300 을 넘어도 획득량이 ∞ 로 튀지 않게 자릿수에서 계산한다 */
 export function soulGainLog(){
   if(!(S.manaRunL>=numLog(REBIRTH_REQ))) return -Infinity;
-  return L10(3)+0.3*(S.manaRunL-numLog(REBIRTH_REQ))+M().soulLog;
+  return L10(3)+0.45*(S.manaRunL-numLog(REBIRTH_REQ))+M().soulLog;
 }
 export function soulGain(){ const l=soulGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
 export function offerGainLog(){
   if(!(S.manaRunL>=numLog(REBIRTH_REQ))) return -Infinity;
-  return L10(2)+0.22*(S.manaRunL-numLog(REBIRTH_REQ))+M().offerLog;
+  return L10(2)+0.33*(S.manaRunL-numLog(REBIRTH_REQ))+M().offerLog;
 }
 export function offerGain(){ const l=offerGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
 export function relicGainLog(){
