@@ -3,7 +3,7 @@ import { PRODUCERS } from './producers'
 import { X } from './core'
 import { GEAR, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, bulkCost, bulkMax, gearCost, runeCost } from './content'
 import { S } from './state'
-import { L10, RES, bulkCostLog, bulkMaxLog, chalTotal, costLogAt, curChal, curL, gearBudgetLog, gearOfferLog, logSub, numLog, spendRes, upMaxOf } from './num'
+import { L10, RES, bulkCostLog, bulkMaxLog, chalTotal, costLogAt, curChal, curL, gearBudgetLog, gearOfferLog, logSub, numLog, round2, spendRes, upMaxOf } from './num'
 import { M, costLogOf, gather, maxAfford, recalc, tierLocked } from './multipliers'
 
 import { doAscend, doInfBreak, doRebirth, doTranscend, INF_AUTO_CD, INF_AUTO_WAIT, infGain, infUnlocked, relicGain, relicGainLog, soulGain, soulGainLog, starGain, starGainLog } from './prestige'
@@ -69,11 +69,12 @@ const LOGGED={ has(k){ return (_logged||(_logged=new Set(RES))).has(k) } };
 export function budgetLogOf(k){ return LOGGED.has(k)?curL(k):numLog(S[k]||0) }
 export function payFrom(k,costLog){
   if(LOGGED.has(k)){ spendRes(k,costLog); return }
-  /* 계층 화폐(무한·영원·현실·공허·근원) 는 돌파 횟수다 — 반쪽이 있을 수 없다.
-     실수로 빼면 잔액이 37.4 같은 값이 되고, 그 값이 다시 다음 예산이 되어
-     소수가 계속 번진다. 값은 올려서 물리고 잔액은 정수로 남긴다. */
-  const cost=costLog<300?Math.ceil(Math.pow(10,costLog)):Infinity;
-  S[k]=Math.max(0,Math.floor(S[k]||0)-cost);
+  /* 재료 잔액은 소수 두 자리까지만 쓴다.
+     그냥 빼면 37.393858723174674 처럼 꼬리가 길게 남고, 그 값이 다음 예산이
+     되어 계속 번진다. 두 자리에서 끊어 두면 화면에 보이는 값과 실제 값이 같다.
+     (사는 개수와 레벨은 정수다 — 강화를 반쪽만 가질 수는 없으니까.) */
+  const cost=costLog<300?Math.pow(10,costLog):Infinity;
+  S[k]=Math.max(0,round2((S[k]||0)-cost));
 }
 const STEP_CAP=1e12;          // 한 번에 사들이는 단계 수 상한 — 정수 정밀도를 지킨다
 export function buyBulkLog(costFn,l,budgetLog,cap){

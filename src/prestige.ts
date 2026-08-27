@@ -27,34 +27,45 @@ export const REBIRTH_REQ=1e6, ASCEND_REQ=300;
 export const REQ_REL=0.55;
 /* 최고치를 넘지 못한 돌파라도 조건은 한 걸음 밀린다 — '돌파할 때마다 더 멀리' 다.
    자릿수로 0.3(=약 두 배) 씩이라, 쉰 번을 해도 열다섯 자릿수만 오른다. */
-export const REQ_STEP=0.3;
+/* 자릿수 0.3 은 돌파마다 조건을 두 배로 만든다. 보상이 1, 2, 3 개로 세어지는
+   경제에서는 스무 번이면 손이 닿지 않는다. 5% 씩만 민다. */
+export const REQ_STEP=0.02;
 export function pushReq(field,reached){
   const b=S[field], now=(typeof reached==='number'&&isFinite(reached))?reached:-Infinity;
   const base=(typeof b==='number'&&isFinite(b))?b:-Infinity;
   S[field]=Math.max(base,now)+REQ_STEP;
 }
-const reqOf=(base,best)=>Math.max(numLog(base),(typeof best==='number'&&isFinite(best)&&best>0)?REQ_REL*best:-Infinity);
-export const rebirthReqLog=()=>reqOf(REBIRTH_REQ,S.bestRunL);
-export const ascendReqLog =()=>reqOf(ASCEND_REQ, S.bestAscL);
-export const transReqLog  =()=>reqOf(TRANS_REQ,  S.bestTransL);
+/* 하한도 돌파 횟수를 따라 오른다. 처음 정한 값만 하한으로 두면 초반에는
+   그 값이 계속 이겨서, 돌파를 아무리 해도 조건이 그대로였다. */
+function reqOf(base,best,count){
+  const floor=numLog(base)+Math.max(0,count||0)*REQ_STEP;
+  const rel=(typeof best==='number'&&isFinite(best)&&best>0)?REQ_REL*best:-Infinity;
+  return Math.max(floor,rel);
+}
+export const rebirthReqLog=()=>reqOf(REBIRTH_REQ,S.bestRunL,  S.rebirthEver||S.rebirths);
+export const ascendReqLog =()=>reqOf(ASCEND_REQ, S.bestAscL,  S.ascendEver ||S.ascensions);
+export const transReqLog  =()=>reqOf(TRANS_REQ,  S.bestTransL,S.transEver  ||S.transcends);
 
-export function soulGainLog(){
-  const r=rebirthReqLog();
-  if(!(S.manaRunL>=r)) return -Infinity;
-  return L10(3)+0.45*(S.manaRunL-numLog(REBIRTH_REQ))+M().soulLog;
+/* ── 돌파가 주는 양은 개수로 센다 ────────────────────
+   여태는 조건을 넘긴 폭이 그대로 지수로 들어가, 첫 환생부터 천문학적인 수가
+   쏟아졌다. 보통은 첫 환생에 영혼석 한 개가 쌓이고 회차를 거듭하며 천천히
+   늘어난다 — 무한 계층이 이미 그렇게 세고 있었으니, 아래 돌파도 같게 맞춘다.
+   넘긴 폭의 로그에 비례하므로 1, 2, 3 … 으로 오르되 폭주하지 않는다.
+   배율은 넘긴 폭에 얹어, 강화가 쌓일수록 같은 회차가 조금 더 준다. */
+function gainCount(excessLog){
+  return (typeof excessLog==='number'&&excessLog>=0)?breakAmount(excessLog):0;
 }
-export function soulGain(){ const l=soulGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
-export function offerGainLog(){
-  if(!(S.manaRunL>=rebirthReqLog())) return -Infinity;
-  return L10(2)+0.33*(S.manaRunL-numLog(REBIRTH_REQ))+M().offerLog;
-}
-export function offerGain(){ const l=offerGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
-export function relicGainLog(){
+export function soulGain(){ return gainCount(S.manaRunL-rebirthReqLog()+Math.max(0,M().soulLog)) }
+export function soulGainLog(){ const g=soulGain(); return g>0?L10(g):-Infinity }
+
+export function offerGain(){ return gainCount(S.manaRunL-rebirthReqLog()+Math.max(0,M().offerLog)) }
+export function offerGainLog(){ const g=offerGain(); return g>0?L10(g):-Infinity }
+
+export function relicGain(){
   const a=(typeof S.soulAscL==='number'&&!isNaN(S.soulAscL))?S.soulAscL:-Infinity;
-  if(!(a>=ascendReqLog())) return -Infinity;
-  return L10(2)+0.35*(a-numLog(ASCEND_REQ))+M().relicLog;
+  return gainCount(a-ascendReqLog()+Math.max(0,M().relicLog));
 }
-export function relicGain(){ const l=relicGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
+export function relicGainLog(){ const g=relicGain(); return g>0?L10(g):-Infinity }
 export function softReset(){
   const free=freeStart();
   S.manaL=Math.max(L10(25),startManaLog(S.soulUps.s7||0));
@@ -243,12 +254,11 @@ export function infBonusLog(){
 export function infBonus(){ const l=infBonusLog(); return l<300?Math.pow(10,l):Infinity; }
 
 export const TRANS_REQ=500;
-export function starGainLog(){
+export function starGain(){
   const r=(typeof S.relicTransL==='number'&&!isNaN(S.relicTransL))?S.relicTransL:-Infinity;
-  if(!(r>=transReqLog())) return -Infinity;
-  return L10(2)+0.4*(r-numLog(TRANS_REQ));
+  return gainCount(r-transReqLog());
 }
-export function starGain(){ const l=starGainLog(); return l<300?Math.floor(Math.pow(10,l)):Infinity }
+export function starGainLog(){ const g=starGain(); return g>0?L10(g):-Infinity }
 export function doTranscend(silent){
   const g=starGain();
   if(g<=0) return false;

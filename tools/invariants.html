@@ -429,13 +429,15 @@
     }
     for(let i=0;i<S.bought.length;i++)
       if(S.bought[i]!==Math.floor(S.bought[i])) bad('소수 레벨',`시설[${i}] = ${D(S.bought[i])}`);
-    /* 계층 화폐도 돌파 횟수라 자연수여야 한다 */
+    /* 재료는 소수 두 자리까지만 — 그 아래 꼬리는 다음 계산으로 번진다.
+       돌파 횟수는 세는 것이라 여전히 정수다. */
     for(const L of G.INF_LAYERS){
-      for(const suf of ['','Ever','Count']){
-        const v=S[L.k+suf];
-        if(typeof v==='number'&&isFinite(v)&&v!==Math.floor(v))
-          bad('소수 재료',`${L.ko}${suf} = ${D(v)}`);
-      }
+      const v=S[L.k];
+      if(typeof v==='number'&&isFinite(v)&&Math.abs(v*100-Math.round(v*100))>1e-6)
+        bad('소수 자리',`${L.ko} = ${v} — 두 자리를 넘는다`);
+      const c=S[L.k+'Count'];
+      if(typeof c==='number'&&isFinite(c)&&c!==Math.floor(c))
+        bad('소수 횟수',`${L.ko} 돌파 횟수 = ${D(c)}`);
     }
   }catch(e){ bad('소수 검사',e.message) }
 

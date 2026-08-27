@@ -243,6 +243,9 @@ export function smallMul(v){
    붙어 버렸고, 강화 비용도 레벨 1340 쯤에서 그대로 ∞ 가 되어 더 살 수 없었다.
    비용 곡선은 전부 base·g^l 꼴이라 레벨 0 과 1 만 보면 어떤 레벨의 비용도
    자릿수로 정확히 나온다 — c(l) 을 직접 부를 이유가 없다. */
+/* 재료는 소수 두 자리까지 쓴다. 그 아래로는 화면에도 안 나오고, 남겨 두면
+   꼬리가 다음 계산으로 번져 같은 값이 자리마다 달라 보인다. */
+export const round2=v=>(typeof v==='number'&&isFinite(v))?Math.round(v*100)/100:v;
 export const RES=['soul','relic','star','crystal','offering'];
 export function curL(k){ const v=S[k+'L']; return (typeof v==='number'&&!isNaN(v))?v:-Infinity }
 export function syncRes(k){ const l=curL(k); S[k]=l<308?Math.pow(10,l):Infinity }
