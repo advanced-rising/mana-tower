@@ -108,10 +108,9 @@ export function buildDungeon(p){
   ar.append(foe,right); c.appendChild(ar);
 
   const ctl=el('div','row'); ctl.style.marginTop='10px';
-  const bDown=btn('sm',X('◀ 이전 층','◀ Prev'),()=>{if(S.floor>1){S.floor--;S.prog=0}});
-  const bUp=btn('sm',X('다음 층 ▶','Next ▶'),()=>{if(S.floor<=S.deepest){S.floor++;S.prog=0}});
+  /* 층은 손으로 옮기지 않는다 — 되밟는 길이 알아서 데려다 놓는다 */
   const go=btn('','',()=>{S.exploring=!S.exploring;if(!S.exploring)S.prog=0});
-  ctl.append(bDown,bUp,go); c.appendChild(ctl);
+  ctl.append(go); c.appendChild(ctl);
   p.appendChild(c);
 
   /* 탐사 계층표 — 못 뚫은 칸은 무엇인지 알 수 없다 */
@@ -172,7 +171,6 @@ export function buildDungeon(p){
       <span class="tag">${icHTML('mana')}<b>${fmtLog(l.manaLog)}</b></span>
       <span class="tag">${icHTML('crystal')}<b>${fmtLog(l.crystalLog)}</b></span>
       ${l.offering?`<span class="tag">${icHTML('offering')}<b>${fmtLog(l.offeringLog)}</b></span>`:''}`;
-    bDown.disabled=S.floor<=1; bUp.disabled=S.floor>S.deepest;
     go.textContent=S.exploring?X('탐험 중단','Stop Delving'):X('탐험 시작','Start Delving');
     go.className='btn '+(S.exploring?'':'gold');
 
