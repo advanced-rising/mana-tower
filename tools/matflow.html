@@ -1,0 +1,90 @@
+<pre id="TESTOUT" style="display:none"></pre>
+<script>
+/* 재료가 흐르는가.
+   프레스티지·돌파를 지날 때마다 두 가지를 본다.
+     1) 자동화가 그대로 열려 있고 켜져 있는가 — 꺼지면 그 뒤로 아무것도 안 모인다
+     2) 재료가 다시 쌓이는가 — 누적(Ever) 은 무엇을 해도 줄어선 안 된다
+   실제로 자동 돌파가 60 초마다 터져 영혼석도 룬도 쌓이기 전에 쓸려 나가던
+   적이 있다. 그건 '값이 이상하다' 가 아니라 '흐르지 않는다' 는 고장이라,
+   숫자 검사로는 안 잡힌다. */
+(async()=>{
+  const O=document.getElementById('TESTOUT'), out=s=>{O.textContent+=s+'\n'};
+  const fail=[]; const bad=(w,d)=>{ if(fail.length<40) fail.push(w+' :: '+d) };
+  const F=x=>window.__game.fmtLog(x);
+  try{
+  await new Promise(r=>setTimeout(r,900));
+  const G=window.__game; if(!G){ out('[!] __game 없음'); out('DONE'); return }
+  const S=G.S;
+  const MATS=[['mana','마나'],['soul','영혼석'],['relic','유물'],['star','별가루'],
+              ['crystal','결정'],['offering','오퍼링']];
+  const everL=k=>k==='mana'?S.manaEverL:G.everLogOf(k);
+  const snapEver=()=>Object.fromEntries(MATS.map(([k])=>[k,everL(k)]));
+  const autoState=()=>G.AUTO_DEFS.filter(a=>G.autoOK(a.k)).map(a=>a.k).join(',');
+
+  /* 충분히 진행한 상태를 만든다 */
+  for(const r of G.RESEARCH) S.research[r.id]=1;
+  S.manaL=S.manaRunL=S.manaEverL=S.manaPeakL=340;
+  for(const k of ['soul','relic','star','crystal','offering']) G.setRes(k,120);
+  for(const k of ['soulEverL','relicEverL','starEverL','crystalEverL','offerEverL']) S[k]=120;
+  S.soulAscL=120; S.relicTransL=120;
+  for(let i=0;i<S.bought.length;i++) S.bought[i]=3000;
+  S.deepest=600; S.deepestEver=600; S.floor=1; S.lootFloor=0; S.exploring=true;
+  S.rebirthEver=50; S.ascendEver=10; S.transEver=2; S.infEver=2; S.infCount=2;
+  G.recalc();
+  for(const a of G.AUTO_DEFS) if(G.autoUnlocked(a.k)) S.auto[a.k]=1;
+  const auto0=autoState();
+  out(`자동화 ${auto0.split(',').filter(Boolean).length}종 켜짐`);
+  out('');
+  out('  단계        | 자동화 | 5분 뒤 누적이 늘어난 재료');
+
+  const LAYERS=[
+    ['환생',()=>G.doRebirth(true)],
+    ['승천',()=>{ S.soulAscL=Math.max(S.soulAscL,G.numLog(G.ASCEND_REQ)+3); G.recalc(); return G.doAscend(true) }],
+    ['초월',()=>{ S.relicTransL=Math.max(S.relicTransL,G.numLog(G.TRANS_REQ)+3); G.recalc(); return G.doTranscend(true) }],
+    ['무한 돌파',()=>{ S.manaEverL=Math.max(S.manaEverL,400); G.recalc(); return G.doInfBreak(0) }],
+  ];
+  for(const [nm,act] of LAYERS){
+    const beforeEver=snapEver(), beforeAuto=autoState(), beforePeak=S.manaPeakL;
+    let ok=false;
+    try{ ok=act() }catch(e){ bad(nm,'실행 중 예외 '+e.message) }
+    if(!ok){ out(`  ${nm.padEnd(11)} | (실행 안 됨 — 조건 미달)`); continue }
+    G.recalc();
+    /* 1) 자동화가 꺼지지 않았는가 */
+    const afterAuto=autoState();
+    const lost=beforeAuto.split(',').filter(k=>k&&afterAuto.split(',').indexOf(k)<0);
+    if(lost.length) bad(nm,`자동화가 꺼졌다: ${lost.join(', ')}`);
+    /* 2) 누적이 줄지 않았는가 */
+    for(const [k,ko] of MATS){
+      /* 무한 돌파만은 마나 누적을 일부러 지운다 — 다음 돌파 조건을 다시 벌게
+         하기 위해서다. 지워지지 않는 진짜 기록은 manaPeakL 이고, 그건 봐야 한다. */
+      if(nm==='무한 돌파'&&k==='mana') continue;
+      const b=beforeEver[k], a=everL(k);
+      if(a<b-1e-9) bad(nm,`${ko} 누적이 ${F(b)} → ${F(a)} 로 줄었다`);
+    }
+    if(S.manaPeakL<beforePeak-1e-9) bad(nm,`마나 최고 기록이 ${F(beforePeak)} → ${F(S.manaPeakL)} 로 줄었다`);
+    /* 3) 5 분을 굴려 재료가 다시 쌓이는가 */
+    /* 흐름은 '잔액' 으로 잰다. 누적은 이미 10^340 쯤이라 새로 번 것이 파묻혀
+       늘었는지 아닌지가 보이지 않는다 — 배정도의 한계이지 고장이 아니다. */
+    const bal0=Object.fromEntries(MATS.map(([k])=>[k,k==='mana'?S.manaL:G.curL(k)]));
+    const ever0=snapEver();
+    for(let i=0;i<1500;i++) G.tick(0.2);          // 5 분
+    G.recalc();
+    const grew=[], flat=[];
+    for(const [k,ko] of MATS){
+      const a=k==='mana'?S.manaL:G.curL(k);
+      (a>bal0[k]+1e-9?grew:flat).push(ko);
+      if(everL(k)<ever0[k]-1e-9) bad(nm,`${ko} 누적이 5분 사이 ${F(ever0[k])} → ${F(everL(k))} 로 줄었다`);
+    }
+    if(!grew.length) bad(nm,'5분을 굴려도 어떤 재료도 잔액이 늘지 않았다');
+    const auto2=autoState();
+    const lost2=beforeAuto.split(',').filter(k=>k&&auto2.split(',').indexOf(k)<0);
+    if(lost2.length) bad(nm,`5분 사이 자동화가 꺼졌다: ${lost2.join(', ')}`);
+    out(`  ${nm.padEnd(11)} | ${String(auto2.split(',').filter(Boolean).length).padStart(3)}종 | ${grew.join(' ')||'(없음)'}${flat.length?'   · 그대로: '+flat.join(' '):''}`);
+  }
+  }catch(e){ bad('하네스',e.message+' @ '+(e.stack||'').split('\n')[1]) }
+  out('');
+  for(const f of fail) out('  [!] '+f);
+  out(`=== 재료 흐름 위반 ${fail.length}건 ===`);
+  out('DONE');
+})();
+</script>

@@ -565,8 +565,11 @@ export function buildSettings(p){
   });
   updaters.push(()=>{
     const m=M();
-    /* 누적은 자릿수 필드가 진실이다. 파생된 평범한 수를 적으면 1e308 에서 ∞ 가 된다. */
-    const tot=`${icHTML('mana')}<b>${fmtLog(S.manaEverL)}</b> · ${icHTML('offering')}<b>${fmtLog(S.offerEverL)}</b> · ${icHTML('crystal')}<b>${fmtLog(S.crystalEverL)}</b> · ${icHTML('soul')}<b>${fmtLog(S.soulEverL)}</b> · ${icHTML('relic')}<b>${fmtLog(S.relicEverL)}</b>`;
+    /* 누적은 자릿수 필드가 진실이다. 파생된 평범한 수를 적으면 1e308 에서 ∞ 가 된다.
+       마나만은 manaEverL 이 아니라 manaPeakL 을 쓴다 — manaEverL 은 무한 돌파가
+       0 으로 지운다(다음 돌파 조건을 다시 벌게 하려고). 그 값을 '누적' 이라 적으면
+       돌파 한 번에 여태 번 마나가 없던 일이 된다. 진짜 기록은 manaPeakL 이다. */
+    const tot=`${icHTML('mana')}<b>${fmtLog(Math.max(S.manaPeakL,S.manaEverL))}</b> · ${icHTML('offering')}<b>${fmtLog(S.offerEverL)}</b> · ${icHTML('crystal')}<b>${fmtLog(S.crystalEverL)}</b> · ${icHTML('soul')}<b>${fmtLog(S.soulEverL)}</b> · ${icHTML('relic')}<b>${fmtLog(S.relicEverL)}</b>`;
     st.innerHTML=X(
       `플레이 시간 <b>${fmtTime(S.playtime)}</b> · 채집 <b>${fmt(S.clicks)}</b>회<br>
        누적 ${tot}<br>
