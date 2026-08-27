@@ -384,7 +384,7 @@ export function buildLayer(p,i){
     const g=infGain(i), v=L.from();
     info.innerHTML=`<span class="tag">${X('현재',"Now")} <b>${i===0?fmtLog(S.manaEverL):fmt(v)}</b></span>
       <span class="tag">${X('필요',"Needs")} <b>${reqTxt(i)}</b></span>
-      <span class="tag">${X('보유',"Held")} <b class="gold">${fmt(S[L.k]||0)}</b></span>
+      <span class="tag">${X('보유',"Held")} <b class="gold">${fmt(Math.floor(S[L.k]||0))}</b></span>
       <span class="tag">${X('전체 배율',"Total")} ×<b>${powTxt(4+i*4,S[L.k+'Ever']||0)}</b></span>`;
     b.disabled=g<=0;
     b.innerHTML=icHTML(L.sp,16)+' '+(g>0?X(`${L.ko} 돌파 · +${fmt(g)}`,`${L.en} Break · +${fmt(g)}`)

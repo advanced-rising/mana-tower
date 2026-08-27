@@ -30,7 +30,9 @@ export function RES_LIST(){ return _res||(_res=[
   val:()=>fmtLog(curL('star')), sub:()=>X('초월 ','Transcends ')+fmt(S.transcends)},
  ...INF_LAYERS.map((L,i)=>({id:L.k, sp:L.sp, nm:{ko:L.ko,en:L.en}, cls:'gold',
    show:()=>(S[L.k+'Ever']||0)>0||infUnlocked(i),
-   val:()=>fmt(S[L.k]||0), sub:()=>X(`돌파 ${fmt(S[L.k+'Count']||0)}회`,`${fmt(S[L.k+'Count']||0)} breaks`)})),
+   /* 돌파로 얻는 것이라 정수로 읽혀야 한다. 강화에 쓰고 남은 잔액은
+      로그 뺄셈에서 소수가 되어 '37.4 무한' 처럼 보였다. */
+   val:()=>fmt(Math.floor(S[L.k]||0)), sub:()=>X(`돌파 ${fmt(S[L.k+'Count']||0)}회`,`${fmt(S[L.k+'Count']||0)} breaks`)})),
  {id:'floor',  sp:'sword',  nm:{ko:'탐사 깊이',en:"Depth"}, cls:'floor',  show:()=>S.manaPeakL>=numLog(5e3),
   val:()=>fmt(S.deepest), sub:()=>cosmosLabel(S.deepest||1)},
 ]) }

@@ -122,7 +122,7 @@ setTimeout(function () {
   };
 }, 6000);
 </script>
-<script id="gameScript" data-src="dist/bundle.js?v=060e5b7e"></script>
+<script id="gameScript" data-src="dist/bundle.js?v=2efddfb3"></script>
 <script>
 /* 번들을 첫 그리기 뒤에 돌린다. 스크립트 태그를 그냥 두면 파서가 여기서 멈춰
    번들이 끝날 때까지 아무것도 안 그려진다 — 번들이 멈추면 영영 검은 화면이다.
@@ -138,6 +138,103 @@ setTimeout(function () {
   }
   if (window.requestAnimationFrame) requestAnimationFrame(function () { setTimeout(go, 0); });
   else setTimeout(go, 30);
+})();
+</script>
+<pre id="TESTOUT" style="display:none"></pre>
+<script>
+/* 장기 시뮬레이터.
+   한 시간짜리 검사로는 후반이 안 보인다 — 무한·영원·현실·공허·근원은
+   며칠을 굴려야 닿는다. 여기서는 게임 시간 며칠을 압축해서 돌리면서
+   곡선이 어디서 멎는지, 불변식이 어디서 깨지는지 본다.
+   틱 간격은 0.2 초로 실제와 같게 둔다 — 크게 잡으면 층 진행이 시간에
+   묶인 규칙과 어긋나 결과가 거짓이 된다. */
+(async()=>{
+  const O=document.getElementById('TESTOUT'), out=s=>{O.textContent+=s+'\n'};
+  const fail=[]; const bad=(w,d)=>{ if(fail.length<30) fail.push(w+' :: '+d) };
+  const D=x=>x===undefined?'—':(typeof x==='number'?(isFinite(x)?(Math.abs(x)>=1e5?x.toExponential(2):String(Math.round(x*100)/100)):String(x)):String(x));
+  try{
+  await new Promise(r=>setTimeout(r,900));
+  const G=window.__game; if(!G){ out('[!] __game 없음'); out('DONE'); return }
+  const S=G.S;
+  const DAYS=+((location.search.match(/days=([\d.]+)/)||[])[1]||3);
+  const STEP=0.2, TOTAL=DAYS*86400;
+  const MULS=['prod','t0','tUp','speed','soul','offer','crystal','dungeon','relic','floorLoot','boss','gearPow','autoSpeed','chalPow','costMul'];
+
+  let t=0, ticks=0, errs=0, lastErr='', lastPres=-99;
+  const t0=Date.now();
+  const marks=[]; for(let d=1;d<=DAYS;d++) for(const h of [1,6,12,24]) marks.push((d-1)*86400+h*3600);
+  marks.sort((a,b)=>a-b);
+  let mi=0, stall=0, lastMana=-Infinity, lastCheck=0;
+
+  out(`게임 시간 ${DAYS}일을 굴린다 (틱 ${STEP}초)`);
+  out('   경과 |  마나자릿수 | 최심층 | 환생 승천 초월 무한 영원 현실 공허 근원 | 업적 연구 룬 장비');
+  while(t<TOTAL){
+    try{
+      G.gather();
+      for(let i=G.PRODUCERS.length-1;i>=0;i--){ const n=G.maxAfford(i); if(n>0){ G.buyProducer(i,n); break } }
+      for(const r of G.RESEARCH){
+        if(S.research[r.id]||(r.req&&!S.research[r.req])) continue;
+        const c=G.numLog(r.cost); if(S.manaL>=c){ S.manaL=G.logSub(S.manaL,c); S.research[r.id]=1; G.recalc(); break }
+      }
+      for(const a of G.AUTO_DEFS) if(G.autoUnlocked(a.k)) S.auto[a.k]=1;
+      S.exploring=true;
+      /* 사람이 하듯 한다: 그 계층의 자동화가 아직 안 열렸으면 손으로 누르고,
+         열린 뒤로는 게임 자신의 자동화에 맡긴다. 손으로 미는 동안에도
+         너무 촘촘하면 실제와 어긋나므로 30 초 간격을 둔다. */
+      if(t-lastPres>30){
+        let did=false;
+        if(!G.autoUnlocked('rebirth')&&G.soulGainLog()>-Infinity){ G.doRebirth(true); did=true }
+        else if(!G.autoUnlocked('ascend')&&G.relicGainLog()>-Infinity){ G.doAscend(true); did=true }
+        else if(!G.autoUnlocked('trans')&&G.starGainLog()>-Infinity){ G.doTranscend(true); did=true }
+        else for(let i=0;i<G.INF_LAYERS.length;i++){
+          const L=G.INF_LAYERS[i], key=i===0?'inf':'brk'+L.k;
+          if(G.autoUnlocked(key)) continue;                 // 이미 자동으로 뚫는다
+          if(!G.infUnlocked(i)||G.infGain(i)<=0) continue;
+          G.doInfBreak(i); did=true; break;
+        }
+        if(did) lastPres=t;
+      }
+      G.tick(STEP);
+    }catch(e){ errs++; if(!lastErr){ lastErr=e.message+' @ '+(e.stack||'').split('\n')[1]; bad('틱 예외',lastErr) } }
+    t+=STEP; ticks++;
+
+    if(t-lastCheck>=300){                     // 5 분마다 불변식
+      lastCheck=t;
+      const m=G.M();
+      for(const k of MULS) if(isNaN(m[k+'Log'])) bad('배율',`${k}Log 가 NaN (${D(t/3600)}시간)`);
+      for(const k of ['manaL','manaEverL','manaPeakL']) if(isNaN(S[k])) bad('마나',`${k} 가 NaN (${D(t/3600)}시간)`);
+      if(!(S.floor>=1)) bad('층',`${D(S.floor)} (${D(t/3600)}시간)`);
+      if((S.deepestEver||0)<(S.deepest||0)) bad('기록',`최심층 ${D(S.deepest)} > 기록 ${D(S.deepestEver)}`);
+      for(const c of ['soul','relic','star','crystal','offering'])
+        if(isNaN(G.curL(c))) bad('재료',`${c} 가 NaN (${D(t/3600)}시간)`);
+      if(/NaN|undefined/.test(G.fmtLog(S.manaL))) bad('표기',`fmtLog(${D(S.manaL)}) → ${G.fmtLog(S.manaL)}`);
+      /* 한 시간 넘게 마나 자릿수가 그대로면 멎은 것이다 */
+      /* 프레스티지 직후에는 마나가 0 으로 떨어진다 — 그건 정체가 아니다.
+         여태 닿아 본 최고치(manaPeakL) 가 오래 그대로일 때만 멎은 것으로 본다. */
+      if(S.manaPeakL<=lastMana+1e-9){ stall+=300; if(stall>=10800){ bad('정체',`${D(t/3600)}시간째 세 시간 동안 최고 기록이 늘지 않는다 (${G.fmtLog(S.manaPeakL)})`); stall=-1e9 } }
+      else { stall=0; lastMana=S.manaPeakL }
+    }
+    if(mi<marks.length&&t>=marks[mi]){
+      const h=marks[mi]/3600;
+      out(`${(h<24?h+'시간':(h/24)+'일').padStart(7)} | ${D(S.manaL).padStart(11)} | ${String(S.deepest).padStart(6)} | `
+        +`${S.rebirths} ${S.ascensions} ${S.transcends} ${S.inf||0} ${S.eter||0} ${S.real||0} ${S.void||0} ${S.origin||0} | `
+        +`${G.achCount()} ${Object.keys(S.research).length} ${G.runeTotal()} ${G.gearTotal()}`);
+      mi++;
+    }
+  }
+  const secs=(Date.now()-t0)/1000;
+  out('');
+  out(`  틱 ${ticks.toLocaleString()}회 · 실제 ${secs.toFixed(1)}초 · 초당 ${Math.round(ticks/Math.max(0.001,secs)).toLocaleString()}틱`);
+  out(`  게임 시간 ${DAYS}일을 ${secs.toFixed(1)}초에 = ${Math.round(DAYS*86400/Math.max(0.001,secs)).toLocaleString()}배속`);
+  const m=G.M();
+  out(`  끝 · 마나 ${G.fmtLog(S.manaL)} · 생산 ${G.fmtLog(G.manaRateLog())}/초 · 최심층 ${G.fmt(S.deepest)} · 업적 ${G.achCount()}`);
+  out(`  배율 prod ${D(m.prodLog)} · dungeon ${D(m.dungeonLog)} · 룬 ${G.runeTotal()} 장비 ${G.gearTotal()}`);
+  if(errs) bad('틱',`${errs}회 예외`);
+  }catch(e){ bad('하네스',e.message+' @ '+(e.stack||'').split('\n')[1]) }
+  out('');
+  for(const f of fail) out('  [!] '+f);
+  out(`=== 장기 시뮬 위반 ${fail.length}건 ===`);
+  out('DONE');
 })();
 </script>
 </body>
