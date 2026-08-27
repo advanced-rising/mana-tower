@@ -18,11 +18,27 @@ const HARNESS=[
   ['tabsweep',   'tools/tabsweep.html',   240,  '탭마다 이미지와 표기'],
   ['infsweep',   'tools/infsweep.html',   180, '유한한 값이 ∞ 로 새는 곳'],
   ['matflow',    'tools/matflow.html',    200, '프레스티지 뒤 재료가 흐르는가'],
+  ['stalem',     'tools/stalem.html',     200, '배율 캐시가 낡는 자리'],
+  ['updthrow',   'tools/updthrow.html',   300, '화면 갱신이 조용히 멈추는 자리'],
   ['invariants', 'tools/invariants.html', 500, '한 시간 플레이 불변식'],
 ]
 const only=process.argv.slice(2).filter(a=>!a.startsWith('-'))
 
-let failed=0
+/* 브라우저 안이 아니라 화면 자체를 보는 검사는 따로 돈다 */
+if(!only.length){
+  for(const args of [[],['--phone']]){
+    try{ const r=await run('node',[ROOT+'scripts/textscan.mjs',...args],{cwd:ROOT,maxBuffer:64*1024*1024})
+      console.log(`\n── textscan${args.length?' (휴대폰)':''}  (글자가 안 나오는 자리)`)
+      for(const l of r.stdout.split('\n')) if(l.trim()) console.log(l)
+    }catch(e){
+      console.log(`\n── textscan${args.length?' (휴대폰)':''}  (글자가 안 나오는 자리)`)
+      for(const l of ((e.stdout||'')+(e.stderr||'')).split('\n')) if(l.trim()) console.log(l)
+      failedText++
+    }
+  }
+}
+
+let failed=0, failedText=0
 for(const [name,rel,secs,what] of HARNESS){
   if(only.length&&!only.includes(name)) continue
   const path=ROOT+rel
@@ -49,8 +65,9 @@ for(const [name,rel,secs,what] of HARNESS){
   const ok=done&&problems.length===0&&!/[1-9]\d*건/.test(tally.replace(/0건/,''))
   console.log(`\n── ${name}  (${what})`)
   if(!done){ console.log('   [!] 도중에 멈췄다 — 아래는 마지막 출력'); }
-  for(const l of body.split('\n').slice(-14)) if(l.trim()) console.log('   '+l)
+  for(const l of body.split("\n").slice(-60)) if(l.trim()) console.log('   '+l)
   if(!ok) failed++
 }
+failed+=failedText
 console.log(failed?`\n검증 실패 ${failed}건`:'\n모든 검증 통과')
 process.exit(failed?1:0)

@@ -189,3 +189,8 @@ entries and their unlock conditions.
 ## Hotkeys
 
 `1`–`9`, `0` switch tabs · `Space` gather · `B` buy quantity · `E` toggle delving · `S` save
+
+## 고친 뒤에는
+
+`npm run verify` 가 통과하지 않은 것은 커밋하지도 배포하지도 않는다.
+절차와 각 검사가 무엇을 잡는지는 [.claude/skills/verify/SKILL.md](.claude/skills/verify/SKILL.md) 에 있다.

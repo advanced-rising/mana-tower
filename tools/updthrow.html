@@ -1,0 +1,127 @@
+<pre id="TESTOUT" style="position:fixed;inset:0;z-index:9;background:#000;color:#ddd;font:11px/1.45 monospace;overflow:auto;padding:8px;margin:0"></pre>
+<script>
+/* 화면 갱신은 updater 목록을 돌면서 한다. 그런데 refresh() 는
+   try{u()}catch(e){console.error(e)} 로 감싸 놓았다 — 하나가 터져도 나머지는 돈다.
+   대신 터진 그 패널만 조용히 그 자리에 멈춘다. 숫자는 굳고 라벨은 빈 채로 남고,
+   콘솔을 열지 않는 한 아무도 모른다. 환생으로 상태가 바뀌어 더는 안 터지면
+   그제야 한꺼번에 되살아난다 — 정확히 사용자가 본 그 증상이다.
+   그래서 온갖 상태를 지나가며 터지는 자리를 전부 받아 적는다. */
+(function(){
+const O=document.getElementById('TESTOUT'), L=[]; const p=s=>{L.push(s);O.textContent=L.join('\n')};
+const hits=new Map();
+function note(where,e){
+  const st=((e&&e.stack)||String(e)).split('\n').slice(0,3)
+    .map(s=>s.trim().replace(/https?:\/\/[^ )]*\//,'').replace(/file:\/\/[^ )]*\//,'')).join(' ← ');
+  const k=(e&&e.message||String(e))+' @ '+st;
+  if(!hits.has(k)) hits.set(k,{n:0,where:new Set()});
+  const h=hits.get(k); h.n++; h.where.add(where);
+}
+let CTX='?';
+const ce=console.error;
+console.error=function(e){ if(e instanceof Error) note(CTX,e); else ce.apply(console,arguments) };
+
+function wrap(){                                  /* render 마다 목록이 새로 만들어진다 */
+  const u=G.updaters;
+  for(let i=0;i<u.length;i++){
+    const f=u[i]; if(f.__w) continue;
+    const g=function(){ try{ f() }catch(e){ note(CTX+'#'+i,e); } }; g.__w=1; u[i]=g;
+  }
+}
+function sweep(tag){                              /* 탭마다 한 번씩 그려 본다 */
+  /* TAB_KEYS 는 단축키('1','2'…) 이고 switchTab 은 탭 id 를 받는다.
+     키를 그대로 넘기면 조용히 되돌아나가 탭이 하나도 안 바뀐다. */
+  for(const t of G.TABS){
+    if(!t.open()) continue;
+    CTX=tag+'/'+t.id;
+    try{ G.switchTab(t.id); wrap(); G.refresh(); G.refresh(); }
+    catch(e){ note(CTX+' (빌드)',e) }
+  }
+}
+setTimeout(function(){
+try{
+  var G=window.__game; window.G=G;
+  if(!G){ p('[!] __game 이 없다'); p('DONE'); return }
+  var S=G.S;
+  sweep('처음');
+
+  /* 한 판을 굴린다 — 마나를 붓고, 사고, 내려가고, 돌파하고, 다시 */
+  var rounds=[];
+  for(var r=0;r<14;r++){
+    var digits=[3,8,20,60,140,300,700,1500,3000,8000,2e4,6e4,2e5,1e6][r];
+    G.addManaLog(digits); S.manaRunL=Math.max(S.manaRunL,digits);
+    S.deepest=S.deepestEver=Math.max(S.deepest||1,Math.floor(Math.pow(10,Math.min(14,r*1.1))));
+    S.floor=Math.max(1,Math.floor(S.deepest*0.5));
+    G.recalc();
+    CTX='굴림'+r; wrap();
+    for(var t=0;t<30;t++){ try{ G.tick(0.25) }catch(e){ note('tick'+r,e) } }
+    
+    sweep('굴림'+r);
+    /* 돌파 — 사용자가 "환생을 누르면 되살아난다" 고 한 그 지점 */
+    var did=[];
+    try{ if(G.soulGain()>0){ G.doRebirth(); did.push('환생') } }catch(e){ note('환생'+r,e) }
+    try{ if(G.relicGain&&G.relicGain()>0){ G.doAscend(); did.push('승천') } }catch(e){ note('승천'+r,e) }
+    try{ if(G.starGain&&G.starGain()>0){ G.doTranscend(); did.push('초월') } }catch(e){ note('초월'+r,e) }
+    try{ for(var i=0;i<G.INF_LAYERS.length;i++) if(G.infGain(i)>0){ G.doInfBreak(i); did.push('무한'+i) } }catch(e){ note('무한'+r,e) }
+    G.recalc(); sweep('돌파뒤'+r);
+    rounds.push('굴림'+r+' '+(did.join(',')||'-'));
+  }
+  /* 던전 층을 훑는다 — 광맥마다 라벨이 다르다 */
+  for(var f=1;f<=220;f++){ S.floor=f; CTX='층'+f;
+    try{ G.refresh() }catch(e){ note('층'+f,e) } }
+  /* 시련 안팎 */
+  try{ for(var c=0;c<G.CHALLENGES.length;c++){ var ch=G.CHALLENGES[c];
+      if(!G.chalOpen||!G.chalOpen(ch)) continue;
+      CTX='시련'+ch.id; G.enterChallenge(ch); G.refresh(); G.exitChallenge&&G.exitChallenge(); G.refresh(); }
+  }catch(e){ note('시련',e) }
+
+  /* 떨어져 나간 memo 노드 — 글자가 허공으로 들어가는 자리다 */
+  var detached=new Map();
+  function memoCheck(where){
+    var M=G.MEMOS||[];
+    for(var i=0;i<M.length;i++){
+      if(document.contains(M[i])) continue;
+      var n=M[i], cls=(n.className&&n.className.baseVal!==undefined?n.className.baseVal:n.className)||'';
+      var k=where+' | '+n.tagName.toLowerCase()+'.'+String(cls).replace(/\s+/g,'.');
+      detached.set(k,(detached.get(k)||0)+1);
+    }
+  }
+  for(var k2=0;k2<G.TABS.length;k2++){
+    var tb=G.TABS[k2]; if(!tb.open()) continue;
+    G.switchTab(tb.id); G.refresh(); G.refresh(); G.refresh(); memoCheck('탭 '+tb.id);
+  }
+  /* 층을 깨고 돌파해도 자리가 살아 있어야 한다 */
+  S.floor=(S.deepest||1)+1; G.refresh();
+  try{ if(G.soulGain()>0) G.doRebirth() }catch(e){}
+  G.render(); G.refresh(); G.refresh(); memoCheck('돌파 뒤');
+
+  /* 게임이 스스로 적어 둔 것도 본다 — 하네스가 못 지나간 자리까지 걸린다 */
+  var uf=G.updFails||{};
+  for(var kf in uf) if(!hits.has(kf+' @ (게임 기록)'))
+    hits.set(kf+' @ (게임 기록)',{n:uf[kf],where:new Set(['refresh'])});
+
+  p('=== 굴림 ===');
+  for(var i=0;i<rounds.length;i++) p('  '+rounds[i]);
+  p('');
+  p('추적 중인 memo 자리 '+((G.MEMOS||[]).length)+'개');
+  if(!detached.size) p('=== 떨어져 나간 글자 자리 0건 ===');
+  else{
+    p('=== 떨어져 나간 글자 자리 '+detached.size+'건 ===');
+    var dk=[...detached.keys()];
+    for(var q=0;q<dk.length&&q<20;q++) p('[!] '+dk[q]+'  ×'+detached.get(dk[q]));
+  }
+  p('');
+  if(!hits.size) p('=== updater 예외 0건 ===');
+  else{
+    p('=== updater 예외 '+hits.size+'건 ===');
+    var ks=[...hits.keys()];
+    for(var j=0;j<ks.length&&j<24;j++){
+      var h=hits.get(ks[j]);
+      p('[!] '+ks[j]);
+      p('     '+h.n+'회 · '+[...h.where].slice(0,6).join(', '));
+    }
+  }
+  p('DONE');
+}catch(e){ p('[!] 하네스가 터졌다: '+e.message); p((e.stack||'').split('\n').slice(0,4).join('\n')); p('DONE') }
+},2200);
+})();
+</script>

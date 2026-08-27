@@ -137,11 +137,36 @@ export function recalc(){setMC(computeM()); syncMana();}
 /* 배율을 지금 다시 재지 않고 '낡았다' 고만 표시한다 — 다음에 M() 을 읽을 때
    한 번만 다시 접는다. 업적처럼 틱 도중에 조용히 바뀌는 입력에 쓴다. */
 export function invalidateM(){ setMC(null) }
-/* 배율의 입력 중 평범한 틱이 바꿀 수 있는 것들. 이게 그대로면 다시 접을 이유가 없다. */
+/* ── 배율이 낡았는지 알아보는 서명 ────────────────────
+   여기는 '틱이 바꿀 수 있는 입력' 을 손으로 적어 둔 목록이었다. 목록은 손으로 적는
+   한 반드시 뒤처진다 — 연구·장비·영혼·별·무한·영원 강화 여섯 갈래가 빠져 있었고,
+   그래서 아이템을 올려도 배율은 옛 값에 굳어 있었다. 화면의 숫자가 멈춘 채로 있다가
+   환생을 누르는 순간 되살아난 것이 이것이다: 돌파 횟수는 목록에 들어 있었으니까.
+   이제 목록을 적지 않는다. computeM 이 읽는 창고를 그대로 훑어 서명을 만든다.
+   빠뜨릴 목록이 없으니 다시 뒤처질 수 없다.
+   값은 가진 항목 수에만 비례한다 — 항목마다 배율을 접는 computeM 에 비하면
+   거의 공짜다(548 항목에서 훑기 0.02ms, 접기 6ms). */
+const SIG_STORES=['research','runes','gear','soulUps','relicUps','starUps','chalDone','achs'];
+function storeSig(o){
+  let sum=0, mix=0;
+  if(o) for(const k in o){
+    const v=(o as any)[k];
+    if(!v) continue;
+    let h=0; for(let i=0;i<k.length;i++) h=(h*31+k.charCodeAt(i))|0;
+    /* 레벨 합만 보면 하나 오르고 하나 내린 것이 서로 지워진다 — 이름도 섞는다.
+       레벨이 조 단위까지 가므로 자릿수로 눌러 담아야 정밀도가 남는다. */
+    sum+=v; mix+=h*(1+Math.log(1+v));
+  }
+  return sum+'~'+(mix|0);
+}
 export function mSignature(){
   const ch=curChal();
-  return `${S.deepest|0}|${S.rebirths|0}|${S.ascensions|0}|${S.transcends|0}|`
+  let s=`${S.floor|0}|${S.deepest|0}|${S.deepestEver|0}|${S.rebirths|0}|${S.rebirthEver|0}|`
+    +`${S.ascensions|0}|${S.transcends|0}|`
     +`${S.inf||0}|${S.eter||0}|${S.real||0}|${S.void||0}|${S.origin||0}|${ch?ch.id:''}`;
+  for(let i=0;i<SIG_STORES.length;i++) s+='|'+storeSig(S[SIG_STORES[i]]);
+  for(let i=0;i<INF_LAYERS.length;i++) s+='|'+storeSig(S[INF_LAYERS[i].store]);
+  return s;
 }
 export function M(){ if(!MC) setMC(computeM()); return MC }
 

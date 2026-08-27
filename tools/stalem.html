@@ -1,0 +1,103 @@
+<pre id="TESTOUT" style="position:fixed;inset:0;z-index:9;background:#000;color:#ddd;font:11px/1.45 monospace;overflow:auto;padding:8px;margin:0"></pre>
+<script>
+/* 배율은 매 프레임 다시 접기엔 비싸서 캐시해 두고, 서명(mSignature) 이 바뀔 때만
+   다시 잰다. 서명이 입력 하나를 빠뜨리면 그 입력이 바뀌어도 캐시가 그대로 남는다 —
+   화면의 숫자가 그 자리에 굳는다. 그러다 환생처럼 서명에 든 값이 바뀌는 순간
+   한꺼번에 되살아난다. 사용자가 본 그대로다.
+   그래서 온갖 상태에서 '캐시된 배율' 과 '지금 다시 잰 배율' 을 맞대어 본다. */
+(function(){
+const O=document.getElementById('TESTOUT'), L=[]; const p=s=>{L.push(s);O.textContent=L.join('\n')};
+setTimeout(function(){
+try{
+  var G=window.__game;
+  if(!G){ p('[!] __game 이 없다'); p('DONE'); return }
+  var S=G.S, F=['prodLog','manaMulLog','costMul','runeCap','gearCap','dungeonLog'];
+  var stale=new Map(), checks=0;
+  function look(what){
+    checks++;
+    var c=G.M(), f=G.computeM();
+    for(var i=0;i<F.length;i++){
+      var k=F[i], a=c[k], b=f[k];
+      if(a===undefined&&b===undefined) continue;
+      var same=(typeof a==='number'&&typeof b==='number')
+        ? (Math.abs(a-b)<=1e-9*Math.max(1,Math.abs(a),Math.abs(b))) : a===b;
+      if(!same){
+        var key=k+' | '+what;
+        if(!stale.has(key)) stale.set(key,{n:0,ex:k+': 캐시 '+a+' vs 실제 '+b});
+        stale.get(key).n++;
+      }
+    }
+  }
+  /* 배율의 입력을 하나씩 건드려 본다 — 서명에 없는 것을 찾는 게 목적이다 */
+  function poke(name,fn){ G.recalc(); fn(); G.tick(0.05); look(name); }
+
+  G.addManaLog(120); S.deepest=S.deepestEver=60; G.recalc();
+  var P=G.PRODUCERS, R=G.RESEARCH, RU=G.RUNES, GE=G.GEAR;
+
+  poke('시설 수', function(){ S.bought[0]=(S.bought[0]||0)+50 });
+  poke('연구', function(){ if(R&&R[0]) S.research[R[0].id]=(S.research[R[0].id]||0)+1 });
+  poke('룬', function(){ if(RU&&RU[0]) S.runes[RU[0].id]=(S.runes[RU[0].id]||0)+1 });
+  poke('장비', function(){ if(GE&&GE[0]) S.gear[GE[0].id]=(S.gear[GE[0].id]||0)+1 });
+  poke('영혼 강화', function(){ var u=G.SOUL_UPS&&G.SOUL_UPS[0]; if(u) S.soulUps[u.id]=(S.soulUps[u.id]||0)+1 });
+  poke('유물 강화', function(){ var u=G.RELIC_UPS&&G.RELIC_UPS[0]; if(u) S.relicUps[u.id]=(S.relicUps[u.id]||0)+1 });
+  poke('별 강화', function(){ var u=G.STAR_UPS&&G.STAR_UPS[0]; if(u) S.starUps[u.id]=(S.starUps[u.id]||0)+1 });
+  poke('무한 강화', function(){ var u=G.INF_UPS&&G.INF_UPS[0]; if(u) S.infUps[u.id]=(S.infUps[u.id]||0)+1 });
+  poke('영원 강화', function(){ var u=G.ETER_UPS&&G.ETER_UPS[0]; if(u) S.eterUps[u.id]=(S.eterUps[u.id]||0)+1 });
+  poke('던전 층', function(){ S.floor=(S.floor||1)+7 });
+  poke('최심층', function(){ S.deepest=(S.deepest||1)+40 });
+  poke('최심기록', function(){ S.deepestEver=(S.deepestEver||1)+900 });
+  poke('업적', function(){ var a=G.ACHS&&G.ACHS[0]; if(a) S.achs[a.id]=1 });
+  poke('장(章) 넘김', function(){ S.deepest=S.deepestEver=400 });
+  poke('장비 재료', function(){ G.setRes&&G.setRes('offering',60) });
+
+  /* 그리고 그냥 오래 굴려 본다 */
+  for(var r=0;r<9;r++){
+    G.addManaLog(40*(r+1)); S.deepest=S.deepestEver=Math.max(S.deepest, 30*(r+1)*(r+1));
+    for(var t=0;t<40;t++){ G.tick(0.25); if(t%7===0) look('굴림'+r); }
+    try{ if(G.soulGain()>0) G.doRebirth() }catch(e){}
+    try{ if(G.relicGain()>0) G.doAscend() }catch(e){}
+    look('돌파뒤'+r);
+  }
+
+  /* 조건부 recalc 이 사 주는 것은 '가만있을 때 접지 않는 것' 이다. 시계는 가상이라
+     0 으로 읽히니(--virtual-time-budget) 시간 대신 그 성질을 직접 잰다:
+     아무것도 안 바뀌는 동안 서명이 흔들리면 매 프레임 548 항목을 다시 접게 된다. */
+  for(var i=0;i<G.RESEARCH.length;i++) S.research[G.RESEARCH[i].id]=1;
+  for(var i=0;i<G.RUNES.length;i++) S.runes[G.RUNES[i].id]=50;
+  for(var i=0;i<G.GEAR.length;i++) S.gear[G.GEAR[i].id]=40;
+  var sets=[[G.SOUL_UPS,'soulUps'],[G.RELIC_UPS,'relicUps'],[G.STAR_UPS,'starUps'],
+            [G.INF_UPS,'infUps'],[G.ETER_UPS,'eterUps'],[G.REAL_UPS,'realUps'],
+            [G.VOID_UPS,'voidUps'],[G.ORIGIN_UPS,'originUps']];
+  for(var i=0;i<sets.length;i++){ var a=sets[i][0]||[];
+    for(var j=0;j<a.length;j++) S[sets[i][1]][a[j].id]=1e6; }
+  var owned=0, stn=['research','runes','gear','soulUps','relicUps','starUps',
+                    'infUps','eterUps','realUps','voidUps','originUps'];
+  for(var i=0;i<stn.length;i++) owned+=Object.keys(S[stn[i]]||{}).length;
+  G.recalc();
+  var base=G.mSignature(), drift=0;
+  for(var i=0;i<600;i++){ G.tick(0.05); if(G.mSignature()!==base){ drift++; base=G.mSignature() } }
+  p('가진 항목 '+owned+'개 · 가만있는 600틱에서 서명이 흔들린 횟수 '+drift);
+  if(drift>60) p('[!] 서명이 자꾸 흔들린다 — 매 프레임 다시 접게 되어 조건부 recalc 의 뜻이 없다');
+
+  /* 서명이 실제로 아이템 변화를 잡는지 */
+  var s1=G.mSignature(); S.gear[G.GEAR[0].id]=(S.gear[G.GEAR[0].id]||0)+1;
+  if(G.mSignature()===s1) p('[!] 장비 레벨이 올랐는데 서명이 그대로다');
+  var s2=G.mSignature(); S.runes[G.RUNES[0].id]=(S.runes[G.RUNES[0].id]||0)+1;
+  S.gear[G.GEAR[0].id]=(S.gear[G.GEAR[0].id]||0)-1;   /* 합만 보면 서로 지워지는 짝 */
+  if(G.mSignature()===s2) p('[!] 하나 오르고 하나 내렸더니 서명이 서로 지워진다');
+  /* 서명이 배율을 접어서는 안 된다 — 그러면 아낀 게 없다 */
+  var folds=0, of=G.M; 
+  p('');
+  p('맞대어 본 횟수 '+checks);
+  p('');
+  if(!stale.size) p('=== 낡은 배율 0건 ===');
+  else{
+    p('=== 낡은 배율 '+stale.size+'건 ===');
+    var ks=[...stale.keys()];
+    for(var j=0;j<ks.length&&j<24;j++) p('[!] '+ks[j]+'  ('+stale.get(ks[j]).n+'회)\n     '+stale.get(ks[j]).ex);
+  }
+  p('DONE');
+}catch(e){ p('[!] 하네스가 터졌다: '+e.message); p((e.stack||'').split('\n').slice(0,4).join('\n')); p('DONE') }
+},2200);
+})();
+</script>

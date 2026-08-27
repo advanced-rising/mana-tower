@@ -3,7 +3,7 @@ import { DS, DSF, NM, X, ic, icHTML } from '../core'
 import { S } from '../state'
 import { costLogAt, fmt, fmtLog, upMaxOf } from '../num'
 import { effLevel, recalc } from '../multipliers'
-import { BELOW_RATIO, LAYER_BELOW, autoUnlocked, budgetLogOf, buyBulkLog, pay2, payFrom } from '../automation'
+import { BELOW_RATIO, LAYER_BELOW, autoUnlocked, budget2Log, budgetLogOf, buyBulkLog, pay2, payFrom } from '../automation'
 import { btn, el, toast } from './dom'
 import { refresh } from './render'
 
@@ -11,7 +11,14 @@ import { refresh } from './render'
 /* 0.1 초마다 갱신 함수가 전부 돈다. 그때마다 querySelector 로 노드를 다시 찾고
    값이 그대로여도 innerHTML 을 다시 써서 브라우저에 HTML 파싱을 시키고 있었다.
    노드는 만들 때 한 번만 찾고, 값이 달라졌을 때만 쓴다. */
+/* memo 는 노드에 마지막 값을 적어 두고 같으면 안 쓴다. 그래서 그 노드가 화면에서
+   떨어져 나가면(부모를 innerHTML 로 다시 그리는 경우) 글자는 계속 허공으로 들어가고
+   화면의 자리는 빈 채로 남는다 — 예외도 안 나고 콘솔도 조용하다.
+   떨어진 노드를 찾을 수 있도록 만든 것을 적어 둔다. render 마다 비운다. */
+export const MEMOS:any[]=[];
+export function clearMemos(){ MEMOS.length=0 }
 export function memo(node){
+  if(node) MEMOS.push(node);
   return {
     set html(v){ if(node._h!==v){ node._h=v; node.innerHTML=v; } },
     set text(v){ if(node._h!==v){ node._h=v; node.textContent=v; } },

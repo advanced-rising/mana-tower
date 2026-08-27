@@ -6,15 +6,16 @@ import { DS, DSF, LANG, NM, VERSION, X, ic, icHTML, setLang, spriteURL } from '.
 import { ACHS, BADGES, chalGoal, chalGoalLog, CHALLENGES, ETER_UPS, GEAR, GEAR_SLOTS, INF_UPS, MILESTONES, ORIGIN_UPS, REAL_UPS, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, VOID_UPS } from './content'
 import { S, setS } from './state'
 import { achCount, bulkCostLog, bulkMaxLog, capFrom, chalTotal, cnt, cntLog, costLogAt, curL, cutTxt, everLogOf, fmt, fmtLog, freeFrom, freeRaw, freeStart, gainRes, gearBudgetLog, gearChapter, gearOfferLog, gearOpen, gearTotal, geoSumLog, L10, logAdd, logSub, numLog, pctTxt, powTxt, ratioOf, RES, runeTotal, safeLog, setRes, spendRes, START_MANA_CAP, syncGen, syncRes, upCapFrom, upMaxOf } from './num'
-import { addManaLog, buyProducer, computeM, costLogOf, effLevel, gather, gatherAmountLog, growth, M, manaRateLog, maxAfford, recalc, syncMana } from './multipliers'
+import { addManaLog, buyProducer, computeM, costLogOf, effLevel, gather, gatherAmountLog, growth, M, manaRateLog, maxAfford, mSignature, recalc, syncMana } from './multipliers'
 import { chapterOf, chapterProgress, chapterSeen, chapterStart, clearFloor, COSMOS, cosmos, cosmosBonusLog, dungeonPowerLog, floorHPLog, floorLoot, floorLootManaLog, foeOf, FOES, syncChapter } from './dungeon'
 import { ASCEND_REQ, ascendReqLog, breakAmount, doAscend, doInfBreak, doRebirth, doTranscend, INF_STACK, infBonusLog, infGain, infUnlocked, markReq, offerGainLog, REBIRTH_REQ, rebirthReqLog, relicGain, relicGainLog, REQ_GROWTH, reqFor, reqLog, softReset, soulGain, soulGainLog, starGain, starGainLog, TRANS_REQ, transReqLog, transUnlocked } from './prestige'
 import { AUTO_DEF, AUTO_DEFS, autoBuyTree, autoOK, autoUnlocked, buyBulkLog, runAutomation } from './automation'
 import { checkAchs, log, tick } from './tick'
 import { $, modal, modalOpen } from './ui/dom'
+import { MEMOS } from './ui/widgets'
 import { TABS, TAB_KEYS, buildTabs, ensureTabs, switchTab, tabByKey, tabKeyOf, updaters } from './ui/tabs'
 import { buildRes } from './ui/resbar'
-import { refresh, render } from './ui/render'
+import { refresh, render, updFails } from './ui/render'
 import { crumb, dec, enc, exportSave, importSave, lastCrumb, load, mergeState, offlineCatchUp, safeMode, save, skippedSave } from './save'
 
 /* ══════════════ 루프 & 입력 ══════════════ */
@@ -83,7 +84,7 @@ document.title=X('무한의 탑','Tower of Infinity');
   PRODUCERS, RESEARCH, RUNES, GEAR, SOUL_UPS, RELIC_UPS, STAR_UPS,
   INF_UPS, ETER_UPS, REAL_UPS, VOID_UPS, ORIGIN_UPS,
   CHALLENGES, ACHS, AUTO_DEFS, TABS, COSMOS, INF_LAYERS, FOES, BADGES,
-  M, computeM, recalc, tick, tabKeyOf, tabByKey, TAB_KEYS, costLogOf, maxAfford, buyProducer, growth, refresh, render, switchTab, buildTabs, save, load,
+  M, computeM, mSignature, recalc, tick, tabKeyOf, tabByKey, TAB_KEYS, costLogOf, maxAfford, buyProducer, growth, refresh, render, switchTab, buildTabs, save, load,
   fmt, fmtLog, powTxt, cutTxt, pctTxt, NM, DS, DSF, X, ic, icHTML, spriteURL,
   foeOf, clearFloor, floorLoot, floorLootManaLog, floorHPLog,
   dungeonPowerLog, cnt, cntLog, syncGen, logAdd, logSub, geoSumLog, numLog, safeLog, L10,
@@ -93,11 +94,11 @@ document.title=X('무한의 탑','Tower of Infinity');
   chapterProgress, chapterStart, gearChapter,
   achCount, runeTotal, gearTotal, chalTotal, chapterSeen, chapterOf, cosmos, cosmosBonusLog, infBonusLog, gatherAmountLog, manaRateLog,
   transUnlocked, starGain, starGainLog, relicGain, relicGainLog, soulGain, soulGainLog, offerGainLog, breakAmount, TRANS_REQ, ASCEND_REQ, REBIRTH_REQ, rebirthReqLog, ascendReqLog, transReqLog, markReq, REQ_GROWTH,
-  gather, addManaLog, syncMana, effLevel, gearOpen, gearChapter, gearBudgetLog, gearOfferLog, START_MANA_CAP, freeStart, freeFrom, freeRaw, upMaxOf, upCapFrom, everLogOf, capFrom, softReset, checkAchs, MILESTONES, RESEARCH_ALL: RESEARCH,
+  gather, addManaLog, syncMana, effLevel, gearOpen, gearBudgetLog, gearOfferLog, START_MANA_CAP, freeStart, freeFrom, freeRaw, upMaxOf, upCapFrom, everLogOf, capFrom, softReset, checkAchs, MILESTONES, RESEARCH_ALL: RESEARCH,
   importSave, mergeState,  offlineCatchUp, dec, enc, crumb, lastCrumb, exportSave, safeMode, skippedSave,
   enterChallenge, exitChallenge, checkChallenge, chalUnlocked, chalOpen, chalGoalLog, chalGoal,
   trackFor, TRACKS, bgmOn, sfxOn, vol, sfxVol, setVol, setSfxVol, applyBgm, unlockAudio, setChapterMusic, nextTrack, nowTrack, sfx,
-  INF_STACK, reqFor, reqLog,
+  INF_STACK, reqFor, reqLog, MEMOS, updFails,
 }
 
 /* 부팅이 어디서 터지든 남는 것은 흰 화면뿐이었다 — 무엇이 잘못됐는지도,
