@@ -22,7 +22,9 @@ export const REBIRTH_REQ=1e6, ASCEND_REQ=300;
    그냥 눌러야 하는 버튼이 되었다.
    여태 낸 최고치의 아홉 할을 요구한다 — 기록이 자라면 조건도 함께 자라므로
    언제나 '거의 최고만큼' 다시 가야 한다. 처음 정한 값이 하한으로 남는다. */
-export const REQ_REL=0.9;
+/* 0.9 로 두었더니 초기화 뒤 한 회차에 그만큼을 다시 벌지 못해 영영 막혔다.
+   돌파는 '거의 최고만큼' 이 아니라 '제법 멀리' 면 된다. */
+export const REQ_REL=0.55;
 /* 최고치를 넘지 못한 돌파라도 조건은 한 걸음 밀린다 — '돌파할 때마다 더 멀리' 다.
    자릿수로 0.3(=약 두 배) 씩이라, 쉰 번을 해도 열다섯 자릿수만 오른다. */
 export const REQ_STEP=0.3;
@@ -103,7 +105,7 @@ export function doAscend(silent){
   const rl=relicGainLog();
   /* 돌파마다 갚는 재료가 달라야 한다. 승천은 유물과 함께 결정을 얹는다 —
      장비를 벼릴 밑천이 되어, 승천이 던전 쪽 경제와도 이어진다. */
-  gainRes('crystal',rl+L10(0.4));
+  gainRes('crystal',rl*0.3);      // 유물 자릿수의 3 할
   gainRes('relic',rl); S.relicTransL=logAdd(S.relicTransL,rl); S.relicTrans=S.relicTransL<308?Math.pow(10,S.relicTransL):Infinity;
   sfx('prestige');
   pushReq('bestAscL',S.soulAscL);
@@ -143,7 +145,9 @@ export const infUnlocked=i=>i===0
    그래서 '지난번에 실제로 닿았던 높이' 를 기준으로 삼는다. 다음 돌파는 그보다
    확실히 더 멀리 가야 한다. 자릿수에 곱으로 붙으므로 생산이 아무리 커져도
    따라잡는 데 시간이 든다. */
-export const REQ_GROWTH=1.15;         // 다음 돌파는 지난번 높이의 1.15 배 자릿수
+/* 자릿수에 곱으로 붙으므로 조금만 커도 금세 손이 닿지 않는다 —
+   1.15 배씩이면 서른네 번 만에 116 배가 되어 게임이 여섯 시간에 멎었다. */
+export const REQ_GROWTH=1.02;         // 다음 돌파는 지난번 높이보다 2% 더 멀리
 export function reqLog(i){
   const k=INF_LAYERS[i].k;
   const base=300+3*(S[k+'Count']||0);
@@ -197,7 +201,9 @@ export function doInfBreak(i){
   markReq(i, i===0?S.manaEverL:numLog(L.from()));   // 다음은 여기보다 멀리 가야 한다
   S[L.k]=(S[L.k]||0)+g; S[L.k+'Ever']=(S[L.k+'Ever']||0)+g; S[L.k+'Count']=(S[L.k+'Count']||0)+1;
   /* 계층 돌파는 아래를 통째로 지우므로, 다시 굴릴 씨앗을 계층마다 다르게 준다 */
-  { const seed=L10(1+g)*6+30;
+  /* 씨앗은 다시 굴릴 만큼이면 된다. 서른 자릿수를 주었더니 룬 상한(약 35 자릿수)
+     을 한 번에 채워, 돌파하자마자 모든 아이템이 최대가 되었다. */
+  { const seed=L10(1+g)*2+2;
     if(i===0){ gainRes('crystal',seed); gainRes('offering',seed*0.9) }
     else if(i===1){ gainRes('soul',seed); gainRes('crystal',seed*0.9) }
     else if(i===2){ gainRes('relic',seed); gainRes('offering',seed*0.9) }
@@ -251,7 +257,7 @@ export function doTranscend(silent){
   pushReq('bestTransL',S.relicTransL);
   /* 초월은 별가루와 함께 오퍼링·영혼석을 얹는다 — 룬과 영혼 강화를 다시
      세울 밑천이다. 아래를 전부 갈아엎는 돌파이니 씨앗은 돌려준다. */
-  gainRes('offering',sl+L10(0.6)); gainRes('soul',sl+L10(0.3));
+  gainRes('offering',sl*0.35); gainRes('soul',sl*0.3);
   gainRes('star',sl); S.lastStarGainL=sl; S.lastStarGain=g; S.transcends++; S.transEver=(S.transEver||0)+1;
   /* 자릿수가 진실이므로 파생값만 0 으로 두면 아무것도 초기화되지 않는다.
      초월 뒤에도 영혼석과 유물이 그대로 남아 있던 자리다. */
