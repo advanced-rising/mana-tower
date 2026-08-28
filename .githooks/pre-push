@@ -1,14 +1,22 @@
 #!/bin/sh
 # 검사를 안 지난 것은 푸시되지 않는다 — 푸시가 곧 배포다.
-# git 은 pre-push 의 stdin 으로 밀어 올릴 ref 목록을 넘긴다. 그걸 읽어 비우지 않으면
-# 검사가 띄우는 크롬이 그 stdin 을 물고 늘어져 영영 안 끝난다 (십 분을 두 번 날렸다).
-# 먼저 비우고, 아래로는 /dev/null 을 물린다.
+#
+# git 은 pre-push 의 stdin 으로 밀어 올릴 ref 목록을 넘긴다. 읽어 비우지 않으면
+# 검사가 띄우는 크롬이 그 stdin 을 물고 늘어져 영영 안 끝난다.
+# 그리고 훅의 stdout 은 git 이 파이프로 받는다 — 검증 로그를 통째로 쏟으면
+# 파이프가 차서 그대로 멈춰 버린다(십 분씩 세 번 날렸다). 로그는 파일로 보내고
+# 여기서는 몇 줄만 적는다.
 cat > /dev/null
-echo "── 푸시 전 전체 검증 (1분쯤 걸린다)"
-npm run verify < /dev/null || {
-  echo ""
-  echo "  푸시를 멈춘다. 푸시하면 그대로 배포되므로 깨진 채로 내보낼 수 없다."
-  echo "  정말 넘겨야 한다면 git push --no-verify (권하지 않는다)"
-  exit 1
-}
-exit 0
+LOG=.verify.log
+echo "── 푸시 전 전체 검증 (40초쯤) · 자세한 것은 $LOG"
+if npm run verify < /dev/null > "$LOG" 2>&1; then
+  tail -1 "$LOG"
+  exit 0
+fi
+echo ""
+grep -E '^── |\[!\]|>>> 실패|실패 [0-9]+건' "$LOG" | tail -20
+echo ""
+echo "  푸시를 멈춘다. 푸시하면 그대로 배포되므로 깨진 채로 내보낼 수 없다."
+echo "  전체 로그: $LOG"
+echo "  정말 넘겨야 한다면 git push --no-verify (권하지 않는다)"
+exit 1

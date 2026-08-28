@@ -6,3 +6,4 @@ _verify.html
 _ag*.html
 node_modules/
 .DS_Store
+.verify.log
