@@ -5,7 +5,7 @@
    각 하네스는 index.html 의 </body> 앞에 끼워 넣어져 실제 게임 위에서 돌고,
    결과를 <pre id="TESTOUT"> 에 적은 뒤 'DONE' 으로 끝낸다.
    'DONE' 이 없으면 도중에 죽은 것이므로 실패로 친다. */
-import { execFile } from 'node:child_process'
+import { execFile, spawn } from 'node:child_process'
 import { readFileSync, writeFileSync, unlinkSync, existsSync } from 'node:fs'
 import { promisify } from 'node:util'
 import { cpus } from 'node:os'
@@ -19,6 +19,7 @@ const HARNESS=[
   ['tabsweep',   'tools/tabsweep.html',   420,  '탭마다 이미지와 표기'],
   ['infsweep',   'tools/infsweep.html',   180, '유한한 값이 ∞ 로 새는 곳'],
   ['matflow',    'tools/matflow.html',    200, '프레스티지 뒤 재료가 흐르는가'],
+  ['itemcurve',  'tools/itemcurve.html',  240, '아이템이 열리는 방식과 상한'],
   ['stalem',     'tools/stalem.html',     200, '배율 캐시가 낡는 자리'],
   ['updthrow',   'tools/updthrow.html',   300, '화면 갱신이 조용히 멈추는 자리'],
   ['invariants', 'tools/invariants.html', 500, '한 시간 플레이 불변식'],
@@ -49,15 +50,23 @@ async function runOne([name,rel,secs,what],tag=''){
   const at=html.lastIndexOf('</body>')
   const tmp=ROOT+`_verify_${name}${tag}.html`
   writeFileSync(tmp, html.slice(0,at)+readFileSync(path,'utf8')+html.slice(at))
-  let out=''
-  try{
-    const r=await run(CHROME,['--headless','--disable-gpu','--no-sandbox',
+  /* execFile 은 자식에게 이 프로세스의 stdin 을 물려준다. 백그라운드나 훅에서 돌면
+     그 stdin 이 영영 안 닫히고, 크롬이 그걸 기다리며 CPU 0% 로 멈춰 선다 —
+     아홉 개가 스무 남짓 분을 그렇게 서 있었다. spawn 으로 stdin 을 아예 없앤다.
+     그래도 안 끝나면 시간을 재서 끊는다. 멈춘 검사는 실패보다 나쁘다. */
+  const out=await new Promise(res=>{
+    const ch=spawn(CHROME,['--headless','--disable-gpu','--no-sandbox',
       '--allow-file-access-from-files','--window-size=1400,1000',
       `--virtual-time-budget=${secs*1000}`,'--dump-dom','file://'+tmp],
-      {maxBuffer:256*1024*1024, stdio:['ignore','pipe','pipe']})
-    out=r.stdout
-  }catch(e){ out=e.stdout||'' }
-  finally{ try{ unlinkSync(tmp) }catch{} }
+      {stdio:['ignore','pipe','pipe']})
+    let buf=''
+    ch.stdout.on('data',d=>{ buf+=d; if(buf.length>256*1024*1024) ch.kill('SIGKILL') })
+    ch.stderr.on('data',()=>{})
+    const timer=setTimeout(()=>{ try{ ch.kill('SIGKILL') }catch{} }, Math.max(60,secs)*1000)
+    ch.on('close',()=>{ clearTimeout(timer); res(buf) })
+    ch.on('error',()=>{ clearTimeout(timer); res(buf) })
+  })
+  try{ unlinkSync(tmp) }catch{}
   return {name,what,out}
 }
 /* 하네스가 끝을 못 봤다(DONE 없음)는 것은 코드가 틀렸다는 뜻이 아니라

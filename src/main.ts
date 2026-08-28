@@ -5,7 +5,7 @@ import { PRODUCERS } from './producers'
 import { DS, DSF, LANG, NM, VERSION, X, ic, icHTML, setLang, spriteURL } from './core'
 import { ACHS, BADGES, chalGoal, chalGoalLog, CHALLENGES, ETER_UPS, GEAR, GEAR_SLOTS, INF_UPS, MILESTONES, ORIGIN_UPS, REAL_UPS, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, VOID_UPS } from './content'
 import { S, setS } from './state'
-import { achCount, bulkCostLog, bulkMaxLog, capFrom, chalTotal, cnt, cntLog, costLogAt, curL, cutTxt, everLogOf, fmt, fmtLog, freeFrom, freeRaw, freeStart, gainRes, gearBudgetLog, gearChapter, gearOfferLog, gearOpen, gearTotal, geoSumLog, L10, logAdd, logSub, numLog, pctTxt, powTxt, ratioOf, RES, runeTotal, safeLog, setRes, spendRes, START_MANA_CAP, syncGen, syncRes, upCapFrom, upMaxOf } from './num'
+import { achCount, bulkCostLog, bulkMaxLog, capFrom, chalTotal, cnt, cntLog, costLogAt, curL, cutTxt, everLogOf, fmt, fmtLog, freeFrom, freeRaw, freeStart, gainRes, gearBudgetLog, gearChapter, gearOfferLog, gearOpen, gearTotal, geoSumLog, L10, logAdd, logSub, numLog, pctTxt, powTxt, ratioOf, RES, runeTotal, safeLog, setRes, spendRes, START_MANA_CAP, syncGen, syncRes, upCapFrom, upMaxOf, notePeaks, peakLogOf, upAnchorLog, upOpen, upOpenCount, UP_UNLOCK_LV } from './num'
 import { addManaLog, buyProducer, computeM, costLogOf, effLevel, gather, gatherAmountLog, growth, M, manaRateLog, maxAfford, mSignature, recalc, syncMana } from './multipliers'
 import { chapterOf, chapterProgress, chapterSeen, chapterStart, clearFloor, COSMOS, cosmos, cosmosBonusLog, dungeonPowerLog, floorHPLog, floorLoot, floorLootManaLog, foeOf, FOES, syncChapter } from './dungeon'
 import { ASCEND_REQ, ascendReqLog, breakAmount, doAscend, doInfBreak, doRebirth, doTranscend, INF_STACK, infBonusLog, infGain, infUnlocked, markReq, offerGainLog, REBIRTH_REQ, rebirthReqLog, relicGain, relicGainLog, REQ_GROWTH, reqFor, reqLog, softReset, soulGain, soulGainLog, starGain, starGainLog, TRANS_REQ, transReqLog, transUnlocked } from './prestige'
@@ -94,7 +94,7 @@ document.title=X('무한의 탑','Tower of Infinity');
   chapterProgress, chapterStart, gearChapter,
   achCount, runeTotal, gearTotal, chalTotal, chapterSeen, chapterOf, cosmos, cosmosBonusLog, infBonusLog, gatherAmountLog, manaRateLog,
   transUnlocked, starGain, starGainLog, relicGain, relicGainLog, soulGain, soulGainLog, offerGainLog, breakAmount, TRANS_REQ, ASCEND_REQ, REBIRTH_REQ, rebirthReqLog, ascendReqLog, transReqLog, markReq, REQ_GROWTH,
-  gather, addManaLog, syncMana, effLevel, gearOpen, gearBudgetLog, gearOfferLog, START_MANA_CAP, freeStart, freeFrom, freeRaw, upMaxOf, upCapFrom, everLogOf, capFrom, softReset, checkAchs, MILESTONES, RESEARCH_ALL: RESEARCH,
+  gather, addManaLog, syncMana, effLevel, gearOpen, gearBudgetLog, gearOfferLog, START_MANA_CAP, freeStart, freeFrom, freeRaw, upMaxOf, upCapFrom, everLogOf, capFrom, notePeaks, peakLogOf, upAnchorLog, upOpen, upOpenCount, UP_UNLOCK_LV, softReset, checkAchs, MILESTONES, RESEARCH_ALL: RESEARCH,
   importSave, mergeState,  offlineCatchUp, dec, enc, crumb, lastCrumb, exportSave, safeMode, skippedSave,
   enterChallenge, exitChallenge, checkChallenge, chalUnlocked, chalOpen, chalGoalLog, chalGoal,
   trackFor, TRACKS, bgmOn, sfxOn, vol, sfxVol, setVol, setSfxVol, applyBgm, unlockAudio, setChapterMusic, nextTrack, nowTrack, sfx,

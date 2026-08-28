@@ -7,6 +7,7 @@ import { ACHS } from './content'
 import { LOG, S } from './state'
 import { cntLog, curChal, logAdd, numLog, syncGen } from './num'
 import { M, addManaLog, invalidateM, manaRateLog, mSignature, recalc, syncMana } from './multipliers'
+import { notePeaks } from './num'
 import { clearFloor, dungeonPowerLog, floorHPLog, floorPace, isRetread, retreadSteps } from './dungeon'
 import { autoOK, runAutomation } from './automation'
 
@@ -86,6 +87,7 @@ export function tick(dt){
      업적은 checkAchs() 가 낡았다고 표시한다. 여기서는 그 밖의 입력이 바뀐
      프레임에만 다시 잰다. 파생값(S.mana 등)은 값이 싸므로 늘 맞춰 둔다. */
   syncMana();
+  notePeaks();          // 상한이 기대는 기록 — 어떤 돌파도 이것만은 못 지운다
   const sig=mSignature();
   if(sig!==lastSig){ lastSig=sig; recalc(); }
 }

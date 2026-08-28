@@ -153,8 +153,66 @@ export const CAP_BASE=25;
 export const UP_CAP_BASE=40;
 export function upCapFrom(everLog){
   const e=(typeof everLog==='number'&&isFinite(everLog))?Math.max(0,Math.min(1e300,everLog)):0;
-  return UP_CAP_BASE+Math.floor(25*Math.log10(1+e));
+  return UP_CAP_BASE+Math.floor(UP_CAP_GROW*Math.log10(1+e));
 }
+/* 상한은 여태 얼마나 멀리 왔는지를 따라간다. 그 기록이 돌파로 지워지면 상한도
+   같이 주저앉는다 — 마나 300 자리를 벌어 101 이던 연구 상한이 무한 돌파 한 번에
+   40 으로 돌아갔고, 영혼·유물·별도 97 에서 40 이 됐다. 올려놓은 것을 도로 뺏는 셈이다.
+   그래서 화폐마다 '여태 닿은 최고 자릿수' 를 따로 적어 둔다. 이것만은 아무 돌파도
+   지우지 않는다. */
+export const UP_CAP_GROW=34;
+export function peakLogOf(curKey){
+  const rec=(S.peak||{})[curKey];
+  const now=everLogOf(curKey);
+  const a=(typeof rec==='number'&&isFinite(rec))?rec:0;
+  const b=(typeof now==='number'&&isFinite(now)&&now>0)?now:0;
+  return Math.max(a,b);
+}
+/* 틱마다 부른다 — 화폐 예닐곱 개를 훑을 뿐이라 값이 거의 안 든다 */
+export function notePeaks(){
+  const P=(S.peak=S.peak||{});
+  for(const k of PEAK_KEYS){
+    const v=everLogOf(k);
+    if(typeof v==='number'&&isFinite(v)&&!(P[k]>=v)) P[k]=v;
+  }
+}
+export const PEAK_KEYS=['mana','soul','relic','star','crystal','offering',
+                        'inf','eter','real','void','origin'];
+/* ── 아이템 값이 돌파를 따라 오르게 ────────────────────
+   여태 강화 한 단계의 값은 레벨만 보고 정해졌다. 돌파를 마흔 번 해도 Lv.10 다음
+   한 단계는 늘 같은 439 였다. 그런데 돌파가 주는 재료는 회차마다 자릿수로 늘어난다 —
+   그러니 재료가 서른 자리쯤 되는 순간 한 번의 돌파가 항목을 상한까지 밀어 올린다.
+   측정해 보니 열두 경우 중 여섯이 그랬다(영혼 각인은 상한 77 에 109 레벨어치).
+   시설이 이미 쓰고 있는 방법을 그대로 쓴다(COST_ANCHOR): 값이 '여태 닿은 최고'
+   를 따라 오르면, 한 번의 돌파로 오르는 레벨 수가 회차마다 비슷해진다.
+   지수를 1 보다 작게 두어, 그 차이만큼이 돌파의 순이득이 된다. */
+/* 닻을 '최고치의 몇 할' 로 두면 남는 예산이 최고치에 비례해 계속 자란다. 그런데
+   한 번에 사지는 레벨 수는 남는 예산의 제곱근쯤으로 늘고, 상한은 로그로만 는다 —
+   제곱근이 로그를 반드시 따라잡는다. 닻을 아무리 세게 당겨도(0.94 까지 재 봤다)
+   재료가 2000 자리가 되면 다시 상한까지 밀렸다.
+   그래서 '몇 할' 이 아니라 '얼마를 남길지' 를 정한다. 남기는 몫이 로그로만 자라면
+   사지는 레벨은 √로그 로 자라고, 상한은 로그로 자라니 영영 안 따라잡는다.
+   재료가 열 배가 될 때마다 살 수 있는 몫이 조금씩만 늘어난다. */
+export const UP_HEAD=5, UP_HEAD_GROW=4;
+export function upAnchorLog(curKey){
+  const p=peakLogOf(curKey);
+  if(!(p>0)||!isFinite(p)) return 0;
+  const head=UP_HEAD+UP_HEAD_GROW*Math.log10(1+p);
+  return Math.max(0,p-head);
+}
+/* ── 아이템은 하나씩 열린다 ──────────────────────────
+   서른 몇 개가 처음부터 한꺼번에 펼쳐져 있으면 무엇을 먼저 올릴지가 아니라
+   '전부' 가 목표가 된다. 앞의 것을 어느 정도 올려야 다음이 열린다.
+   바로 다음 하나는 잠긴 채로 보여 준다 — 무엇이 기다리는지는 보여야 목표가 된다. */
+export const UP_UNLOCK_LV=4;
+export function upOpenCount(defs,lvOf){
+  let n=1;
+  for(let i=0;i<defs.length;i++){
+    if((lvOf(defs[i].id)||0)>=UP_UNLOCK_LV) n=i+2; else break;
+  }
+  return Math.min(n,defs.length);
+}
+export function upOpen(defs,i,lvOf){ return i<upOpenCount(defs,lvOf) }
 /* 화폐 이름으로 '여태 번 자릿수' 를 찾는다. 자릿수 필드가 없으면 평범한 수에서 만든다. */
 export function everLogOf(curKey){
   const l=S[curKey+'EverL'];
@@ -163,7 +221,7 @@ export function everLogOf(curKey){
   return (typeof n==='number'&&n>0&&isFinite(n))?Math.log10(n):0;
 }
 export function upMaxOf(u,curKey){
-  const c=upCapFrom(everLogOf(curKey));
+  const c=upCapFrom(peakLogOf(curKey));
   const m=(typeof u.max==='number'&&isFinite(u.max))?u.max:Infinity;
   const v=Math.min(m,c);
   return Math.floor(isFinite(v)?v:UP_CAP_BASE);   // 상한도 개수이므로 정수다

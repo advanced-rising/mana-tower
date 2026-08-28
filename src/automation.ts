@@ -3,7 +3,7 @@ import { PRODUCERS } from './producers'
 import { X } from './core'
 import { GEAR, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, bulkCost, bulkMax, gearCost, runeCost } from './content'
 import { S } from './state'
-import { L10, RES, bulkCostLog, bulkMaxLog, chalTotal, costLogAt, curChal, curL, gearBudgetLog, gearOfferLog, gearOpen, logSub, numLog, round2, spendRes, upMaxOf } from './num'
+import { L10, RES, bulkCostLog, bulkMaxLog, chalTotal, costLogAt, curChal, curL, gearBudgetLog, gearOfferLog, gearOpen, logSub, numLog, round2, spendRes, upAnchorLog, upMaxOf, upOpenCount } from './num'
 import { M, costLogOf, gather, maxAfford, recalc, tierLocked } from './multipliers'
 
 import { doAscend, doInfBreak, doRebirth, doTranscend, INF_AUTO_CD, INF_AUTO_WAIT, infGain, infUnlocked, relicGain, relicGainLog, soulGain, soulGainLog, starGain, starGainLog } from './prestige'
@@ -116,16 +116,20 @@ export function autoBuyTree(defs,store,curKey){
   let bought=0;
   for(let round=0;round<6;round++){
     const st=S[store]=S[store]||{};
-    const open=defs.filter(u=>(st[u.id]||0)<upMaxOf(u,curKey));
+    const lvOf=id=>st[id]||0;
+    /* 아직 안 열린 항목은 자동화도 못 산다 — 손으로 못 하는 것을 대신 해 줄 수는 없다 */
+    const cnt=upOpenCount(defs,lvOf);
+    const open=defs.slice(0,cnt).filter(u=>(st[u.id]||0)<upMaxOf(u,curKey));
     if(!open.length) break;
     open.sort((a,b)=>costLogAt(a.c,st[a.id]||0)-costLogAt(b.c,st[b.id]||0));
     let did=0;
+    const A=upAnchorLog(curKey);          // 값은 여태 닿은 최고를 따라 오른다
     for(const u of open){
       const l=st[u.id]||0;
-      const share=budget2Log(curKey)-L10(open.length);   // 한 항목이 예산을 독차지하지 않게
+      const share=budget2Log(curKey)-A-L10(open.length);   // 한 항목이 예산을 독차지하지 않게
       const {n,costLog}=buyBulkLog(u.c,l,share,upMaxOf(u,curKey)-l);
       if(!(n>0)) continue;
-      pay2(curKey,costLog); st[u.id]=l+n; bought+=n; did+=n;
+      pay2(curKey,costLog+A); st[u.id]=l+n; bought+=n; did+=n;
     }
     if(!did) break;
   }

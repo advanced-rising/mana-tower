@@ -1,0 +1,167 @@
+<pre id="TESTOUT" style="position:fixed;inset:0;z-index:9;background:#000;color:#ddd;font:11px/1.45 monospace;overflow:auto;padding:8px;margin:0"></pre>
+<script>
+/* 아이템(장비·룬·연구·각 강화) 이 어떻게 열리고 어디서 최대에 닿는지 본다.
+   보는 것: (1) 처음부터 몇 개나 열려 있는가
+            (2) 돌파를 하기 전에 벌써 최대 레벨이 되어 버리는가
+            (3) 돌파를 거듭해도 필요한 재료가 늘어나는가 */
+(function(){
+const O=document.getElementById('TESTOUT'), L=[]; const p=s=>{L.push(s);O.textContent=L.join('\n')};
+setTimeout(function(){
+try{
+  var G=window.__game; if(!G){ p('[!] __game 없음'); p('DONE'); return }
+  var S=G.S;
+  var SETS=[['연구',G.RESEARCH,'research','mana'],['룬',G.RUNES,'runes','crystal'],
+            ['영혼',G.SOUL_UPS,'soulUps','soul'],['유물',G.RELIC_UPS,'relicUps','relic'],
+            ['별',G.STAR_UPS,'starUps','star'],['무한',G.INF_UPS,'infUps','inf']];
+  function lv(store,id){ return (S[store]||{})[id]||0 }
+  function stat(nm,defs,store,cur){
+    var open=0,maxed=0,tot=0,capSum=0;
+    for(var i=0;i<defs.length;i++){
+      var u=defs[i], l=lv(store,u.id), lim=G.upMaxOf(u,cur);
+      tot++; if(l>0) open++; if(l>=lim) maxed++; capSum+=lim;
+    }
+    return {nm:nm,tot:tot,open:open,maxed:maxed,cap:Math.round(capSum/Math.max(1,tot))};
+  }
+  function line(tag){
+    var parts=[];
+    for(var i=0;i<SETS.length;i++){
+      var s=stat(SETS[i][0],SETS[i][1],SETS[i][2],SETS[i][3]);
+      if(!s.tot) continue;
+      parts.push(s.nm+' '+s.maxed+'/'+s.tot+'최대·상한'+s.cap);
+    }
+    p(String(tag).padEnd(12)+parts.join(' | '));
+  }
+
+  p('=== 처음 상태 — 화면에 몇 개가 보이는가 ===');
+  var vis=0,tot=0;
+  for(var i=0;i<SETS.length;i++){ tot+=SETS[i][1].length }
+  p('아이템 정의 '+tot+'개 · 지금은 잠긴 것 없이 전부 목록에 뜬다');
+  p('');
+  p('=== 돌파를 거듭하며 ===');
+  p('단계        각 갈래의 (최대에 닿은 수 / 전체) 와 평균 상한');
+  line('시작');
+  /* 자동화를 켜고 굴린다 — 사람이 하는 것과 같게 */
+  try{ S.autoUnlocked=S.autoUnlocked||{}; S.auto=S.auto||{};
+       for(var i=0;i<G.AUTO_DEFS.length;i++){ var k=G.AUTO_DEFS[i].k||G.AUTO_DEFS[i].id;
+         S.autoUnlocked[k]=1; S.auto[k]=1 } }catch(e){}
+  var brk=0;
+  for(var r=0;r<12;r++){
+    G.addManaLog(30*(r+1)*(r+1));
+    S.deepest=S.deepestEver=Math.max(S.deepest,20*(r+1)*(r+1));
+    for(var t=0;t<200;t++){ G.tick(0.25) }
+    var did=[];
+    try{ if(G.soulGain()>0){ G.doRebirth(); did.push('환생'); brk++ } }catch(e){}
+    try{ if(G.relicGain()>0){ G.doAscend(); did.push('승천'); brk++ } }catch(e){}
+    try{ if(G.starGain()>0){ G.doTranscend(); did.push('초월'); brk++ } }catch(e){}
+    try{ for(var i2=0;i2<G.INF_LAYERS.length;i2++) if(G.infGain(i2)>0){ G.doInfBreak(i2); did.push('무한'+i2); brk++ } }catch(e){}
+    G.recalc();
+    line('굴림'+r+(did.length?'('+did.join(',')+')':''));
+  }
+  p('');
+  p('=== 돌파 한 번이 주는 재료로 몇 레벨을 살 수 있는가 ===');
+  p('이것이 핵심이다 — 한 번의 돌파가 항목을 통째로 상한까지 밀어 올리면');
+  p('올릴 것이 남지 않는다.');
+  p('');
+  p('돌파      재료(자릿수)  항목      상한   그 재료로 살 수 있는 레벨   결과');
+  function buyable(u,cur,haveLog){
+    /* 게임과 같은 셈을 한다 — 값은 '여태 닿은 최고' 를 따라 오르므로
+       예산에서 먼저 그만큼 덜어 낸다 */
+    var lim=G.upMaxOf(u,cur), A=G.upAnchorLog(cur);
+    var n=G.bulkMaxLog(u.c,0,haveLog-A,lim);
+    return {lim:lim,n:Math.floor(Math.max(0,n||0))};
+  }
+  var CASES=[['환생→영혼',G.SOUL_UPS,'soul'],['승천→유물',G.RELIC_UPS,'relic'],
+             ['초월→별가루',G.STAR_UPS,'star'],['무한→무한',G.INF_UPS,'inf']];
+  var SCALES=[6,30,120,500,2000];
+  var instant=0, cases=0;
+  for(var ci=0;ci<CASES.length;ci++){
+    var nm=CASES[ci][0], defs=CASES[ci][1]||[], cur=CASES[ci][2];
+    if(!defs.length) continue;
+    var row=[];
+    for(var d=0;d<SCALES.length;d++){
+      var haveLog=SCALES[d];
+      S.peak=S.peak||{}; S.peak[cur]=haveLog; S[cur+'EverL']=haveLog;
+      var u=defs[0], r=buyable(u,cur,haveLog);
+      cases++;
+      var pct=r.lim>0?r.n/r.lim:0;
+      if(pct>=1){ instant++; p('[!] '+nm+' '+haveLog+'자리 — 한 번에 상한까지'); }
+      else if(pct>0.7){ instant++; p('[!] '+nm+' '+haveLog+'자리 — 한 번에 상한의 '+Math.round(pct*100)+'% (7할을 넘으면 올릴 것이 안 남는다)'); }
+      else if(r.n<1&&haveLog>=30){ instant++; p('[!] '+nm+' '+haveLog+'자리 — 한 레벨도 못 산다'); }
+      row.push(String(r.n)+'/'+r.lim+' ('+Math.round(pct*100)+'%)');
+    }
+    p('  '+nm.padEnd(11)+row.join('   '));
+  }
+  p('  '+'재료 자릿수'.padEnd(11)+SCALES.map(function(x){return String(x)+'자리'}).join('   '));
+  p('');
+  p('=== 한 번의 돌파가 너무 멀리 미는 경우 '+instant+'건 / '+cases+' ===');
+  p('  (산 레벨/상한. 재료가 커져도 산 레벨이 상한을 안 따라잡아야 한다)');
+  p('');
+  p('=== 돌파를 거듭하면 값이 오르는가 ===');
+  var u0=G.SOUL_UPS&&G.SOUL_UPS[0];
+  if(u0){
+    var first=null;
+    /* 돌파를 거듭하면 여태 닿은 최고 자릿수가 는다 — 값이 그것을 따라와야 한다 */
+    for(var n2=0;n2<=200;n2+=50){
+      S.peak=S.peak||{}; S.peak.soul=n2; S.soulEverL=n2; S.soulEver=0; G.recalc();
+      var cl=G.costLogAt(u0.c,10)+G.upAnchorLog('soul');
+      if(first===null) first=cl;
+      p('  여태 최고 '+String(n2).padStart(4)+'자리 · Lv.10 다음 한 단계 = '+G.fmtLog(cl)
+        +(n2&&cl<=first+1e-9?'   [!] 돌파를 거듭해도 값이 그대로다':''));
+    }
+    S.peak.soul=0;
+  }
+  p('');
+  p('=== 상한이 줄어드는 곳은 없는가 ===');
+  var before=G.upMaxOf(G.RESEARCH[0],'mana');
+  G.addManaLog(300); G.recalc();
+  var mid=G.upMaxOf(G.RESEARCH[0],'mana');
+  /* 무한 돌파가 manaEverL 을 지운다 — 조건이 안 맞아도 그 지움을 그대로 흉내 낸다 */
+  G.notePeaks(); S.manaEver=0; S.manaEverL=-Infinity; G.recalc();
+  var after=G.upMaxOf(G.RESEARCH[0],'mana');
+  p('  연구 상한: 처음 '+before+' → 마나 300자리를 번 뒤 '+mid+' → 무한 돌파 뒤 '+after
+    +(after<mid?'   [!] 돌파가 상한을 되돌렸다':''));
+  /* 다른 갈래도 같은 일이 나는가 */
+  var pairs=[['영혼',G.SOUL_UPS,'soul'],['유물',G.RELIC_UPS,'relic'],['별',G.STAR_UPS,'star']];
+  for(var pi=0;pi<pairs.length;pi++){
+    var dd=pairs[pi][1]; if(!dd||!dd.length) continue;
+    var ck=pairs[pi][2];
+    S[ck+'EverL']=200; G.notePeaks(); G.recalc(); var hi=G.upMaxOf(dd[0],ck);
+    S[ck+'EverL']=-Infinity; S[ck+'Ever']=0; G.recalc(); var lo=G.upMaxOf(dd[0],ck);
+    p('  '+pairs[pi][0]+' 상한: 200자리 벌었을 때 '+hi+' → 돌파로 지워지면 '+lo
+      +(lo<hi?'   [!] 되돌아간다':''));
+  }
+  p('');
+  p('=== 아이템이 하나씩 열리는가 ===');
+  var UPS=[['영혼',G.SOUL_UPS,'soulUps'],['유물',G.RELIC_UPS,'relicUps'],
+           ['별',G.STAR_UPS,'starUps'],['무한',G.INF_UPS,'infUps']];
+  var openBad=0, opened=0;
+  for(var oi=0;oi<UPS.length;oi++){
+    var nm2=UPS[oi][0], dd2=UPS[oi][1]||[], st2=UPS[oi][2];
+    if(dd2.length<3) continue;
+    S[st2]={};
+    var lvf=function(id){ return (S[st2]||{})[id]||0 };
+    var c0=G.upOpenCount(dd2,lvf);
+    if(c0!==1){ p('[!] '+nm2+': 처음부터 '+c0+'개가 열려 있다 (1개여야 한다)'); openBad++ }
+    /* 앞의 것을 올리면 다음이 열린다 */
+    S[st2][dd2[0].id]=G.UP_UNLOCK_LV;
+    var c1=G.upOpenCount(dd2,lvf);
+    if(c1!==2){ p('[!] '+nm2+': 첫 항목을 Lv.'+G.UP_UNLOCK_LV+'까지 올렸는데 '+c1+'개만 열렸다'); openBad++ }
+    S[st2][dd2[1].id]=G.UP_UNLOCK_LV;
+    var c2=G.upOpenCount(dd2,lvf);
+    if(c2!==3){ p('[!] '+nm2+': 둘을 올렸는데 '+c2+'개만 열렸다'); openBad++ }
+    /* 덜 올리면 안 열려야 한다 */
+    S[st2][dd2[2].id]=G.UP_UNLOCK_LV-1;
+    if(G.upOpenCount(dd2,lvf)!==3){ p('[!] '+nm2+': 덜 올렸는데도 다음이 열렸다'); openBad++ }
+    opened++;
+    p('  '+nm2+' '+dd2.length+'개 · 처음 '+c0+' → 하나 올려 '+c1+' → 둘 올려 '+c2+'   좋다');
+    S[st2]={};
+  }
+  p('=== 하나씩 열리지 않는 갈래 '+openBad+'건 ===');
+  p('');
+  p('COVER 갈래='+SETS.filter(function(s){return s[1]&&s[1].length}).length+' 굴림=12 돌파='+brk+' 열림검사='+opened+' 규모='+cases);
+  p('=== 조사 끝 ===');
+  p('DONE');
+}catch(e){ p('[!] '+e.message); p((e.stack||'').split('\n').slice(0,4).join('\n')); p('DONE') }
+},2200);
+})();
+</script>

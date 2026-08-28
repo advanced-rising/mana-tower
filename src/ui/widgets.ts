@@ -1,7 +1,7 @@
 import { updaters } from './tabs'
 import { DS, DSF, NM, X, ic, icHTML } from '../core'
 import { S } from '../state'
-import { costLogAt, fmt, fmtLog, upMaxOf } from '../num'
+import { UP_UNLOCK_LV, costLogAt, fmt, fmtLog, upAnchorLog, upMaxOf, upOpen, upOpenCount } from '../num'
 import { effLevel, recalc } from '../multipliers'
 import { BELOW_RATIO, LAYER_BELOW, autoUnlocked, budget2Log, budgetLogOf, buyBulkLog, pay2, payFrom } from '../automation'
 import { btn, el, toast } from './dom'
@@ -34,7 +34,7 @@ export function card(title,hint){
 /* 레벨식 업그레이드 격자 (영혼/유물 공용) */
 export function levelGrid(defs,lvOf,curKey,setLv,curSp){
   const g=el('div','grid wide');
-  defs.forEach(u=>{
+  defs.forEach((u,idx)=>{
     const b=document.createElement('button');
     b.type='button'; b.className='up';
     b.innerHTML=`<span class="ic"></span><span class="bd"><span class="t"></span><span class="d"></span><span class="c"></span></span>`;
@@ -46,26 +46,46 @@ export function levelGrid(defs,lvOf,curKey,setLv,curSp){
        ∞ - ∞ = NaN 이 되어 잔액이 통째로 망가졌다. 전부 자릿수로 다룬다. */
     b.addEventListener('click',e=>{
       e.preventDefault();
+      if(!upOpen(defs,idx,lvOf)) return;
       const l=lvOf(u.id), lim=upMaxOf(u,curKey);
       if(l>=lim) return;
       const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
       const cap=Math.min(lim-l, want);
-      const {n,costLog}=buyBulkLog(u.c,l,budget2Log(curKey),cap);
+      /* 값은 '여태 닿은 최고' 를 따라 오른다 — 예산에서 먼저 그만큼 덜어 내고 셈한 뒤,
+         실제로 낼 때 도로 얹는다. 로그에서 더하기는 곱하기다. */
+      const A=upAnchorLog(curKey);
+      const {n,costLog}=buyBulkLog(u.c,l,budget2Log(curKey)-A,cap);
       if(!(n>0)) return;
-      pay2(curKey,costLog); setLv(u.id,n); recalc(); refresh();
+      pay2(curKey,costLog+A); setLv(u.id,n); recalc(); refresh();
       toast(icHTML(u.sp)+' '+NM(u.nm)+' Lv.'+fmt(l+n));
     });
     g.appendChild(b);
     updaters.push(()=>{
+      const open=upOpenCount(defs,lvOf);
+      /* 열린 것 다음 하나까지만 자리를 내준다. 그 너머는 무엇인지도 알 수 없다. */
+      if(idx>open){ b.style.display='none'; return }
+      b.style.display='';
+      if(idx===open){                        // 바로 다음 것 — 잠긴 채로 보여 준다
+        const prev=defs[idx-1];
+        b.classList.remove('afford','done'); b.classList.add('lock'); b.disabled=true;
+        _t.html=`??? <span class="lv">${X('잠김','Locked')}</span>`;
+        _d.text=X(`${NM(prev.nm)} 을(를) Lv.${UP_UNLOCK_LV} 까지 올리면 열린다`,
+                  `Raise ${NM(prev.nm)} to Lv.${UP_UNLOCK_LV} to open this`);
+        _c.html='';
+        return;
+      }
+      b.classList.remove('lock');
       const l=lvOf(u.id), lim=upMaxOf(u,curKey), maxed=l>=lim;
-      const bud=budget2Log(curKey), cl=costLogAt(u.c,l), afford=!maxed&&bud>=cl;
+      const A=upAnchorLog(curKey);
+      const bud=budget2Log(curKey)-A, cl=costLogAt(u.c,l)+A, afford=!maxed&&bud+A>=cl;
       _t.html=`${NM(u.nm)} <span class="lv">Lv.${fmt(l)} / ${fmt(lim)}</span>`;
       _d.text=u.d(effLevel(l));
       const want=(S.buyAmt==='max')?Infinity:S.buyAmt;
       const {n:bn,costLog:bs}=buyBulkLog(u.c,l,bud,Math.min(lim-l,want));
+      const show=(bn>0?bs+A:cl);
       _c.html=maxed?`<span class="good">${X('최대치 도달','Maxed')}</span>`
-        :`${icHTML(curSp)} ${fmtLog(bn>0?bs:cl)}`
-          +(LAYER_BELOW[curKey]?` ${icHTML(LAYER_BELOW[curKey])} ${fmtLog((bn>0?bs:cl)*BELOW_RATIO)}`:'')
+        :`${icHTML(curSp)} ${fmtLog(show)}`
+          +(LAYER_BELOW[curKey]?` ${icHTML(LAYER_BELOW[curKey])} ${fmtLog(show*BELOW_RATIO)}`:'')
           +(bn>1?` <span class="dim">×${fmt(bn)}</span>`:'');
       b.classList.toggle('done',maxed); b.classList.toggle('afford',afford); b.disabled=maxed;
     });

@@ -80,19 +80,28 @@
        늘었는지 아닌지가 보이지 않는다 — 배정도의 한계이지 고장이 아니다. */
     const bal0=Object.fromEntries(MATS.map(([k])=>[k,k==='mana'?S.manaL:G.curL(k)]));
     const ever0=snapEver();
+    /* 굴리는 5 분 사이에 자동 돌파가 일어날 수 있다. 돌파는 다음 조건을 다시
+       벌게 하려고 마나 누적을 일부러 지운다 — 그걸 고장으로 세면 안 된다.
+       진짜로 지워지지 않는 기록은 manaPeakL 이고 그건 아래에서 따로 본다. */
+    const brk0=G.INF_LAYERS.map(L=>S[L.k]||0).join(',')+'|'+(S.rebirths|0)+'|'+(S.ascensions|0)+'|'+(S.transcends|0);
     for(let i=0;i<1500;i++) G.tick(0.2);          // 5 분
+    const brk1=G.INF_LAYERS.map(L=>S[L.k]||0).join(',')+'|'+(S.rebirths|0)+'|'+(S.ascensions|0)+'|'+(S.transcends|0);
+    const autoBroke=brk0!==brk1;
     G.recalc();
     const grew=[], flat=[];
     for(const [k,ko] of MATS){
       const a=k==='mana'?S.manaL:G.curL(k);
       (a>bal0[k]+1e-9?grew:flat).push(ko);
-      if(everL(k)<ever0[k]-1e-9) bad(nm,`${ko} 누적이 5분 사이 ${F(ever0[k])} → ${F(everL(k))} 로 줄었다`);
+      if(everL(k)<ever0[k]-1e-9&&!(autoBroke&&k==='mana'))
+        bad(nm,`${ko} 누적이 5분 사이 ${F(ever0[k])} → ${F(everL(k))} 로 줄었다`);
     }
     if(!grew.length) bad(nm,'5분을 굴려도 어떤 재료도 잔액이 늘지 않았다');
+    /* 자동 돌파가 마나 누적을 지우더라도 최고 기록은 절대 줄면 안 된다 */
+    if(S.manaPeakL<beforePeak-1e-9) bad(nm,`5분 사이 마나 최고 기록이 ${F(beforePeak)} → ${F(S.manaPeakL)} 로 줄었다`);
     const auto2=autoState();
     const lost2=beforeAuto.split(',').filter(k=>k&&auto2.split(',').indexOf(k)<0);
     if(lost2.length) bad(nm,`5분 사이 자동화가 꺼졌다: ${lost2.join(', ')}`);
-    out(`  ${nm.padEnd(11)} | ${String(auto2.split(',').filter(Boolean).length).padStart(3)}종 | ${grew.join(' ')||'(없음)'}${flat.length?'   · 그대로: '+flat.join(' '):''}`);
+    out(`  ${nm.padEnd(11)} | ${String(auto2.split(',').filter(Boolean).length).padStart(3)}종 | ${grew.join(' ')||'(없음)'}${flat.length?'   · 그대로: '+flat.join(' '):''}${autoBroke?'   (사이에 자동 돌파)':''}`);
   }
   }catch(e){ bad('하네스',e.message+' @ '+(e.stack||'').split('\n')[1]) }
   out('');

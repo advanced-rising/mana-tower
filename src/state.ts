@@ -29,7 +29,7 @@ export function newState(){return{
   origin:0, originEver:0, originCount:0,
   rebirths:0, ascensions:0, transcends:0,
   rebirthEver:0, ascendEver:0, transEver:0,   // 어떤 초기화에도 줄지 않는다
-  deepestEver:0, manaPeakL:-Infinity,         // 업적이 기다릴 수 있는 최고 기록
+  deepestEver:0, manaPeakL:-Infinity, peak:{},         // 업적이 기다릴 수 있는 최고 기록
   lastSoulGain:0, lastRelicGain:0, lastStarGain:0,
   sinceRebirth:0, sinceAscend:0, sinceTrans:0, sinceInf:0,
   deepest:0, floor:1, prog:0, lootFloor:0, bgm:1, bgmVol:0.35, sfx:1, sfxVol:0.4, bestAscL:-Infinity, bestTransL:-Infinity, infReqL:0, eterReqL:0, realReqL:0, voidReqL:0, originReqL:0, exploring:false,
