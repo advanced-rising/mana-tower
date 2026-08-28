@@ -158,7 +158,36 @@ try{
   }
   p('=== 하나씩 열리지 않는 갈래 '+openBad+'건 ===');
   p('');
-  p('COVER 갈래='+SETS.filter(function(s){return s[1]&&s[1].length}).length+' 굴림=12 돌파='+brk+' 열림검사='+opened+' 규모='+cases);
+  p('=== 항목마다 재료가 다른가 ===');
+  var TREES=[['영혼',G.SOUL_UPS,'soul'],['유물',G.RELIC_UPS,'relic'],['별',G.STAR_UPS,'star'],
+             ['무한',G.INF_UPS,'inf'],['영원',G.ETER_UPS,'eter'],['현실',G.REAL_UPS,'real'],
+             ['공허',G.VOID_UPS,'void'],['근원',G.ORIGIN_UPS,'origin']];
+  var matBad=0, treesSeen=0;
+  for(var ti=0;ti<TREES.length;ti++){
+    var tn=TREES[ti][0], td=TREES[ti][1]||[], tk=TREES[ti][2];
+    if(!td.length) continue;
+    treesSeen++;
+    var seen={}, pows={}, missing=0, badIcon=[];
+    for(var k2=0;k2<td.length;k2++){
+      var mk=G.matOf(td[k2],tk), pw=G.powOf(td[k2]);
+      if(!mk){ missing++; continue }
+      seen[mk]=(seen[mk]||0)+1; pows[String(pw)]=1;
+      /* 값을 치를 수 있는 재료여야 한다 — 셈이 안 되는 이름이면 못 산다 */
+      var bl=G.budgetLogOf?G.budgetLogOf(mk):0;
+      if(typeof bl!=='number'||isNaN(bl)) badIcon.push(mk);
+      if(!G.spriteURL(mk)) badIcon.push(mk+'(그림없음)');
+    }
+    var kinds=Object.keys(seen).length, pk=Object.keys(pows).length;
+    if(missing){ p('[!] '+tn+': 재료가 없는 항목 '+missing+'개'); matBad++ }
+    if(kinds<2){ p('[!] '+tn+': 재료가 '+kinds+'종뿐이다 — 항목마다 달라야 한다'); matBad++ }
+    if(pk<2){ p('[!] '+tn+': 몫이 '+pk+'종뿐이다 — 재료가 다르면 몫도 달라야 한다'); matBad++ }
+    if(badIcon.length){ p('[!] '+tn+': 다룰 수 없는 재료 '+badIcon.join(',')); matBad++ }
+    if(G.matOf(td[0],tk)!==tk){ p('[!] '+tn+': 첫 항목이 제 재료가 아니다 ('+G.matOf(td[0],tk)+') — 시작부터 막힌다'); matBad++ }
+    p('  '+tn.padEnd(5)+td.length+'개 · 재료 '+kinds+'종 ('+Object.keys(seen).join(',')+') · 몫 '+pk+'종');
+  }
+  p('=== 재료가 갈리지 않는 갈래 '+matBad+'건 ===');
+  p('');
+  p('COVER 갈래='+SETS.filter(function(s){return s[1]&&s[1].length}).length+' 굴림=12 돌파='+brk+' 열림검사='+opened+' 규모='+cases+' 재료갈래='+treesSeen);
   p('=== 조사 끝 ===');
   p('DONE');
 }catch(e){ p('[!] '+e.message); p((e.stack||'').split('\n').slice(0,4).join('\n')); p('DONE') }

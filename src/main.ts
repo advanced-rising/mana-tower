@@ -3,13 +3,13 @@ import { chalOpen, chalUnlocked, checkChallenge, enterChallenge, exitChallenge }
 import { INF_LAYERS, buildAchievements } from './layers'
 import { PRODUCERS } from './producers'
 import { DS, DSF, LANG, NM, VERSION, X, ic, icHTML, setLang, spriteURL } from './core'
-import { ACHS, BADGES, chalGoal, chalGoalLog, CHALLENGES, ETER_UPS, GEAR, GEAR_SLOTS, INF_UPS, MILESTONES, ORIGIN_UPS, REAL_UPS, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, VOID_UPS } from './content'
+import { ACHS, BADGES, chalGoal, chalGoalLog, CHALLENGES, ETER_UPS, GEAR, GEAR_SLOTS, INF_UPS, MILESTONES, ORIGIN_UPS, REAL_UPS, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, VOID_UPS , matOf, powOf, UP_MAT_SETS} from './content'
 import { S, setS } from './state'
 import { achCount, bulkCostLog, bulkMaxLog, capFrom, chalTotal, cnt, cntLog, costLogAt, curL, cutTxt, everLogOf, fmt, fmtLog, freeFrom, freeRaw, freeStart, gainRes, gearBudgetLog, gearChapter, gearOfferLog, gearOpen, gearTotal, geoSumLog, L10, logAdd, logSub, numLog, pctTxt, powTxt, ratioOf, RES, runeTotal, safeLog, setRes, spendRes, START_MANA_CAP, syncGen, syncRes, upCapFrom, upMaxOf, notePeaks, peakLogOf, upAnchorLog, upOpen, upOpenCount, UP_UNLOCK_LV } from './num'
 import { addManaLog, buyProducer, computeM, costLogOf, effLevel, gather, gatherAmountLog, growth, M, manaRateLog, maxAfford, mSignature, recalc, syncMana } from './multipliers'
 import { chapterOf, chapterProgress, chapterSeen, chapterStart, clearFloor, COSMOS, cosmos, cosmosBonusLog, dungeonPowerLog, floorHPLog, floorLoot, floorLootManaLog, foeOf, FOES, syncChapter } from './dungeon'
 import { ASCEND_REQ, ascendReqLog, breakAmount, doAscend, doInfBreak, doRebirth, doTranscend, INF_STACK, infBonusLog, infGain, infUnlocked, markReq, offerGainLog, REBIRTH_REQ, rebirthReqLog, relicGain, relicGainLog, REQ_GROWTH, reqFor, reqLog, softReset, soulGain, soulGainLog, starGain, starGainLog, TRANS_REQ, transReqLog, transUnlocked } from './prestige'
-import { AUTO_DEF, AUTO_DEFS, autoBuyTree, autoOK, autoUnlocked, buyBulkLog, runAutomation } from './automation'
+import { AUTO_DEF, AUTO_DEFS, autoBuyTree, autoOK, autoUnlocked, buyBulkLog, runAutomation , budgetLogOf} from './automation'
 import { checkAchs, log, tick } from './tick'
 import { $, modal, modalOpen } from './ui/dom'
 import { MEMOS } from './ui/widgets'
@@ -98,7 +98,7 @@ document.title=X('무한의 탑','Tower of Infinity');
   importSave, mergeState,  offlineCatchUp, dec, enc, crumb, lastCrumb, exportSave, safeMode, skippedSave,
   enterChallenge, exitChallenge, checkChallenge, chalUnlocked, chalOpen, chalGoalLog, chalGoal,
   trackFor, TRACKS, bgmOn, sfxOn, vol, sfxVol, setVol, setSfxVol, applyBgm, unlockAudio, setChapterMusic, nextTrack, nowTrack, sfx,
-  INF_STACK, reqFor, reqLog, MEMOS, updFails,
+  INF_STACK, reqFor, reqLog, MEMOS, updFails, matOf, powOf, budgetLogOf, UP_MAT_SETS,
 }
 
 /* 부팅이 어디서 터지든 남는 것은 흰 화면뿐이었다 — 무엇이 잘못됐는지도,

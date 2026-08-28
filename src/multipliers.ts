@@ -1,6 +1,6 @@
 import { INF_LAYERS } from './layers'
 import { PRODUCERS } from './producers'
-import { CHALLENGES, GEAR, MILESTONES, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS } from './content'
+import { CHALLENGES, GEAR, MILESTONES, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, powOf } from './content'
 import { MC, S, setMC } from './state'
 import { L10, achCount, capFrom, cntLog, curChal, gearOpen, geoSumLog, logAdd, logSub, numLog } from './num'
 import { cosmosBonus, cosmosBonusLog, floorLoot } from './dungeon'
@@ -89,13 +89,14 @@ export function computeM(){
        레벨은 지우지 않는다. 그 장으로 되돌아가면 그대로 다시 쓰인다. */
     for(const g of GEAR){const l=S.gear[g.id]||0; if(l&&gearOpen(g)) foldUp(st,g.apply,l);}
   }
-  for(const u of SOUL_UPS){const l=S.soulUps[u.id]||0; if(l) foldUp(st,u.apply,l);}
-  for(const u of RELIC_UPS){const l=S.relicUps[u.id]||0; if(l) foldUp(st,u.apply,l);}
-  for(const u of STAR_UPS){const l=S.starUps[u.id]||0; if(l) foldUp(st,u.apply,l);}
+  /* pow 는 그 항목이 어떤 재료를 요구하는지에 따른 몫이다 — 레벨에 곱해 접는다 */
+  for(const u of SOUL_UPS){const l=S.soulUps[u.id]||0; if(l) foldUp(st,u.apply,l*powOf(u));}
+  for(const u of RELIC_UPS){const l=S.relicUps[u.id]||0; if(l) foldUp(st,u.apply,l*powOf(u));}
+  for(const u of STAR_UPS){const l=S.starUps[u.id]||0; if(l) foldUp(st,u.apply,l*powOf(u));}
   for(const L of INF_LAYERS){
     if(!L.ups) continue;
     const store=S[L.store]||{};
-    for(const u of L.ups()){ const l=store[u.id]||0; if(l) foldUp(st,u.apply,l); }
+    for(const u of L.ups()){ const l=store[u.id]||0; if(l) foldUp(st,u.apply,l*powOf(u)); }
   }
   { const v=infBonusLog();               // 자릿수로 받는다 — 이제 상한이 없다
     st.prodL+=v; st.soulL+=v; st.offerL+=v; st.crystalL+=v; st.dungeonL+=v; st.relicL+=v; }

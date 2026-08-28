@@ -1,4 +1,4 @@
-import { ETER_UPS, GEAR, INF_UPS, ORIGIN_UPS, REAL_UPS, RELIC_UPS, RUNES, SOUL_UPS, STAR_UPS, VOID_UPS } from './content'
+import { ETER_UPS, GEAR, INF_UPS, ORIGIN_UPS, REAL_UPS, RELIC_UPS, RUNES, SOUL_UPS, STAR_UPS, VOID_UPS , matOf} from './content'
 import { PRODUCERS } from './producers'
 import { SAVE_KEY, X, icHTML } from './core'
 
@@ -63,7 +63,7 @@ export function clampToCaps(){
   for(const [defs,store,cur] of TREES()){
     const st=S[store]; if(!st) continue;
     for(const u of defs){
-      const l=st[u.id]||0, lim=upMaxOf(u,cur);
+      const l=st[u.id]||0, lim=upMaxOf(u,matOf(u,cur));
       if(l>lim){ st[u.id]=lim; n++ }
     }
   }
