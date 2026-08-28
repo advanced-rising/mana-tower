@@ -42,12 +42,12 @@ if(!only.length){
 /* 하네스는 저마다 크롬을 따로 띄우므로 서로 기다릴 이유가 없다. 차례로 돌리면
    합이 팔 분이라 푸시 훅으로 쓰기 어려웠다 — 함께 돌리면 가장 긴 하나로 줄어든다.
    출력은 끝난 순서가 아니라 적어 둔 순서로 낸다. 읽는 쪽이 헷갈리지 않아야 한다. */
-async function runOne([name,rel,secs,what]){
+async function runOne([name,rel,secs,what],tag=''){
   const path=ROOT+rel
   if(!existsSync(path)) return {name,what,missing:true}
   const html=readFileSync(ROOT+'index.html','utf8')
   const at=html.lastIndexOf('</body>')
-  const tmp=ROOT+`_verify_${name}.html`
+  const tmp=ROOT+`_verify_${name}${tag}.html`
   writeFileSync(tmp, html.slice(0,at)+readFileSync(path,'utf8')+html.slice(at))
   let out=''
   try{
@@ -60,6 +60,16 @@ async function runOne([name,rel,secs,what]){
   finally{ try{ unlinkSync(tmp) }catch{} }
   return {name,what,out}
 }
+/* 하네스가 끝을 못 봤다(DONE 없음)는 것은 코드가 틀렸다는 뜻이 아니라
+   크롬 여럿이 기계를 다투다 제 시간에 못 끝났다는 뜻일 때가 많다.
+   세 번 중 한 번꼴로 그랬다 — 그때그때 다른 검사가 실패하는 것은
+   없느니만 못하다. 아무도 안 믿게 되고, 결국 --no-verify 로 넘겨 버린다.
+   끝을 못 본 것만 혼자 다시 돌려 판정한다. 문제를 찾아낸 것은 다시 안 돌린다 —
+   진짜 실패를 재시도로 지워 버리면 안 된다. */
+function unfinished(out){
+  const m=out.match(/<pre id="TESTOUT"[^>]*>([\s\S]*?)<\/pre>/)
+  return !/\bDONE\b/.test(m?m[1]:'')
+}
 /* 한꺼번에 열 개를 띄우면 서로 자원을 다투다 몇 개가 제 시간에 못 끝나고,
    멀쩡한 코드가 실패로 나온다 — 훅 안에서 실제로 다섯 건이 그렇게 났다.
    있는 코어의 절반만 쓴다. 그래도 차례로 도는 것보다 훨씬 빠르다. */
@@ -70,6 +80,14 @@ let next=0
 await Promise.all(Array.from({length:Math.min(LANES,picked.length)},async()=>{
   for(;;){ const i=next++; if(i>=picked.length) return; results[i]=await runOne(picked[i]) }
 }))
+/* 끝을 못 본 것들만 혼자, 넉넉한 시간으로 다시 */
+for(let i=0;i<picked.length;i++){
+  const r=results[i]
+  if(r.missing||!unfinished(r.out||'')) continue
+  const [name,rel,secs,what]=picked[i]
+  console.log(`  ${name}: 끝을 못 봐서 혼자 다시 돌린다`)
+  results[i]=await runOne([name,rel,Math.round(secs*1.6),what],'_retry')
+}
 
 let failed=0, failedText=0
 for(const res of results){
