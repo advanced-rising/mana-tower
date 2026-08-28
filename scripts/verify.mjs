@@ -8,6 +8,7 @@
 import { execFile } from 'node:child_process'
 import { readFileSync, writeFileSync, unlinkSync, existsSync } from 'node:fs'
 import { promisify } from 'node:util'
+import { cpus } from 'node:os'
 const run = promisify(execFile)
 
 const CHROME='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
@@ -59,8 +60,16 @@ async function runOne([name,rel,secs,what]){
   finally{ try{ unlinkSync(tmp) }catch{} }
   return {name,what,out}
 }
+/* 한꺼번에 열 개를 띄우면 서로 자원을 다투다 몇 개가 제 시간에 못 끝나고,
+   멀쩡한 코드가 실패로 나온다 — 훅 안에서 실제로 다섯 건이 그렇게 났다.
+   있는 코어의 절반만 쓴다. 그래도 차례로 도는 것보다 훨씬 빠르다. */
+const LANES=Math.max(2,Math.min(4,Math.floor((cpus().length||4)/2)))
 const picked=HARNESS.filter(h=>!only.length||only.includes(h[0]))
-const results=await Promise.all(picked.map(runOne))
+const results=new Array(picked.length)
+let next=0
+await Promise.all(Array.from({length:Math.min(LANES,picked.length)},async()=>{
+  for(;;){ const i=next++; if(i>=picked.length) return; results[i]=await runOne(picked[i]) }
+}))
 
 let failed=0, failedText=0
 for(const res of results){
