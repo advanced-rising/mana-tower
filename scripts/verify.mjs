@@ -53,7 +53,7 @@ async function runOne([name,rel,secs,what]){
     const r=await run(CHROME,['--headless','--disable-gpu','--no-sandbox',
       '--allow-file-access-from-files','--window-size=1400,1000',
       `--virtual-time-budget=${secs*1000}`,'--dump-dom','file://'+tmp],
-      {maxBuffer:256*1024*1024})
+      {maxBuffer:256*1024*1024, stdio:['ignore','pipe','pipe']})
     out=r.stdout
   }catch(e){ out=e.stdout||'' }
   finally{ try{ unlinkSync(tmp) }catch{} }
