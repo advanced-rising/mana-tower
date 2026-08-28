@@ -38,11 +38,12 @@ if(!only.length){
   }
 }
 
-let failed=0, failedText=0
-for(const [name,rel,secs,what] of HARNESS){
-  if(only.length&&!only.includes(name)) continue
+/* 하네스는 저마다 크롬을 따로 띄우므로 서로 기다릴 이유가 없다. 차례로 돌리면
+   합이 팔 분이라 푸시 훅으로 쓰기 어려웠다 — 함께 돌리면 가장 긴 하나로 줄어든다.
+   출력은 끝난 순서가 아니라 적어 둔 순서로 낸다. 읽는 쪽이 헷갈리지 않아야 한다. */
+async function runOne([name,rel,secs,what]){
   const path=ROOT+rel
-  if(!existsSync(path)){ console.log(`  ${name}: 하네스가 없다 (${rel})`); failed++; continue }
+  if(!existsSync(path)) return {name,what,missing:true}
   const html=readFileSync(ROOT+'index.html','utf8')
   const at=html.lastIndexOf('</body>')
   const tmp=ROOT+`_verify_${name}.html`
@@ -56,6 +57,16 @@ for(const [name,rel,secs,what] of HARNESS){
     out=r.stdout
   }catch(e){ out=e.stdout||'' }
   finally{ try{ unlinkSync(tmp) }catch{} }
+  return {name,what,out}
+}
+const picked=HARNESS.filter(h=>!only.length||only.includes(h[0]))
+const results=await Promise.all(picked.map(runOne))
+
+let failed=0, failedText=0
+for(const res of results){
+  const {name,what}=res
+  if(res.missing){ console.log(`  ${name}: 하네스가 없다`); failed++; continue }
+  const out=res.out
 
   const m=out.match(/<pre id="TESTOUT"[^>]*>([\s\S]*?)<\/pre>/)
   const body=(m?m[1]:'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&').trim()
