@@ -62,11 +62,22 @@ for(const [name,rel,secs,what] of HARNESS){
   const done=/\bDONE\b/.test(body)
   const problems=body.split('\n').filter(l=>l.includes('[!]'))
   const tally=body.split('\n').filter(l=>/^===/.test(l.trim())).pop()||''
-  const ok=done&&problems.length===0&&!/[1-9]\d*건/.test(tally.replace(/0건/,''))
+  /* 일을 하나도 안 하고 통과하는 검사가 가장 위험하다. 하네스 둘이 탭을 하나도
+     안 밟은 채 "0건" 을 찍고 있던 적이 있다 — TAB_KEYS(단축키)를 switchTab(id) 에
+     넘겨 조용히 되돌아나갔다. 그래서 하네스는 얼마나 일했는지도 COVER 줄에 적고,
+     그 수가 0 이면 통과로 치지 않는다. */
+  const cover=body.split('\n').filter(l=>/^\s*COVER\s/.test(l))
+  const zero=[]
+  for(const line of cover)
+    for(const mm of line.matchAll(/([^\s=]+)=(\d+)/g)) if(+mm[2]===0) zero.push(mm[1])
+  const ok=done&&problems.length===0&&zero.length===0
+    &&!/[1-9]\d*건/.test(tally.replace(/0건/,''))
   console.log(`\n── ${name}  (${what})`)
   if(!done){ console.log('   [!] 도중에 멈췄다 — 아래는 마지막 출력'); }
-  for(const l of body.split("\n").slice(-60)) if(l.trim()) console.log('   '+l)
-  if(!ok){ failed++; console.log(`   >>> 실패로 친 이유: done=${done} 문제=${problems.length} tally="${tally}"`) }
+  for(const l of body.split("\n").slice(-60)) if(l.trim()&&!/^\s*COVER\s/.test(l)) console.log('   '+l)
+  for(const l of cover) console.log('   '+l.trim().replace(/^COVER/,'한 일:'))
+  if(zero.length) console.log(`   [!] 일을 안 한 자리: ${zero.join(', ')} = 0`)
+  if(!ok){ failed++; console.log(`   >>> 실패: done=${done} 문제=${problems.length} 안한일=${zero.length} tally="${tally}"`) }
 }
 failed+=failedText
 console.log(failed?`\n검증 실패 ${failed}건`:'\n모든 검증 통과')

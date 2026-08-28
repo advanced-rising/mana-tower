@@ -443,33 +443,55 @@ export function buildAch(p){
   /* 다 보여 주면 목표가 안 된다. 달성한 것과 바로 다음 몇 개만 드러내고
      그 너머는 무엇인지 알 수 없게 둔다. */
   const AHEAD=6;
-  const rows=ACHS.map((a,i)=>{
-    const d=el('div','ach');
+  /* 예전에는 업적 오백일흔두 개를 전부 줄로 만들었다. 그중 오백예순여섯 개는
+     글자가 '???' 로 똑같은 줄이었다 — 노드 3,638 개와 이미지 573 개가 아무것도
+     말해 주지 않으면서 탭을 열 때마다 만들어졌다. 저사양 기기에서 그 한 번이 걸린다.
+     달성한 것과 바로 다음 몇 개만 줄로 만들고, 그 너머는 한 줄로 접는다.
+     접힌 줄에 몇 개가 남았는지 적어 두면 전보다 오히려 읽기 쉽다. */
+  const rows=new Map();
+  const beyond=el('div','ach'); beyond.style.opacity='.72';
+  const bIco=el('span'); bIco.appendChild(ic('unknown',32));
+  const bTxt=el('div'); beyond.append(bIco,bTxt);
+  function rowFor(i){
+    let r=rows.get(i); if(r) return r;
+    const a=ACHS[i], d=el('div','ach');
     const icb=el('span'); const img=ic('unknown',32); icb.appendChild(img);
     d.appendChild(icb);
-    const t=el('div'); d.appendChild(t); g.appendChild(d);
-    return {a,i,d,img,t,key:-1};
-  });
-  /* 오백일흔두 줄을 0.1 초마다 통째로 다시 그리고 있었다 — 매번 이미지 노드를
-     새로 만들어 붙이기까지 했다. 초당 오천 개다. 줄의 상태가 바뀌었을 때만 손댄다. */
+    const t=el('div'); d.appendChild(t);
+    /* 나중에 열린 업적이 앞 번호일 수 있다 — 차례를 지켜 끼운다 */
+    let before=null;
+    for(const [j,rr] of rows) if(j>i&&(!before||j<before.i)) before={i:j,d:rr.d};
+    g.insertBefore(d, before?before.d:beyond);
+    r={a,i,d,img,t,key:-1}; rows.set(i,r); return r;
+  }
+  g.appendChild(beyond);
+  /* 줄의 상태가 바뀌었을 때만 손댄다 — 0.1 초마다 통째로 다시 그리던 자리다. */
   updaters.push(()=>{
-    let shown=0;
-    for(const r of rows){
-      const got=!!S.achs[r.a.id];
+    let shown=0, hidden=0;
+    for(let i=0;i<ACHS.length;i++){
+      const got=!!S.achs[ACHS[i].id];
       const reveal=got||shown<AHEAD;
       if(!got&&reveal) shown++;
-      const key=(got?2:0)|(reveal?1:0);
+      if(!reveal){ hidden++; continue }
+      const r=rowFor(i);
+      const key=got?2:1;
       if(r.key===key) continue;
       r.key=key;
       r.d.classList.toggle('got',got);
-      const want=spriteURL(reveal?(r.a.sp||'medal'):'unknown');
+      const want=spriteURL(r.a.sp||'medal');
       if(r.img.getAttribute('src')!==want) r.img.setAttribute('src',want);
       /* 무엇을 요구하는지만 적혀 있고 무엇을 주는지는 어디에도 없었다.
          업적은 하나당 마나 생산 +2% 다 — 줄마다 그 몫을 적어 준다. */
-      r.t.innerHTML = reveal
-        ? `<div class="t">${NM(r.a.nm)}</div><div class="d">${DS(r.a)}`
-          +`<span class="${got?'good':'dim'}" style="margin-left:6px">${X('마나 +2%','Mana +2%')}</span></div>`
-        : `<div class="t">???</div><div class="d">${X('아직 알 수 없다',"Unknown")}</div>`;
+      r.t.innerHTML=`<div class="t">${NM(r.a.nm)}</div><div class="d">${DS(r.a)}`
+        +`<span class="${got?'good':'dim'}" style="margin-left:6px">${X('마나 +2%','Mana +2%')}</span></div>`;
+    }
+    const bk='h'+hidden;
+    if(beyond._k!==bk){
+      beyond._k=bk;
+      beyond.style.display=hidden?'':'none';
+      bTxt.innerHTML=`<div class="t">???</div><div class="d">`
+        +X(`그 너머로 <b>${fmt(hidden)}</b>개가 더 있다 — 아직 알 수 없다`,
+           `<b>${fmt(hidden)}</b> more lie beyond — still unknown`)+`</div>`;
     }
   });
   c.appendChild(g); p.appendChild(c);

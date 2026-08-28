@@ -27,13 +27,14 @@ function wrap(){                                  /* render 마다 목록이 새
     const g=function(){ try{ f() }catch(e){ note(CTX+'#'+i,e); } }; g.__w=1; u[i]=g;
   }
 }
+const visited=new Set();
 function sweep(tag){                              /* 탭마다 한 번씩 그려 본다 */
   /* TAB_KEYS 는 단축키('1','2'…) 이고 switchTab 은 탭 id 를 받는다.
      키를 그대로 넘기면 조용히 되돌아나가 탭이 하나도 안 바뀐다. */
   for(const t of G.TABS){
     if(!t.open()) continue;
     CTX=tag+'/'+t.id;
-    try{ G.switchTab(t.id); wrap(); G.refresh(); G.refresh(); }
+    try{ G.switchTab(t.id); visited.add(t.id); wrap(); G.refresh(); G.refresh(); }
     catch(e){ note(CTX+' (빌드)',e) }
   }
 }
@@ -75,9 +76,10 @@ try{
   }catch(e){ note('시련',e) }
 
   /* 떨어져 나간 memo 노드 — 글자가 허공으로 들어가는 자리다 */
-  var detached=new Map();
+  var detached=new Map(), memoSeen=0;
   function memoCheck(where){
     var M=G.MEMOS||[];
+    memoSeen+=M.length;
     for(var i=0;i<M.length;i++){
       if(document.contains(M[i])) continue;
       var n=M[i], cls=(n.className&&n.className.baseVal!==undefined?n.className.baseVal:n.className)||'';
@@ -99,6 +101,7 @@ try{
   for(var kf in uf) if(!hits.has(kf+' @ (게임 기록)'))
     hits.set(kf+' @ (게임 기록)',{n:uf[kf],where:new Set(['refresh'])});
 
+  p('COVER 탭방문='+visited.size+' 굴림='+rounds.length+' memo검사='+memoSeen);
   p('=== 굴림 ===');
   for(var i=0;i<rounds.length;i++) p('  '+rounds[i]);
   p('');

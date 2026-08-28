@@ -1,0 +1,14 @@
+#!/bin/sh
+# 검사를 안 지난 것은 커밋되지 않는다.
+# 여기서는 빠른 것만 본다 — 굽기(없는 이름 검사 포함)와 페이지가 뜨는지. 3초쯤 걸린다.
+# 하네스 전체는 pre-push 가 본다.
+echo "── 커밋 전 검사"
+npm run build || {
+  echo ""
+  echo "  커밋을 멈춘다. 위 오류를 고치고 다시 커밋해라."
+  echo "  정말 넘겨야 한다면 git commit --no-verify (권하지 않는다)"
+  exit 1
+}
+# 구운 번들이 커밋에 들어가야 한다 — 소스만 커밋되면 배포된 게임은 옛것이다
+git add dist/bundle.js index.html 2>/dev/null
+exit 0

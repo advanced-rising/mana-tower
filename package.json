@@ -8,13 +8,14 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "node scripts/build.mjs && node scripts/nonames.mjs && node scripts/smoke.mjs",
+    "build": "node scripts/build.mjs && node scripts/smoke.mjs",
     "watch": "node scripts/build.mjs --watch",
     "check": "tsc --noEmit",
     "art": "python3 tools/build_sprites.py && python3 tools/build_ui.py",
     "smoke": "node scripts/smoke.mjs",
-    "verify": "node scripts/build.mjs && node scripts/nonames.mjs && node scripts/smoke.mjs && node scripts/verify.mjs",
-    "sim": "node scripts/build.mjs && node scripts/nonames.mjs && node scripts/sim.mjs"
+    "verify": "node scripts/build.mjs && node scripts/smoke.mjs && node scripts/verify.mjs",
+    "sim": "node scripts/build.mjs && node scripts/sim.mjs",
+    "prepare": "git config core.hooksPath .githooks"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",

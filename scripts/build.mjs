@@ -41,6 +41,11 @@ if (watch) {
   await ctx.watch()
   console.log('watching src/ …')
 } else {
+  /* 없는 이름 검사는 반드시 굽기 '전' 에 한다. 통과 못 하면 번들이 아예 안 나온다 —
+     esbuild 는 모르는 이름을 전역 참조로 두고 넘어가므로, 이 검사만이 그것을 잡는다.
+     npm 스크립트가 아니라 여기 두는 이유는 dist/bundle.js 를 만드는 길이 여기 하나뿐이라서다.
+     검사를 건너뛴 번들이 존재할 수 없어야 한다. */
+  await import('./nonames.mjs')
   await build(opts)
   stamp()
   await import('./checkinit.mjs')      // 순환 고리에서 undefined 가 될 코드를 막는다

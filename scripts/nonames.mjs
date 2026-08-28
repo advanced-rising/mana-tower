@@ -14,7 +14,7 @@ try{ await run('npx',['tsc','--noEmit'],{cwd:ROOT,maxBuffer:64*1024*1024}) }
 catch(e){ out=(e.stdout||'')+(e.stderr||'') }
 const bad = out.split('\n').filter(l=>/error TS(2304|2552)\b/.test(l))
 if(bad.length){
-  console.error(`  없는 이름 ${bad.length}건 — 임포트를 빠뜨렸다`)
+  console.error(`  없는 이름 ${bad.length}건 — 임포트를 빠뜨렸다. 번들을 굽지 않는다.`)
   for(const l of bad.slice(0,20)) console.error('    '+l.trim())
   process.exit(1)
 }
