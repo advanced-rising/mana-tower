@@ -62,7 +62,11 @@ async function runOne([name,rel,secs,what],tag=''){
     let buf=''
     ch.stdout.on('data',d=>{ buf+=d; if(buf.length>256*1024*1024) ch.kill('SIGKILL') })
     ch.stderr.on('data',()=>{})
-    const timer=setTimeout(()=>{ try{ ch.kill('SIGKILL') }catch{} }, Math.max(60,secs)*1000)
+    /* 이 제한은 '가상 시간 예산' 이 아니라 '진짜로 멈춰 선 것' 만 잡으라고 있다.
+       예산을 그대로 실제 시간으로 쓰면 기계가 바쁠 때 멀쩡한 검사가 잘려 나가
+       재시도로 들어가고, 푸시가 십 분을 넘긴다 — 실제로 그렇게 세 개가 잘렸다.
+       넉넉히 두 배 남짓 준다. 멈춘 것은 어차피 영영 안 끝난다. */
+    const timer=setTimeout(()=>{ try{ ch.kill('SIGKILL') }catch{} }, Math.max(180,secs*2)*1000)
     ch.on('close',()=>{ clearTimeout(timer); res(buf) })
     ch.on('error',()=>{ clearTimeout(timer); res(buf) })
   })
