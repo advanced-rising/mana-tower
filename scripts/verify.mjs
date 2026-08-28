@@ -26,16 +26,28 @@ const HARNESS=[
 ]
 const only=process.argv.slice(2).filter(a=>!a.startsWith('-'))
 
+let failed=0, failedText=0
 /* 브라우저 안이 아니라 화면 자체를 보는 검사는 따로 돈다 */
 if(!only.length){
   for(const args of [[],['--phone']]){
-    try{ const r=await run('node',[ROOT+'scripts/textscan.mjs',...args],{cwd:ROOT,maxBuffer:64*1024*1024})
-      console.log(`\n── textscan${args.length?' (휴대폰)':''}  (글자가 안 나오는 자리)`)
-      for(const l of r.stdout.split('\n')) if(l.trim()) console.log(l)
-    }catch(e){
-      console.log(`\n── textscan${args.length?' (휴대폰)':''}  (글자가 안 나오는 자리)`)
-      for(const l of ((e.stdout||'')+(e.stderr||'')).split('\n')) if(l.trim()) console.log(l)
-      failedText++
+    const label=`\n── textscan${args.length?' (휴대폰)':''}  (글자가 안 나오는 자리)`
+    /* 크롬이 여럿 뜬 뒤라 부팅이 늦어 결과를 못 읽는 일이 있다 — 한 번 더 준다.
+       진짜로 글자 문제를 찾아낸 것은 다시 돌리지 않는다. */
+    let last=''
+    for(let attempt=0;attempt<2;attempt++){
+      try{
+        const r=await run('node',[ROOT+'scripts/textscan.mjs',...args],
+          {cwd:ROOT,maxBuffer:64*1024*1024,stdio:['ignore','pipe','pipe']})
+        console.log(label)
+        for(const l of r.stdout.split('\n')) if(l.trim()) console.log(l)
+        last=''; break
+      }catch(e){
+        last=((e.stdout||'')+(e.stderr||''))
+        if(/읽지 못했다/.test(last)&&attempt===0){ console.log(label+'  (다시 돌린다)'); continue }
+        console.log(label)
+        for(const l of last.split('\n')) if(l.trim()) console.log(l)
+        failedText++; break
+      }
     }
   }
 }
@@ -81,7 +93,11 @@ async function runOne([name,rel,secs,what],tag=''){
    진짜 실패를 재시도로 지워 버리면 안 된다. */
 function unfinished(out){
   const m=out.match(/<pre id="TESTOUT"[^>]*>([\s\S]*?)<\/pre>/)
-  return !/\bDONE\b/.test(m?m[1]:'')
+  const body=m?m[1]:''
+  /* '__game 없음' 은 게임이 고장났다는 뜻이 아니라, 크롬 넷이 함께 뜨느라
+     부팅이 하네스의 대기 시간보다 늦었다는 뜻이다 — 혼자 돌리면 잘 뜬다.
+     끝을 못 본 것과 같이 취급해 다시 돌린다. 스모크가 이미 부팅을 따로 본다. */
+  return !/\bDONE\b/.test(body) || /__game\s*없음/.test(body)
 }
 /* 한꺼번에 열 개를 띄우면 서로 자원을 다투다 몇 개가 제 시간에 못 끝나고,
    멀쩡한 코드가 실패로 나온다 — 훅 안에서 실제로 다섯 건이 그렇게 났다.
@@ -102,7 +118,6 @@ for(let i=0;i<picked.length;i++){
   results[i]=await runOne([name,rel,Math.round(secs*1.6),what],'_retry')
 }
 
-let failed=0, failedText=0
 for(const res of results){
   const {name,what}=res
   if(res.missing){ console.log(`  ${name}: 하네스가 없다`); failed++; continue }
