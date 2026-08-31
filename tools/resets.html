@@ -1,0 +1,69 @@
+<pre id="TESTOUT" style="display:none"></pre>
+<script>
+/* 돌파는 그 앞 돌파의 재료를 남김없이 지운다 — 여덟 단계 모두 같은 규칙이다.
+   한 단계씩 실제로 눌러 보고, 그 아래에 있어야 할 것이 정말 비었는지 본다.
+   화면 글과 코드가 어긋나 '유물 강화는 영원히 남는다' 고 적힌 채 초월이 지우고
+   있었던 적이 있다 — 글이 아니라 값을 본다. */
+(async()=>{
+  const O=document.getElementById('TESTOUT'), out=s=>{O.textContent+=s+'\n'};
+  const fail=[]; const bad=(w,d)=>{ if(fail.length<40) fail.push(w+' :: '+d) };
+  let checks=0, breaks=0;
+  try{
+  await new Promise(r=>setTimeout(r,900));
+  const G=window.__game; if(!G){ out('[!] __game 없음'); out('DONE'); return }
+  const S=G.S;
+  /* 무엇이 무엇 아래인가. 위 단계를 뚫으면 아래 것이 전부 비어야 한다. */
+  const MATS={
+    soul:   ()=>S.soulL,   offering:()=>S.offeringL, relic:()=>S.relicL,
+    crystal:()=>S.crystalL, star:()=>S.starL,
+    inf:()=>S.inf, eter:()=>S.eter, real:()=>S.real, void:()=>S.void,
+  };
+  const UPS={ soulUps:1, runes:1, relicUps:1, starUps:1, infUps:1, eterUps:1, realUps:1, voidUps:1 };
+  const empty=v=>!(v>0)||v===-Infinity;
+  const emptyStore=st=>{ for(const k in (st||{})) if(st[k]>0) return false; return true };
+  /* 단계 : 그 아래로 비어야 할 재료 · 비어야 할 강화 */
+  const RULE=[
+    ['승천', ['soul','offering'],                          ['soulUps','runes']],
+    ['초월', ['relic','crystal','soul','offering'],        ['relicUps','soulUps','runes']],
+    ['무한', ['star','relic','crystal','soul','offering'], ['starUps','relicUps','soulUps','runes']],
+    ['영원', ['inf','star','relic','crystal','soul'],      ['infUps','starUps','relicUps','soulUps']],
+    ['현실', ['eter','inf','star','relic','soul'],         ['eterUps','infUps','starUps','relicUps']],
+    ['공허', ['real','eter','inf','star','soul'],          ['realUps','eterUps','infUps','starUps']],
+    ['근원', ['void','real','eter','inf','star'],          ['voidUps','realUps','eterUps','infUps']],
+  ];
+  /* 재료와 강화를 넉넉히 채워 둔다 — 지워지는지 보려면 먼저 있어야 한다 */
+  function stock(){
+    for(const k of ['soul','offering','relic','crystal','star']) G.setRes(k,80);
+    S.inf=500; S.infRun=500; S.infEver=500;
+    S.eter=500; S.eterRun=500; S.eterEver=500;
+    S.real=500; S.realRun=500; S.realEver=500;
+    S.void=500; S.voidRun=500; S.voidEver=500;
+    S.origin=0;
+    for(const st of Object.keys(UPS)){ const o=S[st]=S[st]||{}; o.__t=7 }
+    S.transEver=Math.max(1,S.transEver||0); S.manaPeakL=Math.max(S.manaPeakL||0,400);
+  }
+  const DO={ '승천':()=>G.doAscend(true), '초월':()=>G.doTranscend(true), '무한':()=>G.doInfBreak(0),
+             '영원':()=>G.doInfBreak(1), '현실':()=>G.doInfBreak(2), '공허':()=>G.doInfBreak(3),
+             '근원':()=>G.doInfBreak(4) };
+  out('=== 돌파는 그 앞의 재료를 지우는가 ===');
+  for(const [nm,mats,ups] of RULE){
+    stock();
+    /* 조건을 채워 준다 — 여기서 보는 것은 조건이 아니라 초기화다 */
+    S.soulAscL=300; S.relicTransL=300; S.manaEverL=1e3; S.manaRunL=1e3;
+    for(const k of ['inf','eter','real','void']){ S[k+'ReqL']=0; S[k+'Count']=0 }
+    if(!DO[nm]()){ bad(nm,'돌파 자체가 안 됐다'); continue }
+    breaks++;
+    const left=[];
+    for(const m of mats){ checks++; if(!empty(MATS[m]())) left.push(m) }
+    for(const u of ups){ checks++; if(!emptyStore(S[u])) left.push(u) }
+    out(`  ${nm}  아래 ${mats.length+ups.length}가지 검사 · 남은 것 ${left.length?left.join(','):'없음'}`);
+    if(left.length) bad(nm,'지워지지 않았다: '+left.join(','));
+  }
+  }catch(e){ bad('하네스',e.message+' @ '+(e.stack||'').split('\n')[1]) }
+  out('');
+  for(const f of fail) out('  [!] '+f);
+  out(`=== 지워지지 않은 자리 ${fail.length}건 ===`);
+  out(`COVER 돌파=${breaks} 검사=${checks}`);
+  out('DONE');
+})();
+</script>

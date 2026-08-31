@@ -26,7 +26,7 @@
   const t0=Date.now();
   const marks=[]; for(let d=1;d<=DAYS;d++) for(const h of [1,6,12,24]) marks.push((d-1)*86400+h*3600);
   marks.sort((a,b)=>a-b);
-  let mi=0, stall=0, lastMana=-Infinity, lastCheck=0;
+  let mi=0, stall=0, flat=0, lastMana=-Infinity, lastCheck=0;
 
   out(`게임 시간 ${DAYS}일을 굴린다 (틱 ${STEP}초)`);
   out('   경과 |  마나자릿수 | 최심층 | 환생 승천 초월 무한 영원 현실 공허 근원 | 업적 연구 룬 장비');
@@ -73,7 +73,12 @@
       /* 한 시간 넘게 마나 자릿수가 그대로면 멎은 것이다 */
       /* 프레스티지 직후에는 마나가 0 으로 떨어진다 — 그건 정체가 아니다.
          여태 닿아 본 최고치(manaPeakL) 가 오래 그대로일 때만 멎은 것으로 본다. */
-      if(S.manaPeakL<=lastMana+1e-9){ stall+=300; if(stall>=10800){ bad('정체',`${D(t/3600)}시간째 세 시간 동안 최고 기록이 늘지 않는다 (${G.fmtLog(S.manaPeakL)})`); stall=-1e9 } }
+      /* 창을 세 시간으로 잡았더니 현실 돌파 뒤가 걸렸다 — 그 돌파는 별가루까지
+         남김없이 지우므로, 1,700 자리짜리 기록을 다시 넘기까지 몇 시간이 든다.
+         그건 멎은 것이 아니라 값을 치르는 중이다. 진짜 벽은 사흘을 내리 평평했다.
+         가장 깊은 초기화를 견딜 만큼 창을 넓힌다 — 여섯 시간. */
+      if(S.manaPeakL<=lastMana+1e-9){ stall+=300; if(stall>flat) flat=stall;
+        if(stall>=21600){ bad('정체',`${D(t/3600)}시간째 여섯 시간 동안 최고 기록이 늘지 않는다 (${G.fmtLog(S.manaPeakL)})`); stall=-1e9 } }
       else { stall=0; lastMana=S.manaPeakL }
     }
     if(mi<marks.length&&t>=marks[mi]){
@@ -91,6 +96,7 @@
   const m=G.M();
   out(`  끝 · 마나 ${G.fmtLog(S.manaL)} · 생산 ${G.fmtLog(G.manaRateLog())}/초 · 최심층 ${G.fmt(S.deepest)} · 업적 ${G.achCount()}`);
   out(`  배율 prod ${D(m.prodLog)} · dungeon ${D(m.dungeonLog)} · 룬 ${G.runeTotal()} 장비 ${G.gearTotal()}`);
+  out(`  가장 오래 멎어 있던 시간 ${(flat/3600).toFixed(1)}시간`);
   cover=`COVER 시간=${Math.round(t/3600)} 틱=${ticks} 최심층=${S.deepest|0} 돌파=`
     +`${(S.rebirthEver||0)+(S.ascendEver||0)+(S.transEver||0)+(S.infEver||0)}`;
   if(errs) bad('틱',`${errs}회 예외`);

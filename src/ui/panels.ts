@@ -273,7 +273,7 @@ export function buildRebirth(p){
     modal(X('환생하시겠습니까?','Rebirth?'),X(`영혼석 <b class="soul">${fmtLog(soulGainLog())}</b> · 오퍼링 <b class="offer">${fmtLog(offerGainLog())}</b>을 얻고<br>마나 · 시설 · 연구가 초기화되고<br>던전도 1층으로 돌아갑니다 — 최심층 <b class="gold">${fmt(S.deepest)}</b>층까지는 되밟기라 금방입니다.`,`You gain <b class="soul">${fmtLog(soulGainLog())}</b> soul shards and <b class="offer">${fmtLog(offerGainLog())}</b> offerings.<br>Mana, buildings and research reset, and the dungeon returns to floor 1 — retreading to your deepest, <b class="gold">F${fmt(S.deepest)}</b>, is quick.`),()=>doRebirth());
   });
   c.appendChild(b); p.appendChild(c);
-  const uc=card([X('영혼 강화',"Soul Upgrades"),'gem'],X('환생해도 유지된다. 승천할 때만 초기화된다.',"Kept through rebirths. Only ascension resets them."));
+  const uc=card([X('영혼 강화',"Soul Upgrades"),'gem'],X('환생해도 유지된다. 승천부터 초기화된다.',"Kept through rebirths. Ascension and everything above reset them."));
   uc.appendChild(buyAmtRow()); uc.appendChild(levelGrid(SOUL_UPS,id=>S.soulUps[id]||0,'soul',(id,n)=>{S.soulUps[id]=(S.soulUps[id]||0)+(n||1)},'soul'));
   p.appendChild(uc);
   updaters.push(()=>{
@@ -315,7 +315,7 @@ export function buildMilestones(p){
   c.appendChild(g); p.appendChild(c);
 }
 export function buildAscend(p){
-  const c=card([X('승천',"Ascension"),'relic'],X(`영혼석·영혼 강화·룬을 전부 버리고 <b class="relic">유물</b>을 얻는다. 유물 강화는 <b>영원히</b> 남는다.<br>필요 조건: 이번 주기 누적 영혼석 ${fmtLog(ascendReqLog())} <span class="dim">— 돌파할수록 멀어진다</span>`,`Give up soul shards, soul upgrades and runes for <b class="relic">relics</b>. Relic upgrades last <b>forever</b>.<br>Requires ${fmtLog(ascendReqLog())} soul shards this cycle — each breakthrough asks for more.`));
+  const c=card([X('승천',"Ascension"),'relic'],X(`영혼석·영혼 강화·룬을 전부 버리고 <b class="relic">유물</b>을 얻는다. 유물 강화는 초월 전까지 남는다.<br>필요 조건: 이번 주기 누적 영혼석 ${fmtLog(ascendReqLog())} <span class="dim">— 돌파할수록 멀어진다</span>`,`Give up soul shards, soul upgrades and runes for <b class="relic">relics</b>. Relic upgrades last until you transcend.<br>Requires ${fmtLog(ascendReqLog())} soul shards this cycle — each breakthrough asks for more.`));
   const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
   const b=btn('gold big','',()=>{
     if(relicGain()<=0) return;
@@ -344,7 +344,7 @@ export function buildTrans(p){
     modal(X('초월하시겠습니까?','Transcend?'),X(`별가루 <b class="gold">${fmtLog(starGainLog())}</b>를 얻고<br>유물 · 유물 강화 · 승천 · 영혼석 · 룬 · 장비가 초기화됩니다.`,`You gain <b class="gold">${fmtLog(starGainLog())}</b> stardust.<br>Relics, relic upgrades, ascensions, soul shards, runes and gear reset.`),()=>doTranscend());
   });
   c.appendChild(b); p.appendChild(c);
-  const uc=card([X('별 강화',"Star Upgrades"),'sparkle'],X('가장 깊은 층의 강화. 초월해도 남는다.',"The deepest layer. Even transcending cannot take these away."));
+  const uc=card([X('별 강화',"Star Upgrades"),'sparkle'],X('가장 깊은 층의 강화. 초월해도 남고, 무한부터 초기화된다.',"The deepest layer. Transcending cannot touch these; infinity resets them."));
   uc.appendChild(buyAmtRow()); uc.appendChild(levelGrid(STAR_UPS,id=>S.starUps[id]||0,'star',(id,n)=>{S.starUps[id]=(S.starUps[id]||0)+(n||1)},'star'));
   p.appendChild(uc);
   updaters.push(()=>{
@@ -362,14 +362,14 @@ export function buildTrans(p){
    아래쪽은 스크롤해야 보였다 — 왼쪽 메뉴에서 칸마다 따로 연다. */
 export function buildLayer(p,i){
   const L=INF_LAYERS[i];
-  if(i===0) p.appendChild(card([X('넘침이라는 문',"The Overflow Door"),'inf_frame'],X(`수가 <b>${fmtLog(300)}</b> 을 넘길 지경이 되면 그 자체가 관문이 된다. 한 칸 위로 올라가고 아래가 접힌다. <b class="gold">별가루와 별 강화는 남는다.</b> 칸을 넘길 때마다 모든 생산에 큰 배율이 영구히 붙는다.`,`When a number is about to overflow past <b>${fmtLog(300)}</b>, that ceiling becomes a door. You rise one rung and everything below folds away — <b class="gold">stardust and star upgrades stay</b> — leaving a permanent multiplier.`)));
+  if(i===0) p.appendChild(card([X('넘침이라는 문',"The Overflow Door"),'inf_frame'],X(`수가 <b>${fmtLog(300)}</b> 을 넘길 지경이 되면 그 자체가 관문이 된다. 한 칸 위로 올라가고 <b class="gold">아래가 남김없이 접힌다 — 별가루와 별 강화까지.</b> 칸을 넘길 때마다 모든 생산에 큰 배율이 영구히 붙는다.`,`When a number is about to overflow past <b>${fmtLog(300)}</b>, that ceiling becomes a door. You rise one rung and everything below folds away — <b class="gold">stardust and star upgrades included</b> — leaving a permanent multiplier.`)));
   const lc=card([X(L.ko,L.en),L.sp]);
   const info=el('div','row'); info.style.margin='4px 0 9px'; lc.appendChild(info);
   const b=btn('gold big','',()=>{
     if(infGain(i)<=0) return;
     modal(X(`${L.ko} 돌파`,`${L.en} Break`),
-      X(`<b class="gold">${L.ko} +${fmt(infGain(i))}</b> 을 얻고<br>그 아래 계층이 초기화됩니다.<br><span class="gold">별가루와 별 강화는 남습니다.</span>`,
-        `Gain <b class="gold">+${fmt(infGain(i))} ${L.en}</b>.<br>Everything below resets — stardust and star upgrades stay.`),
+      X(`<b class="gold">${L.ko} +${fmt(infGain(i))}</b> 을 얻고<br>그 아래가 남김없이 초기화됩니다.<br><span class="gold">별가루와 별 강화도 지워집니다.</span>`,
+        `Gain <b class="gold">+${fmt(infGain(i))} ${L.en}</b>.<br>Everything below resets — stardust and star upgrades too.`),
       ()=>doInfBreak(i));
   });
   lc.appendChild(b);

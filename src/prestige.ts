@@ -29,22 +29,39 @@ export const REQ_REL=0.55;
    자릿수로 0.3(=약 두 배) 씩이라, 쉰 번을 해도 열다섯 자릿수만 오른다. */
 /* 자릿수 0.3 은 돌파마다 조건을 두 배로 만든다. 보상이 1, 2, 3 개로 세어지는
    경제에서는 스무 번이면 손이 닿지 않는다. 5% 씩만 민다. */
-export const REQ_STEP=0.02;
-export function pushReq(field,reached){
+/* ── 단계마다 다음이 얼마나 멀어지는가 ─────────────────
+   여덟 단계가 모두 같은 걸음이었다 — 아래 셋은 0.02 자릿수씩, 위 다섯은 세 배씩.
+   어느 단계에 서 있든 손에 잡히는 느낌이 같고, 깊은 돌파가 더 무겁다는 것이
+   값에 드러나지 않는다. 게다가 위 칸의 세 배는 너무 가팔랐다 — 현실은 영원
+   열 개를 원하는데 열 번째 영원이 무한 196,830 개를 요구했다. 닿을 수 없는 수다.
+   아래는 자주 가볍게, 위로 갈수록 뜸하고 무겁게 — 걸음을 단계마다 달리 둔다. */
+export const REQ_STEP=0.02;                       // 환생
+export const STEP_ASCEND=0.032, STEP_TRANS=0.048; // 승천 · 초월
+/* 무한 위 다섯 칸. 단위가 둘로 갈린다 —
+   무한은 마나의 '자릿수' 를 세므로 걸음도 자릿수(수백 중의 0.6),
+   그 위는 아래 계층의 '개수' 를 세므로 걸음도 개수의 자릿수(1.6 중의 0.05) 다. */
+export const LAYER_STEP=[0.6, 0.05, 0.06, 0.07, 0.08];
+/* 위 칸이 요구하는 개수는 뚫을 때마다 이 배수로 오른다. 무한은 개수가 아니라
+   자릿수를 보므로 쓰지 않는다. */
+export const LAYER_MUL=[1, 1.45, 1.6, 1.75, 1.9];
+/* 한 칸을 뚫을 때마다 개수에 비례해 붙는 자릿수. 깊을수록 한 번이 크다. */
+export const LAYER_GAIN=[0.3, 0.9, 2.7, 8.1, 24.3];
+export function pushReq(field,reached,step){
   const b=S[field], now=(typeof reached==='number'&&isFinite(reached))?reached:-Infinity;
   const base=(typeof b==='number'&&isFinite(b))?b:-Infinity;
-  S[field]=Math.max(base,now)+REQ_STEP;
+  const d=(typeof step==='number'&&isFinite(step)&&step>0)?step:REQ_STEP;
+  S[field]=Math.max(base,now)+d;
 }
 /* 하한도 돌파 횟수를 따라 오른다. 처음 정한 값만 하한으로 두면 초반에는
    그 값이 계속 이겨서, 돌파를 아무리 해도 조건이 그대로였다. */
-function reqOf(base,best,count){
-  const floor=numLog(base)+Math.max(0,count||0)*REQ_STEP;
+function reqOf(base,best,count,step){
+  const floor=numLog(base)+Math.max(0,count||0)*(step||REQ_STEP);
   const rel=(typeof best==='number'&&isFinite(best)&&best>0)?REQ_REL*best:-Infinity;
   return Math.max(floor,rel);
 }
-export const rebirthReqLog=()=>reqOf(REBIRTH_REQ,S.bestRunL,  S.rebirthEver||S.rebirths);
-export const ascendReqLog =()=>reqOf(ASCEND_REQ, S.bestAscL,  S.ascendEver ||S.ascensions);
-export const transReqLog  =()=>reqOf(TRANS_REQ,  S.bestTransL,S.transEver  ||S.transcends);
+export const rebirthReqLog=()=>reqOf(REBIRTH_REQ,S.bestRunL,  S.rebirthEver||S.rebirths, REQ_STEP);
+export const ascendReqLog =()=>reqOf(ASCEND_REQ, S.bestAscL,  S.ascendEver ||S.ascensions,STEP_ASCEND);
+export const transReqLog  =()=>reqOf(TRANS_REQ,  S.bestTransL,S.transEver  ||S.transcends,STEP_TRANS);
 
 /* ── 돌파가 주는 양은 개수로 센다 ────────────────────
    여태는 조건을 넘긴 폭이 그대로 지수로 들어가, 첫 환생부터 천문학적인 수가
@@ -119,7 +136,7 @@ export function doAscend(silent){
   gainRes('crystal',rl*0.3);      // 유물 자릿수의 3 할
   gainRes('relic',rl); S.relicTransL=logAdd(S.relicTransL,rl); S.relicTrans=S.relicTransL<308?Math.pow(10,S.relicTransL):Infinity;
   sfx('prestige');
-  pushReq('bestAscL',S.soulAscL);
+  pushReq('bestAscL',S.soulAscL,STEP_ASCEND);
   S.lastRelicGainL=rl; S.lastRelicGain=g; S.ascensions++; S.ascendEver=(S.ascendEver||0)+1;
   setRes('soul',-Infinity); S.soulAsc=0; S.soulAscL=-Infinity; S.soulUps={}; S.runes={};
   S.rebirths=0;  setRes('offering',-Infinity); S.lastSoulGain=0; S.lastSoulGainL=-Infinity; S.sinceAscend=0;
@@ -169,7 +186,7 @@ export const REQ_GROWTH=1.02;         // 다음 돌파는 지난번 높이보다
    사흘을 굴려도 영원 1, 현실 0 이던 것이 이것이다. 칸에 맞는 자로 잰다. */
 export function reqBaseLog(i){
   const n=S[INF_LAYERS[i].k+'Count']||0;
-  return i>0 ? L10(INF_STACK)+n*L10(3) : 300+3*n;
+  return i>0 ? L10(INF_STACK)+n*L10(LAYER_MUL[i]) : 300+3*n;
 }
 export function reqLog(i){
   const base=reqBaseLog(i);
@@ -177,10 +194,15 @@ export function reqLog(i){
   return (typeof a==='number'&&isFinite(a))?Math.max(base,a):base;
 }
 /* 돌파한 순간의 높이를 다음 조건으로 새긴다 */
+/* 지난번에 닿은 높이에 '몇 %' 를 얹으면, 자릿수가 커질수록 걸음도 같이 커진다 —
+   마나가 500 자리일 때 2% 는 열 자리다. 그런데 한 번 뚫어 얻는 배율은 개수의
+   로그라 0.2 자리쯤 붙을 뿐이다. 걸음이 보상보다 훨씬 빨리 자라니 여덟 번쯤
+   뚫고 나면 조건이 영영 앞서 나간다 — 무한이 아홉 번에서 멎던 것이 이것이다.
+   퍼센트가 아니라 정해진 걸음만큼 민다. 보상이 걸음을 앞서면 계속 나아간다. */
 export function markReq(i,reachedLog){
   const k=INF_LAYERS[i].k;
   const now=(typeof reachedLog==='number'&&isFinite(reachedLog))?reachedLog:reqLog(i);
-  S[k+'ReqL']=Math.max(reqLog(i),now)*REQ_GROWTH;
+  S[k+'ReqL']=Math.max(reqLog(i),now)+LAYER_STEP[i];
 }
 export function reqFor(i){
   const l=reqLog(i);
@@ -241,7 +263,10 @@ export function doInfBreak(i){
   /* 무한 돌파에서는 별가루와 별 강화가 남는다 — 초월 탭이 약속한 것이 그것이다.
      그러나 영원 위로는 진짜 처음부터다. 별 강화까지 전부 접힌다. */
   for(let j=i-1;j>=0;j--){ S[INF_LAYERS[j].k]=0; S[INF_LAYERS[j].k+'Run']=0; if(INF_LAYERS[j].store) S[INF_LAYERS[j].store]={}; }
-  if(i>0){ setRes('star',-Infinity); S.starUps={}; }
+  /* 돌파는 그 앞 돌파의 재료를 남김없이 지운다 — 여덟 단계 모두 같은 규칙이다.
+     무한만 별가루와 별 강화를 남겨 두어서, 무한 앞에 선 초월이 혼자 손해를
+     보지 않는 단계가 되어 있었다. 무한도 초월을 접는다. */
+  setRes('star',-Infinity); S.starUps={};
 
   setRes('relic',-Infinity); S.relicTrans=0; S.relicTransL=-Infinity; S.relicUps={};
   setRes('soul',-Infinity); S.soulAsc=0; S.soulAscL=-Infinity; S.soulUps={}; S.runes={}; S.gear={};
@@ -249,7 +274,7 @@ export function doInfBreak(i){
   S.rebirths=0; S.ascensions=0; S.transcends=0; 
   if(S.chal) exitChallenge(false);
   softReset();
-  log(`${icHTML(L.sp)}<b class="gold">${X(L.ko,L.en)} ${X('돌파','Break')}</b> · <b>+${fmt(g)}</b> · ${i>0?X('모든 것이 처음으로 돌아갔다','everything returned to the beginning'):X('아래 계층이 접혔다 · 별 강화는 남았다','everything below folded away, star upgrades kept')}`,true);
+  log(`${icHTML(L.sp)}<b class="gold">${X(L.ko,L.en)} ${X('돌파','Break')}</b> · <b>+${fmt(g)}</b> · ${X('모든 것이 처음으로 돌아갔다','everything returned to the beginning')}`,true);
   toast(icHTML(L.sp)+X(` ${L.ko} 돌파 +${fmt(g)}`,` ${L.en} +${fmt(g)}`));
   return true;
 }
@@ -259,10 +284,15 @@ export function infBonusLog(){
      그것만으로 배율이 10^(1.06e264) 이 되어, 룬·장비를 상한에 맞춰도 마나가
      프레스티지 직후 그대로 꼭대기였다. 다른 곳과 같이 로그로 접는다 —
      쉰 번 뚫으면 예순 자릿수쯤, 그 위로는 천천히 는다. */
+  /* 로그로만 접으면 개수를 두 배로 늘려야 열 자릿수가 붙는다 — 조건은 뚫을
+     때마다 한 걸음씩 오르는데 보상은 그 절반도 못 따라가, 결국 조건이 앞선다.
+     로그 항은 그대로 두어 초반 느낌을 지키고, 개수에 비례하는 항을 얹는다.
+     둘 다 개수에 대해 선형 아래이므로 폭주하지 않는다 — 다만 멈추지도 않는다.
+     칸마다 얹는 몫이 다르다: 깊은 칸일수록 한 번이 크다. */
   let v=0;
   for(let i=0;i<INF_LAYERS.length;i++){
     const n=S[INF_LAYERS[i].k+'Ever']||0;
-    if(n>0&&isFinite(n)) v+=35*(1+i*0.5)*L10(1+n);
+    if(n>0&&isFinite(n)) v+=35*(1+i*0.5)*L10(1+n)+LAYER_GAIN[i]*n;
   }
   return v;
 }
@@ -280,7 +310,7 @@ export function doTranscend(silent){
   if(g<=0) return false;
   const sl=starGainLog();
   sfx('prestige');
-  pushReq('bestTransL',S.relicTransL);
+  pushReq('bestTransL',S.relicTransL,STEP_TRANS);
   /* 초월은 별가루와 함께 오퍼링·영혼석을 얹는다 — 룬과 영혼 강화를 다시
      세울 밑천이다. 아래를 전부 갈아엎는 돌파이니 씨앗은 돌려준다. */
   gainRes('offering',sl*0.35); gainRes('soul',sl*0.3);
