@@ -42,6 +42,9 @@ AFFIX = {
  'light'  : (['d','e','f'], 'b', 'f', ['c','d','e','f'], 'ray'),
  'sand'   : (['a','b','c'], 'A', 'd', ['A','a','b','c'], 'grain'),
 }
+# 표에 적은 톤을 그대로 쓰지 않고 lift 를 한 번 지난다 — 어두운 배경에서
+# 읽히는 창으로 밀어 준다. 규칙을 주석이 아니라 값으로 지킨다.
+AFFIX = {k:(lift(v[0]),v[1],v[2],lift(v[3]),v[4]) for k,v in AFFIX.items()}
 
 def put(c, mask, t, o):
     bands(c, mask, t, n=3); edge(c, mask, o); return mask

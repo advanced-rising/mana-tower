@@ -53,6 +53,61 @@ RAMP={
 OUT={'gold':'A','stone':'M','steel':'0','blue':'D','green':'B','red':'C',
      'purple':'E','skin':'H','bone':'I','black':'0'}
 
+# ── 어두운 배경에서 읽히는 톤만 쓴다 ────────────────────────
+# 도안은 램프에서 톤 서넛을 이어서 고른다. 그런데 램프 아래 두 칸은 UI 바탕
+# (#141419) 과의 대비가 1.0~1.5 라 사실상 보이지 않는 색이다. earth 는 몸통
+# 세 톤이 전부 거기여서(A=1.0 a=1.4 b=2.5) 흙 속성 적이 통째로 검은 덩어리로
+# 나왔다 — 3,413 장 중 1,231 장이 배경 위에서 마흔 칸 미만만 보였다.
+# "가장 어두운 톤도 충분히 밝게" 는 여기저기 주석으로 적혀만 있었고 지키는 것이
+# 없었다. 고른 창을 램프 위로 밀어 그 규칙을 값으로 만든다.
+# 외곽선은 어두워야 제 일을 하므로 건드리지 않는다.
+MIN_CR = 2.6
+_BG = (0x14, 0x14, 0x19)
+def _lum(rgb):
+    f = lambda v: ((v/255+0.055)/1.055)**2.4 if v/255 > 0.04045 else v/255/12.92
+    return 0.2126*f(rgb[0]) + 0.7152*f(rgb[1]) + 0.0722*f(rgb[2])
+_PALHEX = None
+def _cr(ch):
+    # 그 색이 배경에서 얼마나 뜨는가 (1 이면 배경과 같은 밝기)
+    global _PALHEX
+    if _PALHEX is None:
+        with open(DATA, encoding='utf-8') as f:
+            _PALHEX = json.load(f)['palette']
+    h = _PALHEX.get(ch)
+    if not h: return 99.0
+    rgb = tuple(int(h.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+    a, b = _lum(rgb), _lum(_BG)
+    return (max(a, b) + 0.05) / (min(a, b) + 0.05)
+def _full(nm):
+    # 램프에 그 계열의 외곽선색을 맨 앞(가장 어두움)에 붙인다 —
+    # 'wood2' 처럼 외곽선색을 몸통 톤으로 쓰는 창이 있어서, 이걸 빼면
+    # 창의 글자가 램프에 없다고 판단해 그대로 지나쳐 버린다.
+    r = RAMP[nm]; o = OUT.get(nm)
+    return ([o] + list(r)) if (o and o not in r) else list(r)
+def _ramp_of(tones):
+    # 창의 글자를 가장 많이 담은 램프를 고른다 — 글자가 램프 둘에 겹쳐 있다
+    best, hit = None, -1
+    for nm in RAMP:
+        n = sum(1 for c in tones if c in _full(nm))
+        if n > hit: best, hit = nm, n
+    return _full(best) if hit > 0 else None
+def lift(tones):
+    # 가장 어두운 톤이 배경에서 읽힐 때까지 창을 램프 위로 민다.
+    # 창을 통째로 밀어 톤 사이 간격(음영)을 그대로 지킨다.
+    t = list(tones)
+    r = _ramp_of(t)
+    if not r: return t
+    idx = [r.index(c) if c in r else None for c in t]
+    if any(i is None for i in idx): return t
+    # 가장 어두운 한 단은 그림자로 쓰이므로 어두워도 된다 — 실루엣은 그 위
+    # 톤들이 만든다. 그래서 '둘째로 어두운 톤' 이 읽히는 데까지만 민다.
+    # 톤을 버리지는 않는다. 넷을 둘로 줄이면 음영이 무너져, 안 보이던 그림이
+    # 이번엔 납작해진다. 램프가 짧아 못 미치면 갈 수 있는 데까지만 간다.
+    key = lambda ii: sorted(_cr(r[i]) for i in ii)[1] if len(ii) > 1 else _cr(r[ii[0]])
+    while key(idx) < MIN_CR and max(idx) + 1 < len(r):
+        idx = [i + 1 for i in idx]
+    return [r[i] for i in idx]
+
 class C:
     def __init__(s,n):
         s.n=n; s.g=[['.']*n for _ in range(n)]
@@ -266,6 +321,10 @@ def bands(c, mask, ramp, n=4, mode='form', cx=None, cy=None, r=None,
     R=RAMP[ramp] if isinstance(ramp,str) else ramp
     step=max(1,(len(R)-1)//max(1,n-1))
     pick=[R[min(len(R)-1,i*step)] for i in range(n)]
+    # 띠를 칠하는 자리는 여기 하나뿐이다 — 규칙도 여기서 지킨다.
+    # mat() 에만 걸어 두었더니 그 길을 안 지나는 생성기(우주·룬·자동화·장비세트)
+    # 오백 장이 그대로 묻혀 있었다. 어느 길로 오든 읽히는 창으로 민다.
+    pick=lift(pick)
     rowx=None
     if mode=='axis':
         rowx={}

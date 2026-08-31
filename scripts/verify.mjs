@@ -54,6 +54,18 @@ if(!only.length){
   }
 }
 
+/* 그림이 배경에 묻혀 있지 않은지는 브라우저 없이 파일에서 바로 본다 */
+if(!only.length){
+  console.log('\n── artscan  (그림이 배경에 묻힌 자리)')
+  try{
+    const r=await run('python3',[ROOT+'tools/artscan.py'],{cwd:ROOT,maxBuffer:16*1024*1024,stdio:['ignore','pipe','pipe']})
+    for(const l of r.stdout.split('\n')) if(l.trim()) console.log(l)
+  }catch(e){
+    for(const l of ((e.stdout||'')+(e.stderr||'')).split('\n')) if(l.trim()) console.log(l)
+    failedText++
+  }
+}
+
 /* 하네스는 저마다 크롬을 따로 띄우므로 서로 기다릴 이유가 없다. 차례로 돌리면
    합이 팔 분이라 푸시 훅으로 쓰기 어려웠다 — 함께 돌리면 가장 긴 하나로 줄어든다.
    출력은 끝난 순서가 아니라 적어 둔 순서로 낸다. 읽는 쪽이 헷갈리지 않아야 한다. */

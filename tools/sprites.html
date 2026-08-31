@@ -1,0 +1,65 @@
+<pre id="TESTOUT" style="display:none"></pre>
+<script>
+/* 그림이 안 나오는 자리를 찾는다.
+   탭을 돌며 보이는 것만 보면 놓친다 — 적 3,000 종, 업적 배지, 장비처럼 이름이
+   코드에서 만들어지는 그림은 그 순간 화면에 없기 때문이다.
+   게임이 만들어 낼 수 있는 이름을 표에서 전부 꺼내 하나씩 받아 본다. */
+(async()=>{
+  const O=document.getElementById('TESTOUT'), out=s=>{O.textContent+=s+'\n'};
+  const fail=[]; const bad=(w,d)=>{ if(fail.length<40) fail.push(w+' :: '+d) };
+  let checked=0, groups=0;
+  try{
+  await new Promise(r=>setTimeout(r,900));
+  const G=window.__game; if(!G){ out('[!] __game 없음'); out('DONE'); return }
+  const want=new Map();                     // 이름 → 어디서 왔는지
+  const add=(nm,where)=>{ if(typeof nm==='string'&&nm&&!want.has(nm)) want.set(nm,where) };
+  const fromList=(list,where)=>{ for(const o of (list||[])) if(o){ add(o.sp,where); add(o.icon,where) } };
+
+  fromList(G.ACHS,'업적'); fromList(G.BADGES,'배지'); fromList(G.GEAR,'장비');
+  fromList(G.RUNES,'룬'); fromList(G.RESEARCH_ALL||G.RESEARCH,'연구');
+  fromList(G.PRODUCERS,'시설'); fromList(G.CHALLENGES,'시련');
+  fromList(G.SOUL_UPS,'영혼'); fromList(G.RELIC_UPS,'유물'); fromList(G.STAR_UPS,'별');
+  fromList(G.INF_UPS,'무한'); fromList(G.ETER_UPS,'영원'); fromList(G.REAL_UPS,'현실');
+  fromList(G.VOID_UPS,'공허'); fromList(G.ORIGIN_UPS,'근원');
+  fromList(G.COSMOS,'우주'); fromList(G.INF_LAYERS,'계층'); fromList(G.TABS,'탭');
+  fromList(G.AUTO_DEFS,'자동'); fromList(G.MILESTONES,'이정표'); fromList(G.FOES,'적표');
+  for(const s of (G.COSMOS_SP||[])) add(s,'우주배율');
+  for(const k of (G.RES||[])) add(typeof k==='string'?k:k&&k.k,'재료');
+  /* 적은 층에서 나온다 — 장이 바뀌는 곳을 넓게 훑는다 */
+  if(G.foeOf) for(let f=1;f<=60000;f+=(f<2000?7:311)){
+    try{ const o=G.foeOf(f); if(o) add(o.sp,'적 '+f+'층') }catch(e){}
+  }
+  /* 장비는 장마다 갈린다 */
+  if(G.GEAR) for(const g of G.GEAR) for(const key of ['sp','sp2','icon']) add(g[key],'장비');
+
+  const names=[...want.keys()];
+  out(`게임이 부를 수 있는 그림 ${names.length}종`);
+  const miss=[];
+  const load=nm=>new Promise(r=>{
+    const i=new Image(); i.onload=()=>r(i.naturalWidth>0); i.onerror=()=>r(false);
+    i.src=G.spriteURL?G.spriteURL(nm):('art/sprites/'+nm+'.png');
+  });
+  for(let i=0;i<names.length;i+=64){
+    const part=names.slice(i,i+64);
+    const oks=await Promise.all(part.map(load));
+    part.forEach((nm,j)=>{ checked++; if(!oks[j]) miss.push(nm) });
+  }
+  const byWhere={};
+  for(const nm of miss){ const w=want.get(nm); (byWhere[w]=byWhere[w]||[]).push(nm) }
+  out('');
+  out('=== 받아지지 않는 그림 ===');
+  const keys=Object.keys(byWhere);
+  groups=keys.length;
+  if(!keys.length) out('  없음');
+  for(const w of keys){
+    const l=byWhere[w];
+    out(`  ${w}  ${l.length}종 · ${l.slice(0,6).join(', ')}${l.length>6?' …':''}`);
+    bad('그림 없음',`${w} ${l.length}종 (${l.slice(0,3).join(', ')})`);
+  }
+  }catch(e){ bad('하네스',e.message+' @ '+(e.stack||'').split('\n')[1]) }
+  out('');
+  out(`=== 안 나오는 그림 ${fail.length}건 ===`);
+  out(`COVER 확인=${checked}`);
+  out('DONE');
+})();
+</script>

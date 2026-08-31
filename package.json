@@ -11,7 +11,7 @@
     "build": "node scripts/build.mjs && node scripts/smoke.mjs",
     "watch": "node scripts/build.mjs --watch",
     "check": "tsc --noEmit",
-    "art": "python3 tools/build_sprites.py && python3 tools/build_ui.py",
+    "art": "python3 tools/brighten.py --write && python3 tools/build_sprites.py && python3 tools/build_ui.py",
     "smoke": "node scripts/smoke.mjs",
     "verify": "node scripts/build.mjs && node scripts/smoke.mjs && node scripts/verify.mjs",
     "sim": "node scripts/build.mjs && node scripts/sim.mjs",

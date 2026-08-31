@@ -32,6 +32,8 @@ PAL = {
  'rust' : (['l','m','n','o'], 'C', 'o', 'm'),
  'void' : (['u','v','w','x'], '0', 'y', 'v'),
 }
+# 배지도 같은 규칙을 지난다 — 415 장이 배경에 묻혀 있었다.
+PAL = {k:(lift(v[0]),v[1],v[2],v[3]) for k,v in PAL.items()}
 
 def ring_m(rx, ry, w):
     return m_ellipse(CX, CY, rx, ry) - m_ellipse(CX, CY, rx-w, ry-w)
