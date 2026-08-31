@@ -98,15 +98,17 @@ export function softReset(){
      생성은 값을 내지 않기 때문에 막을 방법이 없다.
      0 단계는 손으로 채집하는 것을 대신할 뿐이라 연쇄에 불을 붙이지 않는다. */
   S.bought[0]=Math.max(1,free);
-  /* 던전도 1 층으로 초기화된다. 이미 깬 층(1 ~ 최심층)은 되밟는 길이라
-     싸우지도 않고 아무것도 나오지 않으며, 기록이 얼마나 깊든 제자리로
-     돌아가는 데 걸리는 시간이 같도록 그 구간만 빠르게 지나간다.
-     전리품이 없으니 '한 층씩' 규칙이 막으려던 폭주와는 무관하다. */
+  /* 던전은 초기화하지 않는다 — 서 있던 층에서 그대로 이어 간다.
+     예전에는 1 층으로 돌려보내고 이미 깬 구간을 '되밟는 길' 로 빠르게 지나가게
+     했는데, 그건 등반이 아니라 매 회차 되풀이되는 대기였다. 층은 한 번 오르면
+     내려오지 않는다 — 프레스티지가 가져가는 것은 마나·시설·연구뿐이다.
+     보상도 층마다 한 번뿐이므로 lootFloor 를 지우지 않는다. */
   S.research={}; S.sinceRebirth=0;
-  S.floor=1; S.prog=0; S.floorCd=0; S.lootFloor=0;   // 보상도 이번 회차에 다시 받는다
+  S.prog=0; S.floorCd=0;
   S.anchorL=0; recalc();      // 먼저 풀고 다시 재야 이번 회차가 들고 온 배율이 나온다
   setAnchor(); recalc();
 }
+
 export function doRebirth(silent){
   const g=soulGain(), o=offerGain();
   if(g<=0) return false;

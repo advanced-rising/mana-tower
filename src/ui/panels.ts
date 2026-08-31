@@ -97,7 +97,7 @@ export function buildResearch(p){
 }
 
 export function buildDungeon(p){
-  const c=card([X('심연의 던전',"The Abyssal Dungeon"),'sword'],X('원정대의 공격력은 보유한 시설 총합에서 나온다. 한 번 내려가기 시작하면 멈추라고 할 때까지 계속 내려간다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다. 층마다 <b>광맥</b>이 달라 마나·결정·오퍼링 중 무엇이 두터운지 갈린다.<br>프레스티지를 하면 던전도 <b>1층</b>으로 돌아간다. 다만 이미 깬 층은 <b>되밟는 길</b>이라 싸우지도, 아무것도 나오지도 않고 빠르게 지나간다 — <b class="gold">최심층</b>이 아무리 깊어도 제자리로 돌아가는 데 걸리는 시간은 늘 비슷하다.',"Your party power comes from every building you own. Once you start descending you keep going until you stop. A <b class='bad'>boss</b> waits every 10th floor, and depth permanently raises your mana multiplier. Each floor runs a different <b>vein</b> — mana, crystal or votive.<br>A prestige sends the dungeon back to <b>floor 1</b>. Ground you have already cleared is <b>retread</b>: no fighting, nothing drops, and you pass through it quickly — getting back to your <b class='gold'>deepest</b> takes about the same time however deep it is."));
+  const c=card([X('심연의 던전',"The Abyssal Dungeon"),'sword'],X('원정대의 공격력은 보유한 시설 총합에서 나온다. 한 번 내려가기 시작하면 멈추라고 할 때까지 계속 내려간다. 10층마다 <b class="bad">보스</b>가 기다리며, 층이 깊을수록 전체 마나 생산 배율이 영구히 오른다. 층마다 <b>광맥</b>이 달라 마나·결정·오퍼링 중 무엇이 두터운지 갈린다.<br><b class="gold">던전은 초기화되지 않는다.</b> 프레스티지를 해도 서 있던 층에서 그대로 이어 내려간다 — 한 번 오른 층은 다시 오르지 않는다.',"Your party power comes from every building you own. Once you start descending you keep going until you stop. A <b class='bad'>boss</b> waits every 10th floor, and depth permanently raises your mana multiplier. Each floor runs a different <b>vein</b> — mana, crystal or votive.<br><b class='gold'>The dungeon never resets.</b> A prestige leaves you standing where you were — ground you have climbed is never climbed twice."));
   const ar=el('div','arena');
   const foe=el('div','foe'); const foeIco=ic(FOES[0].sp,64); foe.appendChild(foeIco);
   const right=el('div');
@@ -108,7 +108,7 @@ export function buildDungeon(p){
   ar.append(foe,right); c.appendChild(ar);
 
   const ctl=el('div','row'); ctl.style.marginTop='10px';
-  /* 층은 손으로 옮기지 않는다 — 되밟는 길이 알아서 데려다 놓는다 */
+  /* 층은 손으로 옮기지 않는다 — 던전이 초기화되지 않으므로 늘 최전선이다 */
   const go=btn('','',()=>{S.exploring=!S.exploring;if(!S.exploring)S.prog=0});
   ctl.append(go); c.appendChild(ctl);
   p.appendChild(c);
@@ -270,7 +270,7 @@ export function buildRebirth(p){
   const info=el('div','row'); info.style.margin='6px 0 10px'; c.appendChild(info);
   const b=btn('gold big','',()=>{
     if(soulGain()<=0) return;
-    modal(X('환생하시겠습니까?','Rebirth?'),X(`영혼석 <b class="soul">${fmtLog(soulGainLog())}</b> · 오퍼링 <b class="offer">${fmtLog(offerGainLog())}</b>을 얻고<br>마나 · 시설 · 연구가 초기화되고<br>던전도 1층으로 돌아갑니다 — 최심층 <b class="gold">${fmt(S.deepest)}</b>층까지는 되밟기라 금방입니다.`,`You gain <b class="soul">${fmtLog(soulGainLog())}</b> soul shards and <b class="offer">${fmtLog(offerGainLog())}</b> offerings.<br>Mana, buildings and research reset, and the dungeon returns to floor 1 — retreading to your deepest, <b class="gold">F${fmt(S.deepest)}</b>, is quick.`),()=>doRebirth());
+    modal(X('환생하시겠습니까?','Rebirth?'),X(`영혼석 <b class="soul">${fmtLog(soulGainLog())}</b> · 오퍼링 <b class="offer">${fmtLog(offerGainLog())}</b>을 얻고<br>마나 · 시설 · 연구가 초기화됩니다.<br>던전은 <b class="gold">${fmt(S.deepest)}</b>층 그대로 이어집니다.`,`You gain <b class="soul">${fmtLog(soulGainLog())}</b> soul shards and <b class="offer">${fmtLog(offerGainLog())}</b> offerings.<br>Mana, buildings and research reset. The dungeon stays where it is, at <b class="gold">F${fmt(S.deepest)}</b>.`),()=>doRebirth());
   });
   c.appendChild(b); p.appendChild(c);
   const uc=card([X('영혼 강화',"Soul Upgrades"),'gem'],X('환생해도 유지된다. 승천부터 초기화된다.',"Kept through rebirths. Ascension and everything above reset them."));

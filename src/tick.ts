@@ -8,7 +8,7 @@ import { LOG, S } from './state'
 import { cntLog, curChal, logAdd, numLog, syncGen } from './num'
 import { M, addManaLog, invalidateM, manaRateLog, mSignature, recalc, syncMana } from './multipliers'
 import { notePeaks } from './num'
-import { clearFloor, dungeonPowerLog, floorHPLog, floorPace, isRetread, retreadSteps } from './dungeon'
+import { clearFloor, dungeonPowerLog, floorHPLog, floorPace, holdIncome } from './dungeon'
 import { autoOK, runAutomation } from './automation'
 
 /* ══════════════ 진행 ══════════════ */
@@ -26,25 +26,17 @@ export function tick(dt){
        쿨다운을 속도가 곱해진 시간으로 깎아서, 속도 배율이 커지면 한 틱에
        마흔 걸음이 몰렸고 승천 직후 0.5 초 만에 예전 최심층까지 되돌아갔다.
        진행도는 속도를 타되(d), 걸음 사이 간격은 실제 시간(dt)으로만 식는다. */
-    /* 기록 아래의 층은 이미 이긴 곳이다 — 다시 싸우지 않는다.
-       프레스티지로 공격력이 0 이 된 채로 다시 싸우게 두면, 되밟기가 아니라
-       처음부터 다시 오르는 것이 된다(실제로 90 층 언저리에서 막혔다).
-       걸음의 속도만 남기고 전투는 건너뛴다. */
-    if(isRetread(S.floor)){
-      /* 이미 깬 구간은 싸우지 않고 지나간다. 한 틱에 한 층씩이면 기록이 깊을수록
-         돌아가는 데만 몇 분씩 걸리므로, 이 구간만 걸음을 넓혀 시간을 일정하게 둔다.
-         전리품이 없어 아무것도 불어나지 않는다. */
-      let steps=retreadSteps(dt);
-      while(steps-->0&&isRetread(S.floor)) clearFloor(0);
-      S.prog=0; S.floorCd=0;
-      if(!isRetread(S.floor)) recalc();     // 최전선에 닿았을 때 한 번만 다시 잰다
-    }else{
+    /* 던전은 늘 최전선에 서 있다 — 프레스티지가 층을 되돌리지 않으니
+       되밟을 구간이 없다. 싸워서 한 층씩 나아가는 길만 남는다.
+       그 대신 이미 쥔 땅이 계속 값을 낸다 — 되밟기가 하던 몫이다. */
+    holdIncome(dt);
+    {
       const gap=dungeonPowerLog()-floorHPLog(S.floor);
       const per=gap>=8?1e8:(gap<=-300?0:Math.pow(10,gap));   // 초당 채우는 비율
       S.prog=Math.min(1,(S.prog||0)+per*d);
     }
     S.floorCd=Math.max(0,(S.floorCd||0)-dt);
-    if(!isRetread(S.floor)&&(S.floorCd||0)<=0&&S.prog>=1){
+    if((S.floorCd||0)<=0&&S.prog>=1){
       S.prog=0; S.floorCd=floorPace();
       clearFloor(1);                       // 최전선은 한 번에 한 층.
       /* 예전에는 한 층을 깨면 탐험이 꺼졌다 — '연속 탐험' 자동화를 열기 전까지는

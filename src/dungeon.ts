@@ -18,19 +18,32 @@ export const FLOOR_MIN_TIME=0.28;  // 한 층이 화면에 머무는 최소 시�
    되어, ◀ 로 한 칸 내려갔다 올라오기를 되풀이하면 같은 층의 전리품을 얼마든지
    다시 가져갈 수 있었다. 최심층도 이미 깬 층이다.
    되밟는 길에서는 싸우지도 않고 아무것도 나오지 않는다. */
-export function isRetread(f){ return f<=(S.deepest||0) }
-export function floorPace(){ return isRetread(S.floor) ? 0 : FLOOR_MIN_TIME }
-/* 되밟기는 기록이 얼마나 깊든 이만큼 걸린다. 한 틱에 한 층씩만 지나가면
-   5,000 층이 몇 분, 50 만 층이면 몇 시간이다 — 그건 등반이 아니라 대기다.
-   한 틱에 지나갈 층수를 기록에서 거꾸로 정해 걸리는 시간을 일정하게 둔다.
-   층수는 여전히 눈에 보이게 올라가고, 전리품이 없으므로 아무것도 불어나지 않는다. */
+export function floorPace(){ return FLOOR_MIN_TIME }
 export const SOUL_FLOOR=100;      // 이 층부터 영혼석이 나온다
-export const RETREAD_SECONDS=10;   // 최심층까지 되밟는 데 걸리는 시간
-export const RETREAD_MAX_STEP=4096;
-export function retreadSteps(dt){
+/* ── 쥐고 있는 땅은 계속 값을 낸다 ────────────────────
+   예전에는 프레스티지가 던전을 1 층으로 돌려보냈고, 이미 깬 구간을 다시 걸어
+   지나가며 그 층들의 보상을 한 번 더 받았다 — 십 초쯤 걸렸고, 그것이 새 회차를
+   굴리는 밑천이자 최전선이 막혔을 때도 경제가 도는 이유였다.
+   층을 되돌리지 않기로 하면서 그 걸음이 사라졌는데, 수입까지 같이 사라졌다.
+   최전선을 못 이기는 동안 아무것도 들어오지 않아 깊이가 5,069 층에서 여섯 시간을
+   멈춰 섰다. 걷는 일만 없애고 받던 몫은 같은 속도로 남긴다 —
+   쥔 땅이 십 초마다 최심층 한 층 몫을 낸다. */
+/* 몫은 그때그때 다시 잰다. 깰 때의 값으로 얼려 두었더니 배율이 자라도 수입이
+   자라지 않아, 깊이가 5,059 층에서 여섯 시간을 멎었다 — 되밟기는 지날 때마다
+   그 순간의 배율로 다시 셌고, 그래서 회차가 굴러갈수록 밑천도 같이 컸다. */
+export const HOLD_SECONDS=10;
+export function holdIncome(dt){
   const rec=S.deepest||0;
-  if(!(rec>0)) return 1;
-  return Math.max(1,Math.min(RETREAD_MAX_STEP,Math.ceil(rec*(dt/RETREAD_SECONDS))));
+  if(!(dt>0)||!(rec>0)) return;
+  /* 마지막 한 층이 아니라 쥔 땅 전체가 낸다. 층당 보상이 등비수열이므로
+     1 층부터 최심층까지의 합은 마지막 층의 열세 배 남짓이다 — 예전에 되밟기가
+     한 회차에 걸쳐 주던 바로 그 몫이다. 한 층 몫만 주었더니 회차가 짧을 때
+     아무것도 못 모아, 마나 최고치가 257 자리에 멎어 무한 문턱(260)을 못 넘었다. */
+  const l=floorLoot(rec), k=L10(dt/HOLD_SECONDS)+L10(LOOT_PER_FLOOR/(LOOT_PER_FLOOR-1));
+  if(l.manaLog>-Infinity) addManaLog(l.manaLog+k);
+  if(l.crystalLog>-Infinity) gainRes('crystal',l.crystalLog+k);
+  if(l.offeringLog>-Infinity) gainRes('offering',l.offeringLog+k);
+  if(l.soulLog>-Infinity){ gainRes('soul',l.soulLog+k); S.soulAscL=logAdd(S.soulAscL,l.soulLog+k); }
 }
 
 /* ── 우주 계층 ────────────────────────────────

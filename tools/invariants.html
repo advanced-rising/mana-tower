@@ -199,9 +199,12 @@
         if(n) bad(name,`${k} 가 ${n}개 남았다`);
       }
       if(Object.keys(S.research||{}).length) bad(name,`연구가 ${Object.keys(S.research).length}개 남았다`);
-      /* 던전도 1층으로 돌아간다. 최심층(기록) 은 남아 되밟기를 빠르게 만든다 */
+      /* 던전은 초기화되지 않는다 — 서 있던 층에서 그대로 이어 간다.
+         예전에는 1 층으로 돌려보내고 이미 깬 구간을 되밟게 했다. 그 걸음을
+         없앴으므로, 여기서 볼 것은 '1 층으로 돌아갔는가' 가 아니라
+         '제자리를 지켰는가' 다. */
       if((S.deepest||0)<deepBefore) bad(name,`최심층 기록이 ${D(deepBefore)} → ${D(S.deepest)} 로 줄었다`);
-      if(S.floor!==1) bad(name,`던전이 ${D(S.floor)}층에서 시작한다 (1층이어야 한다)`);
+      if(S.floor<floorBefore) bad(name,`던전이 ${D(floorBefore)} → ${D(S.floor)}층으로 되돌아갔다 (이어져야 한다)`);
       /* 정말로 처음으로 돌아갔는가 — 되돌아온 시설과 생산량으로 본다 */
       if(!(G.cntLog(0)<4))
         bad(name,`시설이 통째로 돌아왔다 — 0단계 ${G.fmtLog(G.cntLog(0))}개 (이전 ${G.fmtLog(before.cnt)}개)`);
@@ -240,6 +243,11 @@
     S.auto={};                                  // 자동화를 하나도 켜지 않는다
     S.manaL=S.manaEverL=S.manaPeakL=60;
     for(let i=0;i<S.bought.length;i++) S.bought[i]=200;
+    /* 여기서 보려는 것은 '한 층을 깨고 탐험이 꺼지는가' 이지 힘이 얼마나 세냐가
+       아니다. 던전이 초기화되지 않으니 앞선 검사가 남긴 최전선(3,045층)에
+       그대로 서 있게 되고, 그 층은 이 힘으로 못 이겨 층이 안 는다 —
+       재려던 것과 다른 것을 재게 된다. 이길 수 있는 자리에 세운다. */
+    S.deepest=40; S.floor=41; S.prog=0; S.floorCd=0; S.lootFloor=40;
     G.recalc(); S.exploring=true;
     const f0=S.floor;
     for(let i=0;i<300;i++) G.tick(0.2);         // 60초
@@ -250,38 +258,37 @@
     if(G.doAscend(true)){
       G.recalc();
       if((S.deepest||0)<d1) bad('던전',`승천이 최심층 기록을 ${D(d1)} → ${D(S.deepest)} 로 줄였다`);
-      if(S.floor!==1) bad('던전',`승천 뒤 ${D(S.floor)}층에서 시작한다 (1층이어야 한다)`);
+      if(S.floor<f1) bad('던전',`승천이 던전을 ${D(f1)} → ${D(S.floor)}층으로 되돌렸다`);
       if(!S.exploring) bad('던전','승천이 탐험을 껐다');
-      /* 되밟기: 기록까지 돌아가는 데 걸리는 시간이 깊이와 무관해야 한다 */
-      let bt=0; while(S.floor<=d1&&bt<400){ G.tick(0.2); bt++ }
-      const secs=bt*0.2;
-      if(S.floor<=d1) bad('던전',`80초를 돌아도 기록 ${D(d1)}층을 못 넘었다 (${D(S.floor)}층)`);
-      else if(secs>25) bad('던전',`기록까지 되밟는 데 ${D(secs)}초 걸렸다 — 깊이에 따라 늘어난다`);
-      const f2=S.floor;
-      for(let i=0;i<300;i++) G.tick(0.2);
-      if(!(S.floor>f2)) bad('던전',`기록 너머로는 더 내려가지 않는다 (${D(f2)}층에서 멈춤)`);
+      /* 쥐고 있는 땅은 계속 값을 낸다 — 최전선을 아직 못 이겨도 경제가 돈다.
+         되밟기가 하던 일이 이것이고, 걸음만 없앴지 몫은 남겼다.
+         이게 없으면 프레스티지 직후 아무것도 안 들어와 게임이 멎는다. */
+      G.setRes('crystal',-Infinity); const h0=G.curL('crystal');
+      for(let i=0;i<150;i++) G.tick(0.2);
+      if(!(G.curL('crystal')>h0)) bad('던전','쥔 땅이 아무것도 내지 않는다 — 최전선이 막히면 경제가 멎는다');
       /* 내려갔다 올라오기로 같은 층의 전리품을 되풀이해 가져갈 수 있으면 안 된다.
          잔액을 비워 두고 잰다 — 큰 잔액에 작은 전리품을 더하면 자릿수가 안 변해
          가져갔는지 아닌지 보이지 않는다. */
       for(let i=0;i<S.bought.length;i++) S.bought[i]=0;   // 시설 생산을 빼고 전리품만 본다
       S.genL=S.genL.map(()=>-Infinity); G.syncGen();
       S.manaL=-Infinity; G.setRes('crystal',-Infinity); G.recalc();
-      const rec=S.deepest, m0=S.manaL, c0=G.curL('crystal');
-      S.lootFloor=Math.max(S.lootFloor||0,rec);   // 그 층까지는 이번 회차에 이미 받았다
+      const rec=S.deepest;
+      S.lootFloor=Math.max(S.lootFloor||0,rec);   // 그 층까지는 이미 받았다
+      /* 쥔 땅이 늘 값을 내므로 잔액은 가만두어도 는다 — 그 몫을 먼저 재 두고,
+         같은 횟수만큼 '이미 받은 층에 다시 서서' 굴려 차이를 본다.
+         차이가 나면 그 층을 되풀이해 캔 것이다. */
+      G.setRes('crystal',-Infinity);
+      const bf=S.floor, bp=S.prog;
+      for(let k=0;k<12;k++) G.tick(0.2);
+      const base=G.curL('crystal');
+      G.setRes('crystal',-Infinity);
+      S.floor=bf; S.prog=bp;
       for(let k=0;k<12;k++){
-        S.floor=rec; S.prog=1; S.floorCd=0;      // 이번 회차에 이미 받은 층에 서서
+        S.floor=rec; S.prog=1; S.floorCd=0;      // 이미 받은 층에 서서
         G.tick(0.2);                              // 되풀이해 캐 본다
       }
-      /* 결정으로 판정한다 — 결정은 층을 깨야만 나오므로 전리품인지 아닌지가 분명하다.
-         마나는 채집·생산 등 다른 길로도 들어와 섞인다. */
-      if(G.curL('crystal')>c0+1e-9)
-        bad('던전',`이번 회차에 이미 받은 층(${D(rec)}, 받은 데까지 ${D(S.lootFloor)})을 되풀이해 캐냈다 — 결정 ${G.fmtLog(c0)} → ${G.fmtLog(G.curL('crystal'))}`);
-      /* 그리고 새 회차에서는 그 층들의 보상을 다시 받아야 한다 — 던전이 초기화되니까 */
-      G.setRes('crystal',-Infinity); const c1=G.curL('crystal');
-      S.lootFloor=0; S.floor=1; S.prog=0; S.floorCd=0; S.exploring=true;
-      for(let i=0;i<200;i++) G.tick(0.2);
-      if(!(G.curL('crystal')>c1))
-        bad('던전','새 회차인데 이미 깬 층에서 보상이 다시 나오지 않는다');
+      if(G.curL('crystal')>base+0.05)
+        bad('던전',`이번 회차에 이미 받은 층(${D(rec)}, 받은 데까지 ${D(S.lootFloor)})을 되풀이해 캐냈다 — 결정 ${G.fmtLog(base)} → ${G.fmtLog(G.curL('crystal'))}`);
     }
   }catch(e){ bad('던전',e.message) }
 
