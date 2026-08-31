@@ -159,10 +159,21 @@ export const infUnlocked=i=>i===0
 /* 자릿수에 곱으로 붙으므로 조금만 커도 금세 손이 닿지 않는다 —
    1.15 배씩이면 서른네 번 만에 116 배가 되어 게임이 여섯 시간에 멎었다. */
 export const REQ_GROWTH=1.02;         // 다음 돌파는 지난번 높이보다 2% 더 멀리
+/* ── 칸마다 재는 자가 다르다 ────────────────────────
+   무한은 마나의 '자릿수' 를 본다 — 1e300 부터, 뚫을 때마다 세 자리씩.
+   그 위 칸들은 아래 계층을 '몇 개' 모았는지를 본다 — 열 개부터, 뚫을 때마다 세 배.
+   그런데 바닥값이 한 줄뿐이라 어느 칸에나 300 이 깔렸고, markReq 가 그 300 을
+   그대로 다음 조건으로 새겼다. 영원을 한 번 뚫는 순간 다음 조건이 '무한 열 개'
+   에서 '무한 10^306 개' 로 뛰어, 두 번째 영원은 영영 오지 않는다.
+   현실은 영원 열 개를 원하므로 그 위 세 칸은 아무도 본 적이 없다 —
+   사흘을 굴려도 영원 1, 현실 0 이던 것이 이것이다. 칸에 맞는 자로 잰다. */
+export function reqBaseLog(i){
+  const n=S[INF_LAYERS[i].k+'Count']||0;
+  return i>0 ? L10(INF_STACK)+n*L10(3) : 300+3*n;
+}
 export function reqLog(i){
-  const k=INF_LAYERS[i].k;
-  const base=300+3*(S[k+'Count']||0);
-  const a=S[k+'ReqL'];
+  const base=reqBaseLog(i);
+  const a=S[INF_LAYERS[i].k+'ReqL'];
   return (typeof a==='number'&&isFinite(a))?Math.max(base,a):base;
 }
 /* 돌파한 순간의 높이를 다음 조건으로 새긴다 */
@@ -172,14 +183,17 @@ export function markReq(i,reachedLog){
   S[k+'ReqL']=Math.max(reqLog(i),now)*REQ_GROWTH;
 }
 export function reqFor(i){
-  if(i>0){
-    const k=INF_LAYERS[i].k;
-    const base=INF_STACK*Math.pow(3,S[k+'Count']||0);   // 10 → 30 → 90 …
-    const a=S[k+'ReqL'];                                 // 지난번에 실제로 모았던 양
-    return (typeof a==="number"&&isFinite(a))?Math.max(base,Math.pow(10,a)):base;
-  }
   const l=reqLog(i);
   return l<300?Math.pow(10,l):Infinity;
+}
+/* 옛 세이브에는 잘못 새겨진 조건이 그대로 남아 있다. 위 칸의 조건은 개수의
+   자릿수라 스무 자리를 넘을 일이 없다 — 300 이 넘게 적힌 것은 그 버그가
+   남긴 자국이므로 지운다. 지우면 바닥값(열 개, 서른 개 …) 부터 다시 센다. */
+export function fixReqs(){
+  for(let i=1;i<INF_LAYERS.length;i++){
+    const k=INF_LAYERS[i].k+'ReqL', a=S[k];
+    if(typeof a==='number'&&a>reqBaseLog(i)+40) delete S[k];
+  }
 }
 export function reqTxt(i){ const r=reqFor(i); return isFinite(r)?fmt(r):('1e'+reqLog(i)); }
 /* ── 돌파로 얻는 양은 넘긴 폭의 로그에 비례한다 ──────────
@@ -211,6 +225,8 @@ export function doInfBreak(i){
   const L=INF_LAYERS[i];
   markReq(i, i===0?S.manaEverL:numLog(L.from()));   // 다음은 여기보다 멀리 가야 한다
   S[L.k]=(S[L.k]||0)+g; S[L.k+'Ever']=(S[L.k+'Ever']||0)+g; S[L.k+'Count']=(S[L.k+'Count']||0)+1;
+  /* 이번 회차에 모은 총량 — 위 칸이 세는 것이 이것이다. 강화에 써도 줄지 않는다. */
+  S[L.k+'Run']=(S[L.k+'Run']||0)+g;
   /* 계층 돌파는 아래를 통째로 지우므로, 다시 굴릴 씨앗을 계층마다 다르게 준다 */
   /* 씨앗은 다시 굴릴 만큼이면 된다. 서른 자릿수를 주었더니 룬 상한(약 35 자릿수)
      을 한 번에 채워, 돌파하자마자 모든 아이템이 최대가 되었다. */
@@ -224,7 +240,7 @@ export function doInfBreak(i){
   S.sinceInf=0;                        // 자동 돌파 쿨다운 시작 (수동 버튼은 즉시 가능)
   /* 무한 돌파에서는 별가루와 별 강화가 남는다 — 초월 탭이 약속한 것이 그것이다.
      그러나 영원 위로는 진짜 처음부터다. 별 강화까지 전부 접힌다. */
-  for(let j=i-1;j>=0;j--){ S[INF_LAYERS[j].k]=0; if(INF_LAYERS[j].store) S[INF_LAYERS[j].store]={}; }
+  for(let j=i-1;j>=0;j--){ S[INF_LAYERS[j].k]=0; S[INF_LAYERS[j].k+'Run']=0; if(INF_LAYERS[j].store) S[INF_LAYERS[j].store]={}; }
   if(i>0){ setRes('star',-Infinity); S.starUps={}; }
 
   setRes('relic',-Infinity); S.relicTrans=0; S.relicTransL=-Infinity; S.relicUps={};

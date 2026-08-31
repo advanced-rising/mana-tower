@@ -23,6 +23,7 @@ const HARNESS=[
   ['stalem',     'tools/stalem.html',     200, '배율 캐시가 낡는 자리'],
   ['updthrow',   'tools/updthrow.html',   300, '화면 갱신이 조용히 멈추는 자리'],
   ['invariants', 'tools/invariants.html', 500, '한 시간 플레이 불변식'],
+  ['longrun',    'tools/longrun.html',    400, '하루를 굴려 벽이 생기는가'],
 ]
 const only=process.argv.slice(2).filter(a=>!a.startsWith('-'))
 

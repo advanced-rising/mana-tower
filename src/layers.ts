@@ -6,12 +6,21 @@ import { X } from './core'
 
 /* 무한 위의 다섯 칸. 재료 바가 이것을 모듈 평가 시점에 읽으므로
    프레스티지 본체와 떼어 둔다 — 같이 두면 고리가 돌아 undefined 가 된다. */
+/* ── 위 칸이 세는 것은 '모은 것' 이지 '남은 것' 이 아니다 ──────────────
+   무한은 S.manaEver 를, 곧 이번 회차에 번 마나를 센다 — 그 마나를 시설에 다
+   써도 무한은 그대로 열린다. 그런데 그 위 칸들은 S.inf 처럼 지금 손에 쥔 수를
+   보고 있었다. 무한 강화를 사면 그 수가 줄어드니, 자동 강화가 재료를 쓰는 만큼
+   영원이 뒤로 밀렸다 — 무한을 마흔여섯까지 모았다가 스물여섯으로 줄었고,
+   영원은 사흘 내내 한 번밖에 안 열렸다. 아래 다섯 칸이 통째로 죽어 있었다.
+   무한이 하는 대로 이번 회차에 모은 총량을 센다. 쓰는 것과 오르는 것이
+   서로를 갉지 않는다. 옛 세이브에는 이 값이 없으므로 쥔 수로 받는다. */
+const runOf=k=>Math.max(S[k+'Run']||0, S[k]||0);
 export const INF_LAYERS=[
- {k:'inf',  ko:'무한',  en:"Infinity",  from:()=>S.manaEver, sp:'tab_inf', ups:()=>INF_UPS,   store:'infUps'},
- {k:'eter', ko:'영원',  en:"Eternity",  from:()=>S.inf,      sp:'tab_eter', ups:()=>ETER_UPS,  store:'eterUps'},
- {k:'real', ko:'현실',  en:"Reality",   from:()=>S.eter,     sp:'tab_real',   ups:()=>REAL_UPS,  store:'realUps'},
- {k:'void', ko:'공허',  en:"The Void",  from:()=>S.real,     sp:'tab_void', ups:()=>VOID_UPS,  store:'voidUps'},
- {k:'origin',ko:'근원', en:"Origin",    from:()=>S.void,     sp:'tab_origin',ups:()=>ORIGIN_UPS,store:'originUps'},
+ {k:'inf',  ko:'무한',  en:"Infinity",  from:()=>S.manaEver,   sp:'tab_inf', ups:()=>INF_UPS,   store:'infUps'},
+ {k:'eter', ko:'영원',  en:"Eternity",  from:()=>runOf('inf'), sp:'tab_eter', ups:()=>ETER_UPS,  store:'eterUps'},
+ {k:'real', ko:'현실',  en:"Reality",   from:()=>runOf('eter'),sp:'tab_real',   ups:()=>REAL_UPS,  store:'realUps'},
+ {k:'void', ko:'공허',  en:"The Void",  from:()=>runOf('real'),sp:'tab_void', ups:()=>VOID_UPS,  store:'voidUps'},
+ {k:'origin',ko:'근원', en:"Origin",    from:()=>runOf('void'),sp:'tab_origin',ups:()=>ORIGIN_UPS,store:'originUps'},
 ];
 
 /* 무한 계층 업적은 여기서 만든다 — 콘텐츠 쪽에 두면 INF_LAYERS 를 쓰느라

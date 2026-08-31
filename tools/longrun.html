@@ -9,12 +9,16 @@
 (async()=>{
   const O=document.getElementById('TESTOUT'), out=s=>{O.textContent+=s+'\n'};
   const fail=[]; const bad=(w,d)=>{ if(fail.length<30) fail.push(w+' :: '+d) };
+  /* 얼마나 일했는지는 try 밖에서 적어야 한다 — 안에서 죽어도 0 으로 드러나게 */
+  let cover='COVER 시간=0 틱=0 최심층=0 돌파=0';
   const D=x=>x===undefined?'—':(typeof x==='number'?(isFinite(x)?(Math.abs(x)>=1e5?x.toExponential(2):String(Math.round(x*100)/100)):String(x)):String(x));
   try{
   await new Promise(r=>setTimeout(r,900));
   const G=window.__game; if(!G){ out('[!] __game 없음'); out('DONE'); return }
   const S=G.S;
-  const DAYS=+((location.search.match(/days=([\d.]+)/)||[])[1]||3);
+  /* 기본은 하루다 — 검증 묶음이 매번 돌기 때문이다. 여섯 시간에 멎던 벽은
+     하루면 충분히 드러난다. 더 깊이 보고 싶으면 ?days=3 으로 연다. */
+  const DAYS=+((location.search.match(/days=([\d.]+)/)||[])[1]||1);
   const STEP=0.2, TOTAL=DAYS*86400;
   const MULS=['prod','t0','tUp','speed','soul','offer','crystal','dungeon','relic','floorLoot','boss','gearPow','autoSpeed','chalPow','costMul'];
 
@@ -87,11 +91,14 @@
   const m=G.M();
   out(`  끝 · 마나 ${G.fmtLog(S.manaL)} · 생산 ${G.fmtLog(G.manaRateLog())}/초 · 최심층 ${G.fmt(S.deepest)} · 업적 ${G.achCount()}`);
   out(`  배율 prod ${D(m.prodLog)} · dungeon ${D(m.dungeonLog)} · 룬 ${G.runeTotal()} 장비 ${G.gearTotal()}`);
+  cover=`COVER 시간=${Math.round(t/3600)} 틱=${ticks} 최심층=${S.deepest|0} 돌파=`
+    +`${(S.rebirthEver||0)+(S.ascendEver||0)+(S.transEver||0)+(S.infEver||0)}`;
   if(errs) bad('틱',`${errs}회 예외`);
   }catch(e){ bad('하네스',e.message+' @ '+(e.stack||'').split('\n')[1]) }
   out('');
   for(const f of fail) out('  [!] '+f);
   out(`=== 장기 시뮬 위반 ${fail.length}건 ===`);
+  out(cover);
   out('DONE');
 })();
 </script>

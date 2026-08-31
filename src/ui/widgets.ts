@@ -55,7 +55,7 @@ export function levelGrid(defs,lvOf,curKey,setLv,curSp){
       const cap=Math.min(lim-l, want);
       /* 값은 '여태 닿은 최고' 를 따라 오른다 — 예산에서 먼저 그만큼 덜어 내고 셈한 뒤,
          실제로 낼 때 도로 얹는다. 로그에서 더하기는 곱하기다. */
-      const A=upAnchorLog(mk);
+      const A=upAnchorLog(mk,budget2Log(mk));
       const {n,costLog}=buyBulkLog(u.c,l,budget2Log(mk)-A,cap);
       if(!(n>0)) return;
       pay2(mk,costLog+A); setLv(u.id,n); recalc(); refresh();
@@ -79,7 +79,7 @@ export function levelGrid(defs,lvOf,curKey,setLv,curSp){
       b.classList.remove('lock');
       const mk=matOf(u,curKey), pw=powOf(u);
       const l=lvOf(u.id), lim=upMaxOf(u,mk), maxed=l>=lim;
-      const A=upAnchorLog(mk);
+      const A=upAnchorLog(mk,budget2Log(mk));
       const bud=budget2Log(mk)-A, cl=costLogAt(u.c,l)+A, afford=!maxed&&bud+A>=cl;
       _t.html=`${NM(u.nm)} <span class="lv">Lv.${fmt(l)} / ${fmt(lim)}</span>`
         +(pw>1?` <span class="lv">${X('몫','yield')} ×${pctTxt(pw*100)}%</span>`:'');

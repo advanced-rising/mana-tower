@@ -194,11 +194,20 @@ export const PEAK_KEYS=['mana','soul','relic','star','crystal','offering',
    사지는 레벨은 √로그 로 자라고, 상한은 로그로 자라니 영영 안 따라잡는다.
    재료가 열 배가 될 때마다 살 수 있는 몫이 조금씩만 늘어난다. */
 export const UP_HEAD=5, UP_HEAD_GROW=4;
-export function upAnchorLog(curKey){
+/* 닻을 '여태 닿은 최고' 에만 매어 두면 돌파 뒤에 값이 잔고보다 커진다. 돌파는
+   재료를 일부러 지우는데 최고 기록은 남으니, 지금 가진 것이 닻 아래로 내려간다 —
+   그러면 한 레벨도 못 산다. 잠깐이 아니라 영영. 그 회차에 그 기록을 다시 낼 힘은
+   방금 지운 강화에서 나왔으니 되돌아올 길이 없다.
+   실제로 영혼석을 10^87 개 쥐고도 강화 열여섯 개가 전부 Lv.0 이었고, 여섯 시간
+   뒤로는 마나도 깊이도 연구도 사흘 내내 한 발짝을 못 갔다.
+   닻은 지금 쓸 수 있는 것을 넘지 않는다. 무엇을 지우든 head 자릿수만큼은 늘 남아
+   다시 오를 밑천이 된다. 기록을 새로 쓰는 동안에는 그만큼 더 쓸 수 있다. */
+export function upAnchorLog(curKey,budLog){
   const p=peakLogOf(curKey);
   if(!(p>0)||!isFinite(p)) return 0;
   const head=UP_HEAD+UP_HEAD_GROW*Math.log10(1+p);
-  return Math.max(0,p-head);
+  const b=(typeof budLog==='number'&&isFinite(budLog))?budLog:p;
+  return Math.max(0,Math.min(p,b)-head);
 }
 /* ── 아이템은 하나씩 열린다 ──────────────────────────
    서른 몇 개가 처음부터 한꺼번에 펼쳐져 있으면 무엇을 먼저 올릴지가 아니라

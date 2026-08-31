@@ -126,7 +126,7 @@ export function autoBuyTree(defs,store,curKey){
     for(const u of open){
       const l=st[u.id]||0, mk=matOf(u,curKey);
       /* 항목마다 재료가 다르므로 예산도 값도 그 재료로 잰다 */
-      const A=upAnchorLog(mk);            // 값은 여태 닿은 최고를 따라 오른다
+      const A=upAnchorLog(mk,budget2Log(mk));   // 값은 여태 닿은 최고를 따라 오르되, 잔고를 넘지 않는다
       const share=budget2Log(mk)-A-L10(open.length);   // 한 항목이 예산을 독차지하지 않게
       const {n,costLog}=buyBulkLog(u.c,l,share,upMaxOf(u,mk)-l);
       if(!(n>0)) continue;

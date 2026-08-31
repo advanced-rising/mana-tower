@@ -5,6 +5,7 @@ import { SAVE_KEY, X, icHTML } from './core'
 import { S, newState, setLOG, setS } from './state'
 import { fmt, fmtLog, fmtTime, genNum, logSub, numLog, upMaxOf } from './num'
 import { M, gather, recalc } from './multipliers'
+import { fixReqs } from './prestige'
 
 import { tick } from './tick'
 import { modal, toast } from './ui/dom'
@@ -54,6 +55,7 @@ export const TREES=()=>[
   [VOID_UPS,'voidUps','void'], [ORIGIN_UPS,'originUps','origin'],
 ];
 export function clampToCaps(){
+  fixReqs();          // 잘못 새겨진 계층 돌파 조건을 지운다
   recalc();
   const rc=Math.floor(M().runeCap), gc=Math.floor(M().gearCap);
   let n=0;
