@@ -516,13 +516,58 @@ export const CHAL_STEP=120;          // 절대 하한이 단계마다 오르는 
    어려웠다 — 백 단계가 있는데 사다리가 없는 셈이었다. */
 export const CHAL_REL_LOW=0.06;      // 1 단계는 기록의 이만큼
 export const CHAL_REL_HIGH=0.92;     // 마지막 단계는 이만큼
+/* ── 한 층으로는 닿을 수 없는 곳에 둔다 ────────────────
+   층이 내주는 몫에는 생산 배율이 통째로 들어 있다. 시련은 1 층에서 다시
+   시작하는데, 그 1 층 하나가 이미 '기록의 몇 할' 을 넘어 버린다 —
+   스물여섯 개가 전부 한 틱에 깨지던 것이 이것이었다. 제약을 견딘 것이 아니라
+   그냥 한 번 눌린 것이다.
+   그래서 시작하는 자리(1 층)의 몫 위로 단계마다 조금씩 더 얹는다.
+   층당 보상이 1.08 배씩이니 한 자릿수를 더 벌려면 서른 층쯤을 더 깨야 한다 —
+   1 단계는 예순 층, 100 단계는 천팔백 층. 열다섯 분 안에 닿을 만한 거리다. */
+/* 얹는 몫의 뜻이 두 갈래에서 다르다.
+   층으로 벌 때는 한 자릿수를 더 벌려면 서른 층쯤 더 깨면 된다 — 열다섯 분이면
+   삼천 층, 백 자릿수까지 닿는다. 그런데 생산으로만 벌 때는 마나가 시간에 비례해
+   쌓이므로 한 자릿수가 곧 '열 배의 시간' 이다. 두 자릿수면 백 초, 세 자릿수면
+   천 초 — 열다섯 분 제한에 벌써 걸린다. 예순 자릿수를 얹으면 10^60 초다.
+   같은 수를 두 곳에 쓰면 한쪽은 버튼이 되고 한쪽은 벽이 된다. */
+export const CHAL_FLOOR_LOW=2,   CHAL_FLOOR_HIGH=60;    // 층으로 벌 때
+export const CHAL_RATE_LOW=0.8,  CHAL_RATE_HIGH=2.6;    // 생산으로만 벌 때
+/* 시련이 빼앗아 가는 몫을 자릿수로 잰다. 목표를 '제약 없는 생산' 기준으로 잡으면
+   제약이 무거운 시련일수록 닿을 수 없게 된다 — 넷이 열다섯 분을 굴려도 1 단계를
+   못 깼다. 빼앗는 만큼을 목표에서 덜어 준다. */
+export function chalPenaltyLog(ch){
+  const r=ch.rule||{};
+  let v=0;
+  if(r.drain>0) v+=numLog(r.drain);
+  if(r.slow>0)  v+=numLog(r.slow);
+  if(r.noResearch)  v+=L10(4);
+  if(r.noAuto)      v+=L10(3);
+  if(r.noRelicGear) v+=L10(3);
+  if(r.maxTier!==undefined) v+=L10(3);
+  return v;
+}
 export function chalGoalLog(ch,c){
   const abs=numLog(ch.base)+c*L10(CHAL_STEP);
   const best=(typeof S.bestRunL==='number'&&isFinite(S.bestRunL))?S.bestRunL:0;
   const max=Math.max(1,ch.max||100);
   const frac=Math.min(1,Math.max(0,c)/(max-1||1));
   const rel=best>0?best*(CHAL_REL_LOW+(CHAL_REL_HIGH-CHAL_REL_LOW)*frac):-Infinity;
-  return Math.max(abs,rel);
+  /* 던전을 봉인하는 시련은 층으로 벌 수가 없다 — 거기에 목표를 매면
+     닿을 길이 없는 시련이 된다. 실제로 넷이 열다섯 분을 굴려도 1 단계를
+     못 깼다. 그런 시련은 예전대로 기록만 보고 잰다. */
+  /* 기준은 '지금 가만히 있어도 한 번에 들어오는 양' 이다 — 층 하나가 내주는 몫과
+     생산 일 초치. 둘 다 생산 배율을 통째로 업고 있어서, 그보다 낮은 목표는
+     들어가자마자 넘어 버린다. 던전을 봉인하는 시련은 층으로 벌 수 없으니
+     생산 쪽만 본다. */
+  const f1=S.floor1L, r1=S.rate1L;
+  const ok=v=>(typeof v==='number'&&isFinite(v));
+  /* 시련에 들어간 뒤에 재므로 r1·f1 은 이미 제약이 깎아 낸 값이다 —
+     따로 빼 줄 것이 없다. */
+  let one=-Infinity;
+  if(ok(r1)) one=Math.max(one, r1+CHAL_RATE_LOW+(CHAL_RATE_HIGH-CHAL_RATE_LOW)*frac);
+  if(!ch.rule.noDungeon&&ok(f1))
+    one=Math.max(one, f1+CHAL_FLOOR_LOW+(CHAL_FLOOR_HIGH-CHAL_FLOOR_LOW)*frac);
+  return Math.max(abs,rel,one);
 }
 /* 돌파마다 새 시련이 열린다. 위로 갈수록 제약이 겹치고, 갚는 재료도 갈린다 —
    어떤 시련은 영혼석을, 어떤 시련은 결정을 두텁게 만든다. */

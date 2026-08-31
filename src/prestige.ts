@@ -164,7 +164,11 @@ export const INF_STACK=10;
    앞 칸을 밟았을 때만 다음 칸이 열린다. 마나도 회차마다 초기화되는 manaEver
    대신 줄지 않는 최고 기록을 본다. */
 export const infUnlocked=i=>i===0
-  ? (S.inf>0 || ((S.transEver||S.transcends)>0 && S.manaPeakL>=numLog(INF_CAP/1e40)))
+  /* 문턱을 1e260 에 두었더니, 던전이 이어지도록 바꾼 뒤로 경제가 1e258 언저리에서
+     수렴해 두 자리 차이로 여섯 시간을 멎었다 — 깊이도 마나도 그대로였다.
+     이 문은 '더는 못 올라갈 지경이 되면 열리는 문' 이라는 뜻이므로, 수렴점보다
+     위에 있으면 문이 아니라 벽이다. 수렴점 아래로 내린다. */
+  ? (S.inf>0 || ((S.transEver||S.transcends)>0 && S.manaPeakL>=infDoorLog()))
   : (S[INF_LAYERS[i-1].k+'Ever']||0)>=INF_STACK;
 /* 돌파 요구치는 돌파할수록 오른다 — 1e300 → 1e303 → 1e306 … (돌파 1회마다 1000배).
    1e308 을 넘어가면 double 로는 못 적으므로 지수(로그) 로 다룬다. */
@@ -186,9 +190,14 @@ export const REQ_GROWTH=1.02;         // 다음 돌파는 지난번 높이보다
    에서 '무한 10^306 개' 로 뛰어, 두 번째 영원은 영영 오지 않는다.
    현실은 영원 열 개를 원하므로 그 위 세 칸은 아무도 본 적이 없다 —
    사흘을 굴려도 영원 1, 현실 0 이던 것이 이것이다. 칸에 맞는 자로 잰다. */
+/* 무한의 문은 한 곳에서만 정한다. 탭은 INF_CAP 을 보고 열리는데 첫 돌파는
+   따로 적힌 300 을 요구해서, 마흔 자리 동안 '열려 있지만 쓸 수 없는 탭' 이었다.
+   던전이 이어지도록 바꾼 뒤로는 경제가 그 사이에서 수렴해, 여섯 시간 동안
+   깊이도 마나도 그대로였다. 여는 자리와 뚫는 자리를 같은 값에서 가져온다. */
+export const infDoorLog=()=>numLog(INF_CAP/1e70);
 export function reqBaseLog(i){
   const n=S[INF_LAYERS[i].k+'Count']||0;
-  return i>0 ? L10(INF_STACK)+n*L10(LAYER_MUL[i]) : 300+3*n;
+  return i>0 ? L10(INF_STACK)+n*L10(LAYER_MUL[i]) : infDoorLog()+3*n;
 }
 export function reqLog(i){
   const base=reqBaseLog(i);

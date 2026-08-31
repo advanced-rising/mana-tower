@@ -134,7 +134,15 @@ export function computeM(){
   }
   return m;
 }
-export function recalc(){setMC(computeM()); syncMana();}
+export function recalc(){
+  setMC(computeM()); syncMana();
+  /* 1 층 하나가 내주는 몫. 시련의 목표가 이 값을 기준으로 잡힌다 —
+     content 가 던전을 들여오면 고리가 생기므로(dungeon → multipliers → content)
+     여기서 재어 상태에 적어 둔다. 던전의 첫 층 식과 같은 항들이다. */
+  const m=M();
+  S.floor1L=L10(80)+m.prodLog+m.floorLootLog;
+  S.rate1L=manaRateLog();          // 지금 한 초에 버는 양 — 시련의 목표가 이걸 넘어야 한다
+}
 /* 배율을 지금 다시 재지 않고 '낡았다' 고만 표시한다 — 다음에 M() 을 읽을 때
    한 번만 다시 접는다. 업적처럼 틱 도중에 조용히 바뀌는 입력에 쓴다. */
 export function invalidateM(){ setMC(null) }

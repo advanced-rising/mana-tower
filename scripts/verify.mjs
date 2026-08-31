@@ -22,6 +22,7 @@ const HARNESS=[
   ['itemcurve',  'tools/itemcurve.html',  240, '아이템이 열리는 방식과 상한'],
   ['stalem',     'tools/stalem.html',     200, '배율 캐시가 낡는 자리'],
   ['resets',     'tools/resets.html',      60, '돌파가 그 앞의 재료를 지우는가'],
+  ['trials',     'tools/trials.html',     300, '시련이 제약을 견디게 하는가'],
   ['updthrow',   'tools/updthrow.html',   300, '화면 갱신이 조용히 멈추는 자리'],
   ['invariants', 'tools/invariants.html', 500, '한 시간 플레이 불변식'],
   ['longrun',    'tools/longrun.html',    400, '하루를 굴려 벽이 생기는가'],

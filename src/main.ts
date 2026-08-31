@@ -6,7 +6,7 @@ import { DS, DSF, LANG, NM, VERSION, X, ic, icHTML, setLang, spriteURL } from '.
 import { ACHS, BADGES, chalGoal, chalGoalLog, CHALLENGES, ETER_UPS, GEAR, GEAR_SLOTS, INF_UPS, MILESTONES, ORIGIN_UPS, REAL_UPS, RELIC_UPS, RESEARCH, RUNES, SOUL_UPS, STAR_UPS, VOID_UPS , matOf, powOf, UP_MAT_SETS} from './content'
 import { S, setS } from './state'
 import { achCount, bulkCostLog, bulkMaxLog, capFrom, chalTotal, cnt, cntLog, costLogAt, curL, cutTxt, everLogOf, fmt, fmtLog, freeFrom, freeRaw, freeStart, gainRes, gearBudgetLog, gearChapter, gearOfferLog, gearOpen, gearTotal, geoSumLog, L10, logAdd, logSub, numLog, pctTxt, powTxt, ratioOf, RES, runeTotal, safeLog, setRes, spendRes, START_MANA_CAP, syncGen, syncRes, upCapFrom, upMaxOf, notePeaks, peakLogOf, upAnchorLog, upOpen, upOpenCount, UP_UNLOCK_LV } from './num'
-import { addManaLog, buyProducer, computeM, costLogOf, effLevel, gather, gatherAmountLog, growth, M, manaRateLog, maxAfford, mSignature, recalc, syncMana } from './multipliers'
+import { addManaLog, buyProducer, computeM, costLogOf, effLevel, gather, gatherAmountLog, growth, M, manaRateLog, maxAfford, mSignature, recalc, syncMana, tierLocked} from './multipliers'
 import { chapterOf, chapterProgress, chapterSeen, chapterStart, clearFloor, COSMOS, cosmos, cosmosBonusLog, dungeonPowerLog, floorHPLog, floorLoot, floorLootManaLog, foeOf, FOES, syncChapter } from './dungeon'
 import { ASCEND_REQ, ascendReqLog, breakAmount, doAscend, doInfBreak, doRebirth, doTranscend, INF_STACK, infBonusLog, infGain, infUnlocked, markReq, offerGainLog, REBIRTH_REQ, rebirthReqLog, relicGain, relicGainLog, REQ_GROWTH, reqFor, reqLog, softReset, soulGain, soulGainLog, starGain, starGainLog, TRANS_REQ, transReqLog, transUnlocked } from './prestige'
 import { AUTO_DEF, AUTO_DEFS, autoBuyTree, autoOK, autoUnlocked, buyBulkLog, runAutomation , budgetLogOf} from './automation'
@@ -87,6 +87,7 @@ document.title=X('무한의 탑','Tower of Infinity');
   M, computeM, mSignature, recalc, tick, tabKeyOf, tabByKey, TAB_KEYS, costLogOf, maxAfford, buyProducer, growth, refresh, render, switchTab, buildTabs, save, load,
   fmt, fmtLog, powTxt, cutTxt, pctTxt, NM, DS, DSF, X, ic, icHTML, spriteURL,
   foeOf, clearFloor, floorLoot, floorLootManaLog, floorHPLog,
+  tierLocked,
   dungeonPowerLog, cnt, cntLog, syncGen, logAdd, logSub, geoSumLog, numLog, safeLog, L10,
   autoBuyTree, runAutomation, autoOK, autoUnlocked, AUTO_DEF, buyBulkLog,
   costLogAt, bulkCostLog, bulkMaxLog, curL, spendRes, gainRes, setRes, syncRes, RES, ratioOf,

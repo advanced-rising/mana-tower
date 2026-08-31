@@ -1,0 +1,130 @@
+<pre id="TESTOUT" style="display:none"></pre>
+<script>
+/* 시련이 제 노릇을 하는가.
+   시련은 '제약을 걸고 목표 마나에 닿는 것' 이다. 그러니 두 가지가 참이어야 한다 —
+   제약이 실제로 값을 바꿀 것, 그리고 들어가자마자 깨지지 않을 것.
+   깊은 던전을 쥔 채로 본다. 얕은 자리에서 재면 쥔 땅이 내는 몫이 작아
+   '들어가자마자 깨지는' 것이 안 보인다. */
+(async()=>{
+  const O=document.getElementById('TESTOUT'), out=s=>{O.textContent+=s+'\n'};
+  const fail=[]; const bad=(w,d)=>{ if(fail.length<40) fail.push(w+' :: '+d) };
+  let seen=0, ruled=0;
+  try{
+  await new Promise(r=>setTimeout(r,900));
+  const G=window.__game; if(!G){ out('[!] __game 없음'); out('DONE'); return }
+  const S=G.S;
+  const D=x=>(typeof x==='number'&&isFinite(x))?String(Math.round(x*100)/100):String(x);
+
+  /* 중반쯤 되는 자리를 만든다 — 깊은 던전과 넉넉한 기록 */
+  function setup(){
+    S.chal=null; S.chalCd=0; S.chalTime=0; S.chalDone={};
+    S.deepest=4000; S.floor=4001; S.lootFloor=4000; S.prog=0; S.floorCd=0; S.exploring=true;
+    S.manaL=S.manaEverL=S.manaPeakL=S.manaRunL=S.bestRunL=160;
+    S.ascendEver=3; S.transEver=1; S.infEver=1; S.eterEver=1; S.realEver=1; S.voidEver=1; S.originEver=1;
+    for(let i=0;i<S.bought.length;i++) S.bought[i]=120;
+    S.auto={}; for(const a of G.AUTO_DEFS) S.auto[a.k]=1;
+    /* 제약이 무엇을 빼앗는지 보려면 먼저 그것을 쥐고 있어야 한다 —
+       연구·룬·장비가 비어 있으면 '연구 금지' 가 아무 값도 안 바꾼다.
+       처음 재 봤을 때 셋 다 '그대로' 로 나온 것이 이것이었다. */
+    S.research={}; for(const r of (G.RESEARCH_ALL||G.RESEARCH||[]).slice(0,60)) S.research[r.id]=1;
+    S.runes={};  for(const r of (G.RUNES||[]).slice(0,12)) S.runes[r.id]=20;
+    S.gear={};   for(const g of (G.GEAR||[]).slice(0,12)) S.gear[g.id]=20;
+    G.recalc();
+  }
+
+  /* ── 1. 제약이 정말로 값을 바꾸는가 ────────────────── */
+  out('=== 제약이 값을 바꾸는가 ===');
+  const RULE_CHECK={
+    noResearch: ()=>G.M().prodLog,
+    noRelicGear:()=>G.M().prodLog,
+    drain:      ()=>G.M().prodLog,
+    slow:       ()=>G.M().speedLog!==undefined?G.M().speedLog:Math.log10(G.M().speed),
+    maxTier:    ()=>G.tierLocked?(G.tierLocked(9)?1:0):(G.maxAfford?null:null),
+    noAuto:     null, noDungeon:null,
+  };
+  const done={};
+  for(const ch of G.CHALLENGES){
+    for(const k in ch.rule){
+      if(done[k]||!(k in RULE_CHECK)||!RULE_CHECK[k]) continue;
+      setup();
+      const before=RULE_CHECK[k]();
+      S.chal=ch.id; G.recalc();
+      const after=RULE_CHECK[k]();
+      S.chal=null; G.recalc();
+      done[k]=1; ruled++;
+      const moved=(k==='maxTier')?(after&&!before):(after<before-1e-9);
+      out(`  ${k.padEnd(12)} ${NMS(ch)}  ${D(before)} → ${D(after)}   ${moved?'바뀐다':'그대로'}`);
+      if(!moved) bad('제약',`${k} 가 아무 값도 바꾸지 않는다 (${ch.id})`);
+    }
+  }
+  function NMS(ch){ return (ch.nm&&(ch.nm.ko||ch.nm.en))||ch.id }
+
+  /* 자동화·던전 금지는 값이 아니라 행동이므로 따로 본다 */
+  {
+    setup();
+    const c=G.CHALLENGES.find(x=>x.rule.noDungeon);
+    /* 제대로 들어가야 한다. S.chal 만 바꿔 놓으면 회차 마나가 그대로 남아
+       첫 틱에 목표를 넘고, 시련이 끝난 뒤의 던전을 재게 된다 —
+       '던전 금지인데 층이 나아갔다' 는 그래서 나온 헛발이었다. */
+    G.enterChallenge(c.id);
+    const f0=S.floor; G.setRes('crystal',-Infinity); const q0=G.curL('crystal');
+    /* 시련이 끝나면 봉인이 풀려 층이 돌아온다 — 그 뒤를 재면 안 된다.
+       시련 안에 있는 동안만 굴린다. */
+    let inFloor=S.floor;
+    for(let i=0;i<100&&S.chal===c.id;i++){ G.tick(0.2); if(S.chal===c.id) inFloor=S.floor }
+    if(inFloor!==f0) bad('제약',`던전 금지인데 층이 ${D(f0)} → ${D(inFloor)} 로 나아갔다`);
+    if(G.curL('crystal')>q0+1e-9) bad('제약','던전 금지인데 쥔 땅이 결정을 내준다');
+    out(`  noDungeon    ${NMS(c)}  층 ${D(f0)} → ${D(inFloor)} · 결정 ${G.fmtLog(q0)} → ${G.fmtLog(G.curL('crystal'))}`);
+    ruled++;
+    S.chal=null; G.recalc();
+  }
+
+  /* ── 2. 들어가자마자 깨지지 않는가 ────────────────── */
+  out('');
+  out('=== 들어가자마자 깨지는가 ===');
+  let instant=0, entered=0, slowest=0;
+  for(const ch of G.CHALLENGES){
+    setup();
+    if(!G.chalOpen||!G.chalOpen(ch)) continue;
+    G.enterChallenge(ch.id);
+    if(S.chal!==ch.id) continue;
+    entered++; seen++;
+    const goal=G.chalGoalLog(ch,0);
+    /* 한 틱만 굴려 본다. 이것으로 목표에 닿으면 시련이 아니라 버튼이다. */
+    G.tick(0.2);
+    const after=S.manaRunL;
+    if((S.chalDone[ch.id]||0)>0 || after>=goal){
+      instant++;
+      if(instant<=6) out(`  [!] ${NMS(ch)}  한 틱에 목표 ${G.fmtLog(goal)} 를 넘었다 (${G.fmtLog(after)})`);
+    }else{
+      /* 얼마나 걸리는지 — 열다섯 분 안에 끝나야 철수당하지 않는다 */
+      let t=0.2;
+      while(t<900&&(S.chalDone[ch.id]||0)===0&&S.chal===ch.id){ G.tick(0.2); t+=0.2 }
+      if(t>slowest) slowest=t;
+      if((S.chalDone[ch.id]||0)===0&&instant+0===0&&t>=900)
+        bad('시련',`${NMS(ch)} 은 15분을 굴려도 1단계를 못 깬다 (목표 ${G.fmtLog(goal)})`);
+    }
+    S.chal=null;
+  }
+  out(`  들어가 본 시련 ${entered}개 · 한 틱에 깨진 것 ${instant}개 · 가장 오래 걸린 것 ${D(slowest)}초`);
+  if(instant) bad('시련',`${instant}개가 한 틱에 깨진다 — 제약을 견디는 것이 아니라 그냥 눌리는 것이다`);
+
+  /* ── 3. 보상이 붙는가 ────────────────────────── */
+  out('');
+  out('=== 깬 만큼 보상이 붙는가 ===');
+  setup();
+  const p0=G.M().prodLog;
+  S.chalDone={c1:10}; G.recalc();
+  const p1=G.M().prodLog;
+  out(`  침묵의 시련 10단계 · 마나 생산 자릿수 ${D(p0)} → ${D(p1)}`);
+  if(!(p1>p0+1e-9)) bad('보상','시련을 열 단계 깨도 배율이 그대로다');
+  S.chalDone={}; G.recalc();
+
+  }catch(e){ bad('하네스',e.message+' @ '+(e.stack||'').split('\n')[1]) }
+  out('');
+  for(const f of fail) out('  [!] '+f);
+  out(`=== 시련 문제 ${fail.length}건 ===`);
+  out(`COVER 시련=${seen} 제약=${ruled}`);
+  out('DONE');
+})();
+</script>
